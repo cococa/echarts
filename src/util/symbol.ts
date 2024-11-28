@@ -265,7 +265,10 @@ const symbolShapeMakers: Dictionary<SymbolShapeMaker> = {
 
 export const symbolBuildProxies: Dictionary<ECSymbol> = {};
 each(symbolCtors, function (Ctor, name) {
-    symbolBuildProxies[name] = new Ctor();
+    console.log("Ctor", Ctor, name);
+    const ctor =  new Ctor();
+    // s.roughness = 1
+    symbolBuildProxies[name] = ctor
 });
 
 const SymbolClz = graphic.Path.extend({

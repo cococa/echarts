@@ -158,6 +158,7 @@ class Line extends graphic.Group {
 
     constructor(lineData: SeriesData, idx: number, seriesScope?: LineDrawSeriesScope) {
         super();
+        console.log("echarts Line constructor");
         this._createLine(lineData as LineList, idx, seriesScope);
     }
 
