@@ -443,6 +443,7 @@ class ECharts extends Eventful<ECEventDefinition> {
         }
 
         const zr = this._zr = zrender.init(dom, {
+            roughness: 3,
             renderer: opts.renderer || defaultRenderer,
             devicePixelRatio: opts.devicePixelRatio,
             width: opts.width,
@@ -611,6 +612,7 @@ class ECharts extends Eventful<ECEventDefinition> {
     setOption<Opt extends ECBasicOption>(option: Opt, opts?: SetOptionOpts): void;
     /* eslint-disable-next-line */
     setOption<Opt extends ECBasicOption>(option: Opt, notMerge?: boolean | SetOptionOpts, lazyUpdate?: boolean): void {
+        console.log("setOption");
         if (this[IN_MAIN_PROCESS_KEY]) {
             if (__DEV__) {
                 error('`setOption` should not be called during main process.');
@@ -877,7 +879,8 @@ class ECharts extends Eventful<ECEventDefinition> {
             const height = bottom - top;
             const targetCanvas = platformApi.createCanvas();
             const zr = zrender.init(targetCanvas, {
-                renderer: isSvg ? 'svg' : 'canvas'
+                renderer: isSvg ? 'svg' : 'canvas',
+                roughness: 3,
             });
             zr.resize({
                 width: width,
@@ -1549,6 +1552,7 @@ class ECharts extends Eventful<ECEventDefinition> {
                 else {
                     i++;
                 }
+                console.log('view',view);
             }
         };
 
