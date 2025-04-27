@@ -33,6 +33,12 @@ export default function pointsLayout(seriesType: string, forceStoreInTypedArray?
         plan: createRenderPlanner(),
 
         reset: function (seriesModel: SeriesModel) {
+            console.warn('reset', seriesModel);
+            const ecApi = seriesModel.ecModel.scheduler.api;
+            const width = ecApi.getWidth();
+            const height = ecApi.getHeight();
+            console.warn('reset', width, height);
+
             const data = seriesModel.getData();
             const coordSys = seriesModel.coordinateSystem;
             const pipelineContext = seriesModel.pipelineContext;
@@ -87,10 +93,11 @@ export default function pointsLayout(seriesType: string, forceStoreInTypedArray?
                             points[offset++] = point[1];
                         }
                         else {
-                            data.setItemLayout(i, point.slice());
+                            console.warn('reset', point);
+                            data.setItemLayout(i, [width /2, height /2]);
                         }
                     }
-
+                    
                     useTypedArray && data.setLayout('points', points);
                 }
             };
