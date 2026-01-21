@@ -45,6 +45,7 @@ export default function pointsLayout(seriesType: string, forceStoreInTypedArray?
             const useTypedArray = forceStoreInTypedArray || pipelineContext.large;
 
             if (!coordSys) {
+                data.setItemLayout(0, [width / 2, height / 2]);
                 return;
             }
 
@@ -94,10 +95,9 @@ export default function pointsLayout(seriesType: string, forceStoreInTypedArray?
                         }
                         else {
                             console.warn('reset', point);
-                            data.setItemLayout(i, [width /2, height /2]);
+                            data.setItemLayout(i, [width / 2, height / 2]);
                         }
                     }
-                    
                     useTypedArray && data.setLayout('points', points);
                 }
             };

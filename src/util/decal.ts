@@ -253,6 +253,7 @@ export function createOrUpdatePatternFromDecal(
                             const height = dashArrayY[yId] * decalOpt.symbolSize;
                             const symbolXId = (xId1Total / 2) % symbolArray[symbolYId].length;
 
+                            console.log(left, top, width, height);
                             brushSymbol(left, top, width, height, symbolArray[symbolYId][symbolXId]);
                         }
 
