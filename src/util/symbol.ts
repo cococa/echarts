@@ -290,7 +290,7 @@ const SymbolClz = graphic.Path.extend({
     },
 
     buildPath(ctx, shape, inBundle) {
-        console.log('symbol', shape);
+        // console.log('symbol', shape);
         let symbolType = shape.symbolType;
         if (symbolType !== 'none') {
             let proxySymbol = symbolBuildProxies[symbolType];

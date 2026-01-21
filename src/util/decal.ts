@@ -1,4 +1,3 @@
-
 /*
 * Licensed to the Apache Software Foundation (ASF) under one
 * or more contributor license agreements.  See the NOTICE file
@@ -253,7 +252,7 @@ export function createOrUpdatePatternFromDecal(
                             const height = dashArrayY[yId] * decalOpt.symbolSize;
                             const symbolXId = (xId1Total / 2) % symbolArray[symbolYId].length;
 
-                            console.log(left, top, width, height);
+                            // console.log(left, top, width, height);
                             brushSymbol(left, top, width, height, symbolArray[symbolYId][symbolXId]);
                         }
 
