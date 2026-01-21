@@ -327,7 +327,8 @@ export type EChartsInitOpts = {
     pointerSize?: number,
     ssr?: boolean,
     width?: number | string,
-    height?: number | string
+    height?: number | string,
+    roughness?: number
 };
 class ECharts extends Eventful<ECEventDefinition> {
 
@@ -443,7 +444,7 @@ class ECharts extends Eventful<ECEventDefinition> {
         }
 
         const zr = this._zr = zrender.init(dom, {
-            roughness: 3,
+            roughness: opts.roughness,
             renderer: opts.renderer || defaultRenderer,
             devicePixelRatio: opts.devicePixelRatio,
             width: opts.width,

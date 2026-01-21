@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ZRender Instance Test</title>
+    <script src="lib/simpleRequire.js"></script>
+    <script src="lib/config.js"></script>
+    <script src="lib/jquery.min.js"></script>
+    <script src="lib/facePrint.js"></script>
+    <script src="lib/testHelper.js"></script>
+    <link rel="stylesheet" href="lib/reset.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        
+        .info {
+            background: #f0f0f0;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        .info h2 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        
+        .info pre {
+            background: #fff;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+        
+        .charts-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .chart-wrapper {
+            flex: 1;
+            min-width: 400px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .chart-title {
+            background: #333;
+            color: white;
+            padding: 10px;
+            font-weight: bold;
+        }
+        
+        .chart {
+            width: 100%;
+            height: 400px;
+        }
+        
+        .log {
+            margin-top: 20px;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .log h3 {
+            margin: 0 0 10px 0;
+        }
+        
+        .log-entry {
+            padding: 5px;
+            margin: 5px 0;
+            background: white;
+            border-left: 3px solid #5470c6;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .log-entry.success {
+            border-left-color: #91cc75;
+        }
+        
+        .log-entry.info {
+            border-left-color: #fac858;
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        <h2>📊 ECharts 与 ZRender 实例关系测试</h2>
+        <p><strong>核心结论：</strong>一个 ECharts 实例对应一个 ZRender 实例</p>
+        <p>本页面创建了多个 ECharts 实例，每个实例都有自己独立的 ZRender 实例。</p>
+    </div>
+
+    <div class="charts-container">
+        <div class="chart-wrapper">
+            <div class="chart-title">图表 1 - 柱状图</div>
+            <div id="chart1" class="chart"></div>
+        </div>
+        
+        <div class="chart-wrapper">
+            <div class="chart-title">图表 2 - 折线图</div>
+            <div id="chart2" class="chart"></div>
+        </div>
+        
+        <div class="chart-wrapper">
+            <div class="chart-title">图表 3 - 饼图</div>
+            <div id="chart3" class="chart"></div>
+        </div>
+    </div>
+
+    <div class="log">
+        <h3>🔍 实例分析日志</h3>
+        <div id="logContainer"></div>
+    </div>
+
+    <script>
+        require(['echarts'], function (echarts) {
+            const logContainer = document.getElementById('logContainer');
+            
+            function log(message, type = 'info') {
+                const entry = document.createElement('div');
+                entry.className = `log-entry ${type}`;
+                entry.textContent = message;
+                logContainer.appendChild(entry);
+                console.log(message);
+            }
+
+            log('=== 开始创建 ECharts 实例 ===', 'info');
+            log('');
+
+            // 创建图表 1 - 柱状图
+            const chart1 = echarts.init(document.getElementById('chart1'), null, {
+                renderer: 'canvas',
+                roughness: 3
+            });
+            
+            const zr1 = chart1.getZr();
+            log(`图表 1 创建完成`, 'success');
+            log(`  - ECharts 实例 ID: ${chart1.id}`);
+            log(`  - ZRender 实例 ID: ${zr1.id}`);
+            log(`  - ZRender roughness: ${zr1.roughness}`);
+            log(`  - ZRender 渲染器类型: ${zr1.painter.getType()}`);
+            log('');
+
+            chart1.setOption({
+                title: { text: '柱状图示例', left: 'center' },
+                xAxis: { type: 'category', data: ['A', 'B', 'C', 'D', 'E'] },
+                yAxis: { type: 'value' },
+                series: [{
+                    data: [120, 200, 150, 80, 70],
+                    type: 'bar',
+                    itemStyle: { color: '#5470c6' }
+                }]
+            });
+
+            // 创建图表 2 - 折线图
+            const chart2 = echarts.init(document.getElementById('chart2'), null, {
+                renderer: 'svg',
+                roughness: 0
+            });
+            
+            const zr2 = chart2.getZr();
+            log(`图表 2 创建完成`, 'success');
+            log(`  - ECharts 实例 ID: ${chart2.id}`);
+            log(`  - ZRender 实例 ID: ${zr2.id}`);
+            log(`  - ZRender roughness: ${zr2.roughness}`);
+            log(`  - ZRender 渲染器类型: ${zr2.painter.getType()}`);
+            log('');
+
+            chart2.setOption({
+                title: { text: '折线图示例', left: 'center' },
+                xAxis: { type: 'category', data: ['A', 'B', 'C', 'D', 'E'] },
+                yAxis: { type: 'value' },
+                series: [{
+                    data: [120, 200, 150, 80, 70],
+                    type: 'line',
+                    smooth: true,
+                    itemStyle: { color: '#91cc75' }
+                }]
+            });
+
+            // 创建图表 3 - 饼图
+            const chart3 = echarts.init(document.getElementById('chart3'), null, {
+                renderer: 'canvas',
+                roughness: 5
+            });
+            
+            const zr3 = chart3.getZr();
+            log(`图表 3 创建完成`, 'success');
+            log(`  - ECharts 实例 ID: ${chart3.id}`);
+            log(`  - ZRender 实例 ID: ${zr3.id}`);
+            log(`  - ZRender roughness: ${zr3.roughness}`);
+            log(`  - ZRender 渲染器类型: ${zr3.painter.getType()}`);
+            log('');
+
+            chart3.setOption({
+                title: { text: '饼图示例', left: 'center' },
+                series: [{
+                    type: 'pie',
+                    radius: '60%',
+                    data: [
+                        { value: 335, name: 'A' },
+                        { value: 310, name: 'B' },
+                        { value: 234, name: 'C' },
+                        { value: 135, name: 'D' },
+                        { value: 148, name: 'E' }
+                    ]
+                }]
+            });
+
+            // 验证实例关系
+            log('=== 验证实例关系 ===', 'info');
+            log('');
+            
+            log(`✓ 图表 1 的 ZRender 实例是否唯一: ${chart1.getZr() === zr1}`, 'success');
+            log(`✓ 图表 2 的 ZRender 实例是否唯一: ${chart2.getZr() === zr2}`, 'success');
+            log(`✓ 图表 3 的 ZRender 实例是否唯一: ${chart3.getZr() === zr3}`, 'success');
+            log('');
+            
+            log(`✓ 图表 1 和图表 2 的 ZRender 实例是否不同: ${zr1 !== zr2}`, 'success');
+            log(`✓ 图表 2 和图表 3 的 ZRender 实例是否不同: ${zr2 !== zr3}`, 'success');
+            log(`✓ 图表 1 和图表 3 的 ZRender 实例是否不同: ${zr1 !== zr3}`, 'success');
+            log('');
+
+            // 检查 ZRender 内部结构
+            log('=== ZRender 内部结构分析（以图表 1 为例）===', 'info');
+            log('');
+            
+            setTimeout(() => {
+                const storage = zr1.storage;
+                const painter = zr1.painter;
+                const roots = storage.getRoots();
+                
+                log(`ZRender Storage 根元素数量: ${roots.length}`);
+                log(`ZRender Painter 类型: ${painter.getType()}`);
+                log(`ZRender Painter 宽度: ${painter.getWidth()}px`);
+                log(`ZRender Painter 高度: ${painter.getHeight()}px`);
+                log('');
+                
+                // 统计元素类型
+                const elementTypes = {};
+                let totalElements = 0;
+                
+                function countElements(el) {
+                    totalElements++;
+                    const type = el.type || 'unknown';
+                    elementTypes[type] = (elementTypes[type] || 0) + 1;
+                    
+                    if (el.childrenRef && typeof el.childrenRef === 'function') {
+                        const children = el.childrenRef();
+                        if (children && children.length > 0) {
+                            children.forEach(countElements);
+                        }
+                    }
+                }
+                
+                roots.forEach(countElements);
+                
+                log(`图表 1 总元素数量: ${totalElements}`);
+                log(`元素类型分布:`);
+                for (let type in elementTypes) {
+                    log(`  - ${type}: ${elementTypes[type]} 个`);
+                }
+                log('');
+                
+                log('=== 结论 ===', 'info');
+                log('');
+                log('1️⃣ 每个 ECharts 实例有且仅有一个 ZRender 实例', 'success');
+                log('2️⃣ 不同的 ECharts 实例有不同的 ZRender 实例', 'success');
+                log('3️⃣ 一个 ZRender 实例管理该图表的所有图形元素', 'success');
+                log('4️⃣ ZRender 实例在 ECharts 初始化时创建，在 dispose 时销毁', 'success');
+            }, 500);
+        });
+    </script>
+</body>
+</html>

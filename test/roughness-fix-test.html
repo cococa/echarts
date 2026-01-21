@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Roughness Fix Test</title>
+    <script src="lib/simpleRequire.js"></script>
+    <script src="lib/config.js"></script>
+    <script src="lib/jquery.min.js"></script>
+    <script src="lib/facePrint.js"></script>
+    <script src="lib/testHelper.js"></script>
+    <link rel="stylesheet" href="lib/reset.css" />
+</head>
+<body>
+    <style>
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .chart {
+            width: 50%;
+            height: 100%;
+            border: 1px solid #ccc;
+            position: relative;
+        }
+        .title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255,255,255,0.9);
+            padding: 5px 10px;
+            font-weight: bold;
+            z-index: 100;
+        }
+        .log {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 11px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+        }
+    </style>
+
+    <div class="container">
+        <div class="chart">
+            <div class="title">Normal (roughness: 0)</div>
+            <div id="chart1" style="width: 100%; height: 100%;"></div>
+            <div id="log1" class="log"></div>
+        </div>
+        <div class="chart">
+            <div class="title">Hand-drawn (roughness: 5)</div>
+            <div id="chart2" style="width: 100%; height: 100%;"></div>
+            <div id="log2" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        function createChart(containerId, logId, roughness) {
+            require(['echarts'], function (echarts) {
+                const logDiv = document.getElementById(logId);
+                
+                function log(msg) {
+                    console.log(`[${containerId}] ${msg}`);
+                    logDiv.innerHTML += msg + '<br>';
+                    logDiv.scrollTop = logDiv.scrollHeight;
+                }
+                
+                try {
+                    const chart = echarts.init(document.getElementById(containerId), null, {
+                        renderer: 'canvas',
+                        roughness: roughness
+                    });
+                    
+                    log(`Chart created with roughness: ${roughness}`);
+                    log(`ZRender roughness: ${chart.getZr().roughness}`);
+                    log(`ZRender filler: ${chart.getZr().filler}`);
+                    
+                    const option = {
+                        xAxis: {
+                            type: 'category',
+                            data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
+                        },
+                        yAxis: {
+                            type: 'value'
+                        },
+                        series: [{
+                            data: [120, 200, 150, 80, 70],
+                            type: 'bar',
+                            itemStyle: {
+                                color: '#ff6b6b',
+                                borderColor: '#333',
+                                borderWidth: 1
+                            }
+                        }]
+                    };
+                    
+                    chart.setOption(option);
+                    log('Chart rendered');
+                    
+                    // 检查元素属性
+                    setTimeout(() => {
+                        const zr = chart.getZr();
+                        const roots = zr.storage.getRoots();
+                        log('--- Element Properties ---');
+                        
+                        function checkElement(el, depth = 0) {
+                            const indent = '  '.repeat(depth);
+                            if (el.type) {
+                                const roughnessStr = el.roughness !== undefined ? el.roughness : 'undefined';
+                                const fillerStr = el.filler || 'undefined';
+                                log(`${indent}${el.type}: roughness=${roughnessStr}, filler=${fillerStr}`);
+                                
+                                // 特别检查 rect 元素
+                                if (el.type === 'rect' && el.roughness > 0) {
+                                    log(`${indent}  -> RECT HAS ROUGHNESS! Should show hand-drawn effect`);
+                                }
+                            }
+                            if (el.childrenRef && typeof el.childrenRef === 'function') {
+                                const children = el.childrenRef();
+                                if (children && children.length > 0) {
+                                    children.forEach(child => checkElement(child, depth + 1));
+                                }
+                            }
+                        }
+                        
+                        roots.forEach(root => checkElement(root));
+                    }, 500);
+                    
+                } catch (error) {
+                    log(`Error: ${error.message}`);
+                    console.error(error);
+                }
+            });
+        }
+        
+        // 创建两个图表进行对比
+        createChart('chart1', 'log1', 0);
+        createChart('chart2', 'log2', 5);
+    </script>
+</body>
+</html>

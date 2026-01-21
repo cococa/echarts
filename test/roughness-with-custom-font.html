@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Roughness with Custom Font</title>
+    <script src="lib/simpleRequire.js"></script>
+    <script src="lib/config.js"></script>
+    <script src="lib/jquery.min.js"></script>
+    <script src="lib/facePrint.js"></script>
+    <script src="lib/testHelper.js"></script>
+    <link rel="stylesheet" href="lib/reset.css" />
+    <style>
+        /* 加载自定义字体 */
+        @font-face {
+            font-family: 'JinNianYeYaoJiaYouYa';
+            src: url('../JinNianYeYaoJiaYouYa-2.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .chart-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #ccc;
+            position: relative;
+        }
+
+        .title {
+            padding: 10px;
+            background: #f0f0f0;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .chart {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="chart-wrapper">
+            <div class="title">Normal Style (roughness: 0)</div>
+            <div id="chart1" class="chart"></div>
+        </div>
+        <div class="chart-wrapper">
+            <div class="title">Hand-drawn Style (roughness: 5) + Custom Font</div>
+            <div id="chart2" class="chart"></div>
+        </div>
+    </div>
+
+    <script>
+        require(['echarts'], function (echarts) {
+            // 等待字体加载完成
+            document.fonts.ready.then(function() {
+                console.log('Fonts loaded');
+                createCharts();
+            });
+
+            function createCharts() {
+                // 图表 1：正常样式
+                const chart1 = echarts.init(document.getElementById('chart1'), null, {
+                    renderer: 'canvas',
+                    roughness: 0
+                });
+
+                const option1 = {
+                    title: {
+                        text: '正常柱状图',
+                        left: 'center'
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+                    },
+                    yAxis: {
+                        type: 'value'
+                    },
+                    series: [{
+                        data: [120, 200, 150, 80, 70, 110, 130],
+                        type: 'bar',
+                        itemStyle: {
+                            color: '#5470c6'
+                        }
+                    }]
+                };
+
+                chart1.setOption(option1);
+
+                // 图表 2：手绘风格 + 自定义字体
+                const chart2 = echarts.init(document.getElementById('chart2'), null, {
+                    renderer: 'canvas',
+                    roughness: 2,
+                    fontFamily: 'JinNianYeYaoJiaYouYa, sans-serif',
+                    filler: 'cross-hatch'
+                });
+
+                const option2 = {
+                    textStyle:{
+                        fontFamily: 'JinNianYeYaoJiaYouYa, sans-serif',
+                    },
+                    title: {
+                        text: '手绘风格柱状图',
+                        left: 'center',
+                        textStyle: {
+
+                            fontSize: 24
+                        }
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+                        axisLabel: {
+                            // fontFamily: 'JinNianYeYaoJiaYouYa, sans-serif',
+                            fontSize: 14
+                        }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        axisLabel: {
+                            // fontFamily: 'JinNianYeYaoJiaYouYa, sans-serif',
+                            fontSize: 16
+                        }
+                    },
+                    series: [{
+                        data: [120, 200, 150, 80, 70, 110, 130],
+                        type: 'bar',
+                        itemStyle: {
+                            color: 'grey'
+                        },
+                        label: {
+                            show: true,
+                            position: 'top',
+                            // fontFamily: 'JinNianYeYaoJiaYouYa, sans-serif',
+                            fontSize: 16
+                        }
+                    }]
+                };
+
+                chart2.setOption(option2);
+
+                console.log('Chart 1 roughness:', chart1.getZr().roughness);
+                console.log('Chart 2 roughness:', chart2.getZr().roughness);
+            }
+        });
+    </script>
+</body>
+</html>

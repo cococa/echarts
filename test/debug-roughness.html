@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Debug Roughness</title>
+    <script src="lib/simpleRequire.js"></script>
+    <script src="lib/config.js"></script>
+    <script src="lib/jquery.min.js"></script>
+    <script src="lib/facePrint.js"></script>
+    <script src="lib/testHelper.js"></script>
+    <link rel="stylesheet" href="lib/reset.css" />
+</head>
+<body>
+    <div id="main" style="width: 800px; height: 600px;"></div>
+    <div id="debug" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: white; padding: 10px; font-family: monospace; font-size: 12px;"></div>
+
+    <script>
+        require([
+            'echarts'
+        ], function (echarts) {
+            var debugDiv = document.getElementById('debug');
+            
+            function log(msg) {
+                console.log(msg);
+                debugDiv.innerHTML += msg + '<br>';
+            }
+            
+            log('ECharts version: ' + echarts.version);
+            log('ZRender version: ' + echarts.dependencies.zrender);
+            
+            // 创建图表
+            var chart = echarts.init(document.getElementById('main'), null, {
+                renderer: 'canvas',
+                roughness: 5
+            });
+            
+            log('Chart created');
+            log('ZRender roughness: ' + chart.getZr().roughness);
+            log('ZRender filler: ' + chart.getZr().filler);
+            
+            // 检查 ZRender 实例
+            var zr = chart.getZr();
+            log('ZRender storage: ' + (zr.storage ? 'exists' : 'missing'));
+            log('ZRender painter: ' + (zr.painter ? zr.painter.getType() : 'missing'));
+            
+            var option = {
+                xAxis: {
+                    type: 'category',
+                    data: ['A', 'B', 'C']
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                series: [{
+                    data: [120, 200, 150],
+                    type: 'bar',
+                    itemStyle: {
+                        color: 'red'
+                    }
+                }]
+            };
+            
+            chart.setOption(option);
+            log('Option set');
+            
+            // 检查渲染后的元素
+            setTimeout(() => {
+                var roots = zr.storage.getRoots();
+                log('Root elements count: ' + roots.length);
+                
+                function checkElement(el, depth = 0) {
+                    var indent = '  '.repeat(depth);
+                    if (el.type) {
+                        log(indent + 'Element: ' + el.type + ' roughness: ' + (el.roughness || 'undefined'));
+                        if (el.roughness) {
+                            log(indent + '  -> Has roughness!');
+                        }
+                    }
+                    if (el.childrenRef && el.childrenRef()) {
+                        el.childrenRef().forEach(child => checkElement(child, depth + 1));
+                    }
+                }
+                
+                roots.forEach(root => checkElement(root));
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

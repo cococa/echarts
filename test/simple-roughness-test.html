@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Simple Roughness Test</title>
+    <script src="lib/simpleRequire.js"></script>
+    <script src="lib/config.js"></script>
+    <script src="lib/jquery.min.js"></script>
+    <script src="lib/facePrint.js"></script>
+    <script src="lib/testHelper.js"></script>
+    <link rel="stylesheet" href="lib/reset.css" />
+</head>
+<body>
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            height: 100vh;
+        }
+        .chart-container {
+            width: 50%;
+            height: 50%;
+            position: relative;
+            border: 1px solid #ccc;
+        }
+        .chart-title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255,255,255,0.8);
+            padding: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 100;
+        }
+        .chart {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+
+    <div class="container">
+        <div class="chart-container">
+            <div class="chart-title">Canvas - No Roughness</div>
+            <div id="chart1" class="chart"></div>
+        </div>
+        <div class="chart-container">
+            <div class="chart-title">Canvas - Roughness 5</div>
+            <div id="chart2" class="chart"></div>
+        </div>
+        <div class="chart-container">
+            <div class="chart-title">SVG - No Roughness</div>
+            <div id="chart3" class="chart"></div>
+        </div>
+        <div class="chart-container">
+            <div class="chart-title">SVG - Roughness 5</div>
+            <div id="chart4" class="chart"></div>
+        </div>
+    </div>
+
+    <script>
+        require([
+            'echarts'
+        ], function (echarts) {
+            console.log('ECharts version:', echarts.version);
+            console.log('ECharts dependencies:', echarts.dependencies);
+
+            var option = {
+                xAxis: {
+                    type: 'category',
+                    data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                series: [{
+                    data: [120, 200, 150, 80, 70],
+                    type: 'bar',
+                    itemStyle: {
+                        color: 'rgba(255, 100, 100, 0.8)'
+                    }
+                }]
+            };
+
+            // Test 1: Canvas - No Roughness
+            try {
+                var chart1 = echarts.init(document.getElementById('chart1'), null, {
+                    renderer: 'canvas',
+                    roughness: 0
+                });
+                chart1.setOption(option);
+                console.log('Chart1 ZRender roughness:', chart1.getZr().roughness);
+            } catch (e) {
+                console.error('Chart1 error:', e);
+            }
+
+            // Test 2: Canvas - Roughness 5
+            try {
+                var chart2 = echarts.init(document.getElementById('chart2'), null, {
+                    renderer: 'canvas',
+                    roughness: 5
+                });
+                chart2.setOption(option);
+                console.log('Chart2 ZRender roughness:', chart2.getZr().roughness);
+            } catch (e) {
+                console.error('Chart2 error:', e);
+            }
+
+            // Test 3: SVG - No Roughness
+            try {
+                var chart3 = echarts.init(document.getElementById('chart3'), null, {
+                    renderer: 'svg',
+                    roughness: 0
+                });
+                chart3.setOption(option);
+                console.log('Chart3 ZRender roughness:', chart3.getZr().roughness);
+            } catch (e) {
+                console.error('Chart3 error:', e);
+            }
+
+            // Test 4: SVG - Roughness 5
+            try {
+                var chart4 = echarts.init(document.getElementById('chart4'), null, {
+                    renderer: 'svg',
+                    roughness: 5
+                });
+                chart4.setOption(option);
+                console.log('Chart4 ZRender roughness:', chart4.getZr().roughness);
+            } catch (e) {
+                console.error('Chart4 error:', e);
+            }
+        });
+    </script>
+</body>
+</html>

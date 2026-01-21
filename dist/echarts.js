@@ -55,17 +55,18 @@
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     }
 
-    class Browser {
-        constructor() {
+    var Browser = (function () {
+        function Browser() {
             this.firefox = false;
             this.ie = false;
             this.edge = false;
             this.newEdge = false;
             this.weChat = false;
         }
-    }
-    class Env {
-        constructor() {
+        return Browser;
+    }());
+    var Env = (function () {
+        function Env() {
             this.browser = new Browser();
             this.node = false;
             this.wxa = false;
@@ -78,8 +79,9 @@
             this.transform3dSupported = false;
             this.hasGlobalWindow = typeof window !== 'undefined';
         }
-    }
-    const env = new Env();
+        return Env;
+    }());
+    var env = new Env();
     if (typeof wx === 'object' && typeof wx.getSystemInfoSync === 'function') {
         env.wxa = true;
         env.touchEventsSupported = true;
@@ -95,12 +97,12 @@
         detect(navigator.userAgent, env);
     }
     function detect(ua, env) {
-        const browser = env.browser;
-        const firefox = ua.match(/Firefox\/([\d.]+)/);
-        const ie = ua.match(/MSIE\s([\d.]+)/)
+        var browser = env.browser;
+        var firefox = ua.match(/Firefox\/([\d.]+)/);
+        var ie = ua.match(/MSIE\s([\d.]+)/)
             || ua.match(/Trident\/.+?rv:(([\d.]+))/);
-        const edge = ua.match(/Edge?\/([\d.]+)/);
-        const weChat = (/micromessenger/i).test(ua);
+        var edge = ua.match(/Edge?\/([\d.]+)/);
+        var weChat = (/micromessenger/i).test(ua);
         if (firefox) {
             browser.firefox = true;
             browser.version = firefox[1];
@@ -122,7 +124,7 @@
         env.pointerEventsSupported = 'onpointerdown' in window
             && (browser.edge || (browser.ie && +browser.version >= 11));
         env.domSupported = typeof document !== 'undefined';
-        const style = document.documentElement.style;
+        var style = document.documentElement.style;
         env.transform3dSupported = ((browser.ie && 'transition' in style)
             || browser.edge
             || (('WebKitCSSMatrix' in window) && ('m11' in new WebKitCSSMatrix()))
@@ -132,36 +134,36 @@
             || (browser.ie && +browser.version >= 9);
     }
 
-    const DEFAULT_FONT_SIZE = 12;
-    const DEFAULT_FONT_FAMILY = 'sans-serif';
-    const DEFAULT_FONT = `${DEFAULT_FONT_SIZE}px ${DEFAULT_FONT_FAMILY}`;
-    const OFFSET = 20;
-    const SCALE = 100;
-    const defaultWidthMapStr = `007LLmW'55;N0500LLLLLLLLLL00NNNLzWW\\\\WQb\\0FWLg\\bWb\\WQ\\WrWWQ000CL5LLFLL0LL**F*gLLLL5F0LF\\FFF5.5N`;
+    var DEFAULT_FONT_SIZE = 12;
+    var DEFAULT_FONT_FAMILY = 'sans-serif';
+    var DEFAULT_FONT = DEFAULT_FONT_SIZE + "px " + DEFAULT_FONT_FAMILY;
+    var OFFSET = 20;
+    var SCALE = 100;
+    var defaultWidthMapStr = "007LLmW'55;N0500LLLLLLLLLL00NNNLzWW\\\\WQb\\0FWLg\\bWb\\WQ\\WrWWQ000CL5LLFLL0LL**F*gLLLL5F0LF\\FFF5.5N";
     function getTextWidthMap(mapStr) {
-        const map = {};
+        var map = {};
         if (typeof JSON === 'undefined') {
             return map;
         }
-        for (let i = 0; i < mapStr.length; i++) {
-            const char = String.fromCharCode(i + 32);
-            const size = (mapStr.charCodeAt(i) - OFFSET) / SCALE;
+        for (var i = 0; i < mapStr.length; i++) {
+            var char = String.fromCharCode(i + 32);
+            var size = (mapStr.charCodeAt(i) - OFFSET) / SCALE;
             map[char] = size;
         }
         return map;
     }
-    const DEFAULT_TEXT_WIDTH_MAP = getTextWidthMap(defaultWidthMapStr);
-    const platformApi = {
-        createCanvas() {
+    var DEFAULT_TEXT_WIDTH_MAP = getTextWidthMap(defaultWidthMapStr);
+    var platformApi = {
+        createCanvas: function () {
             return typeof document !== 'undefined'
                 && document.createElement('canvas');
         },
         measureText: (function () {
-            let _ctx;
-            let _cachedFont;
-            return (text, font) => {
+            var _ctx;
+            var _cachedFont;
+            return function (text, font) {
                 if (!_ctx) {
-                    const canvas = platformApi.createCanvas();
+                    var canvas = platformApi.createCanvas();
                     _ctx = canvas && canvas.getContext('2d');
                 }
                 if (_ctx) {
@@ -173,24 +175,24 @@
                 else {
                     text = text || '';
                     font = font || DEFAULT_FONT;
-                    const res = /((?:\d+)?\.?\d*)px/.exec(font);
-                    const fontSize = res && +res[1] || DEFAULT_FONT_SIZE;
-                    let width = 0;
+                    var res = /((?:\d+)?\.?\d*)px/.exec(font);
+                    var fontSize = res && +res[1] || DEFAULT_FONT_SIZE;
+                    var width = 0;
                     if (font.indexOf('mono') >= 0) {
                         width = fontSize * text.length;
                     }
                     else {
-                        for (let i = 0; i < text.length; i++) {
-                            const preCalcWidth = DEFAULT_TEXT_WIDTH_MAP[text[i]];
+                        for (var i = 0; i < text.length; i++) {
+                            var preCalcWidth = DEFAULT_TEXT_WIDTH_MAP[text[i]];
                             width += preCalcWidth == null ? fontSize : (preCalcWidth * fontSize);
                         }
                     }
-                    return { width };
+                    return { width: width };
                 }
             };
         })(),
-        loadImage(src, onload, onerror) {
-            const image = new Image();
+        loadImage: function (src, onload, onerror) {
+            var image = new Image();
             image.onload = onload;
             image.onerror = onerror;
             image.src = src;
@@ -198,14 +200,14 @@
         }
     };
     function setPlatformAPI(newPlatformApis) {
-        for (let key in platformApi) {
+        for (var key in platformApi) {
             if (newPlatformApis[key]) {
                 platformApi[key] = newPlatformApis[key];
             }
         }
     }
 
-    const BUILTIN_OBJECT = reduce([
+    var BUILTIN_OBJECT = reduce([
         'Function',
         'RegExp',
         'Date',
@@ -214,11 +216,11 @@
         'CanvasPattern',
         'Image',
         'Canvas'
-    ], (obj, val) => {
+    ], function (obj, val) {
         obj['[object ' + val + ']'] = true;
         return obj;
     }, {});
-    const TYPED_ARRAY = reduce([
+    var TYPED_ARRAY = reduce([
         'Int8',
         'Uint8',
         'Uint8Clamped',
@@ -228,24 +230,28 @@
         'Uint32',
         'Float32',
         'Float64'
-    ], (obj, val) => {
+    ], function (obj, val) {
         obj['[object ' + val + 'Array]'] = true;
         return obj;
     }, {});
-    const objToString = Object.prototype.toString;
-    const arrayProto = Array.prototype;
-    const nativeForEach = arrayProto.forEach;
-    const nativeFilter = arrayProto.filter;
-    const nativeSlice = arrayProto.slice;
-    const nativeMap = arrayProto.map;
-    const ctorFunction = function () { }.constructor;
-    const protoFunction = ctorFunction ? ctorFunction.prototype : null;
-    const protoKey = '__proto__';
-    let idStart = 0x0907;
+    var objToString = Object.prototype.toString;
+    var arrayProto = Array.prototype;
+    var nativeForEach = arrayProto.forEach;
+    var nativeFilter = arrayProto.filter;
+    var nativeSlice = arrayProto.slice;
+    var nativeMap = arrayProto.map;
+    var ctorFunction = function () { }.constructor;
+    var protoFunction = ctorFunction ? ctorFunction.prototype : null;
+    var protoKey = '__proto__';
+    var idStart = 0x0907;
     function guid() {
         return idStart++;
     }
-    function logError(...args) {
+    function logError() {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
         if (typeof console !== 'undefined') {
             console.error.apply(console, args);
         }
@@ -254,25 +260,25 @@
         if (source == null || typeof source !== 'object') {
             return source;
         }
-        let result = source;
-        const typeStr = objToString.call(source);
+        var result = source;
+        var typeStr = objToString.call(source);
         if (typeStr === '[object Array]') {
             if (!isPrimitive(source)) {
                 result = [];
-                for (let i = 0, len = source.length; i < len; i++) {
+                for (var i = 0, len = source.length; i < len; i++) {
                     result[i] = clone(source[i]);
                 }
             }
         }
         else if (TYPED_ARRAY[typeStr]) {
             if (!isPrimitive(source)) {
-                const Ctor = source.constructor;
+                var Ctor = source.constructor;
                 if (Ctor.from) {
                     result = Ctor.from(source);
                 }
                 else {
                     result = new Ctor(source.length);
-                    for (let i = 0, len = source.length; i < len; i++) {
+                    for (var i = 0, len = source.length; i < len; i++) {
                         result[i] = source[i];
                     }
                 }
@@ -280,7 +286,7 @@
         }
         else if (!BUILTIN_OBJECT[typeStr] && !isPrimitive(source) && !isDom(source)) {
             result = {};
-            for (let key in source) {
+            for (var key in source) {
                 if (source.hasOwnProperty(key) && key !== protoKey) {
                     result[key] = clone(source[key]);
                 }
@@ -292,10 +298,10 @@
         if (!isObject(source) || !isObject(target)) {
             return overwrite ? clone(source) : target;
         }
-        for (let key in source) {
+        for (var key in source) {
             if (source.hasOwnProperty(key) && key !== protoKey) {
-                const targetProp = target[key];
-                const sourceProp = source[key];
+                var targetProp = target[key];
+                var sourceProp = source[key];
                 if (isObject(sourceProp)
                     && isObject(targetProp)
                     && !isArray(sourceProp)
@@ -316,8 +322,8 @@
         return target;
     }
     function mergeAll(targetAndSources, overwrite) {
-        let result = targetAndSources[0];
-        for (let i = 1, len = targetAndSources.length; i < len; i++) {
+        var result = targetAndSources[0];
+        for (var i = 1, len = targetAndSources.length; i < len; i++) {
             result = merge(result, targetAndSources[i], overwrite);
         }
         return result;
@@ -327,7 +333,7 @@
             Object.assign(target, source);
         }
         else {
-            for (let key in source) {
+            for (var key in source) {
                 if (source.hasOwnProperty(key) && key !== protoKey) {
                     target[key] = source[key];
                 }
@@ -336,22 +342,22 @@
         return target;
     }
     function defaults(target, source, overlay) {
-        const keysArr = keys(source);
-        for (let i = 0; i < keysArr.length; i++) {
-            let key = keysArr[i];
+        var keysArr = keys(source);
+        for (var i = 0; i < keysArr.length; i++) {
+            var key = keysArr[i];
             if ((overlay ? source[key] != null : target[key] == null)) {
                 target[key] = source[key];
             }
         }
         return target;
     }
-    const createCanvas = platformApi.createCanvas;
+    var createCanvas = platformApi.createCanvas;
     function indexOf(array, value) {
         if (array) {
             if (array.indexOf) {
                 return array.indexOf(value);
             }
-            for (let i = 0, len = array.length; i < len; i++) {
+            for (var i = 0, len = array.length; i < len; i++) {
                 if (array[i] === value) {
                     return i;
                 }
@@ -360,11 +366,11 @@
         return -1;
     }
     function inherits(clazz, baseClazz) {
-        const clazzPrototype = clazz.prototype;
+        var clazzPrototype = clazz.prototype;
         function F() { }
         F.prototype = baseClazz.prototype;
         clazz.prototype = new F();
-        for (let prop in clazzPrototype) {
+        for (var prop in clazzPrototype) {
             if (clazzPrototype.hasOwnProperty(prop)) {
                 clazz.prototype[prop] = clazzPrototype[prop];
             }
@@ -376,9 +382,9 @@
         target = 'prototype' in target ? target.prototype : target;
         source = 'prototype' in source ? source.prototype : source;
         if (Object.getOwnPropertyNames) {
-            const keyList = Object.getOwnPropertyNames(source);
-            for (let i = 0; i < keyList.length; i++) {
-                const key = keyList[i];
+            var keyList = Object.getOwnPropertyNames(source);
+            for (var i = 0; i < keyList.length; i++) {
+                var key = keyList[i];
                 if (key !== 'constructor') {
                     if ((override ? source[key] != null : target[key] == null)) {
                         target[key] = source[key];
@@ -407,12 +413,12 @@
             arr.forEach(cb, context);
         }
         else if (arr.length === +arr.length) {
-            for (let i = 0, len = arr.length; i < len; i++) {
+            for (var i = 0, len = arr.length; i < len; i++) {
                 cb.call(context, arr[i], i, arr);
             }
         }
         else {
-            for (let key in arr) {
+            for (var key in arr) {
                 if (arr.hasOwnProperty(key)) {
                     cb.call(context, arr[key], key, arr);
                 }
@@ -430,8 +436,8 @@
             return arr.map(cb, context);
         }
         else {
-            const result = [];
-            for (let i = 0, len = arr.length; i < len; i++) {
+            var result = [];
+            for (var i = 0, len = arr.length; i < len; i++) {
                 result.push(cb.call(context, arr[i], i, arr));
             }
             return result;
@@ -441,7 +447,7 @@
         if (!(arr && cb)) {
             return;
         }
-        for (let i = 0, len = arr.length; i < len; i++) {
+        for (var i = 0, len = arr.length; i < len; i++) {
             memo = cb.call(context, memo, arr[i], i, arr);
         }
         return memo;
@@ -457,8 +463,8 @@
             return arr.filter(cb, context);
         }
         else {
-            const result = [];
-            for (let i = 0, len = arr.length; i < len; i++) {
+            var result = [];
+            for (var i = 0, len = arr.length; i < len; i++) {
                 if (cb.call(context, arr[i], i, arr)) {
                     result.push(arr[i]);
                 }
@@ -470,7 +476,7 @@
         if (!(arr && cb)) {
             return;
         }
-        for (let i = 0, len = arr.length; i < len; i++) {
+        for (var i = 0, len = arr.length; i < len; i++) {
             if (cb.call(context, arr[i], i, arr)) {
                 return arr[i];
             }
@@ -483,23 +489,31 @@
         if (Object.keys) {
             return Object.keys(obj);
         }
-        let keyList = [];
-        for (let key in obj) {
+        var keyList = [];
+        for (var key in obj) {
             if (obj.hasOwnProperty(key)) {
                 keyList.push(key);
             }
         }
         return keyList;
     }
-    function bindPolyfill(func, context, ...args) {
+    function bindPolyfill(func, context) {
+        var args = [];
+        for (var _i = 2; _i < arguments.length; _i++) {
+            args[_i - 2] = arguments[_i];
+        }
         return function () {
             return func.apply(context, args.concat(nativeSlice.call(arguments)));
         };
     }
-    const bind = (protoFunction && isFunction(protoFunction.bind))
+    var bind = (protoFunction && isFunction(protoFunction.bind))
         ? protoFunction.call.bind(protoFunction.bind)
         : bindPolyfill;
-    function curry(func, ...args) {
+    function curry(func) {
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
         return function () {
             return func.apply(this, args.concat(nativeSlice.call(arguments)));
         };
@@ -523,7 +537,7 @@
         return typeof value === 'number';
     }
     function isObject(value) {
-        const type = typeof value;
+        var type = typeof value;
         return type === 'function' || (!!value && type === 'object');
     }
     function isBuiltInObject(value) {
@@ -549,8 +563,12 @@
     function eqNaN(value) {
         return value !== value;
     }
-    function retrieve(...args) {
-        for (let i = 0, len = args.length; i < len; i++) {
+    function retrieve() {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        for (var i = 0, len = args.length; i < len; i++) {
             if (args[i] != null) {
                 return args[i];
             }
@@ -568,14 +586,18 @@
                 ? value1
                 : value2;
     }
-    function slice(arr, ...args) {
+    function slice(arr) {
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
         return nativeSlice.apply(arr, args);
     }
     function normalizeCssArray(val) {
         if (typeof (val) === 'number') {
             return [val, val, val, val];
         }
-        const len = val.length;
+        var len = val.length;
         if (len === 2) {
             return [val[0], val[1], val[0], val[1]];
         }
@@ -600,55 +622,56 @@
             return str.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
         }
     }
-    const primitiveKey = '__ec_primitive__';
+    var primitiveKey = '__ec_primitive__';
     function setAsPrimitive(obj) {
         obj[primitiveKey] = true;
     }
     function isPrimitive(obj) {
         return obj[primitiveKey];
     }
-    class MapPolyfill {
-        constructor() {
+    var MapPolyfill = (function () {
+        function MapPolyfill() {
             this.data = {};
         }
-        delete(key) {
-            const existed = this.has(key);
+        MapPolyfill.prototype.delete = function (key) {
+            var existed = this.has(key);
             if (existed) {
                 delete this.data[key];
             }
             return existed;
-        }
-        has(key) {
+        };
+        MapPolyfill.prototype.has = function (key) {
             return this.data.hasOwnProperty(key);
-        }
-        get(key) {
+        };
+        MapPolyfill.prototype.get = function (key) {
             return this.data[key];
-        }
-        set(key, value) {
+        };
+        MapPolyfill.prototype.set = function (key, value) {
             this.data[key] = value;
             return this;
-        }
-        keys() {
+        };
+        MapPolyfill.prototype.keys = function () {
             return keys(this.data);
-        }
-        forEach(callback) {
-            const data = this.data;
-            for (const key in data) {
+        };
+        MapPolyfill.prototype.forEach = function (callback) {
+            var data = this.data;
+            for (var key in data) {
                 if (data.hasOwnProperty(key)) {
                     callback(data[key], key);
                 }
             }
-        }
-    }
-    const isNativeMapSupported = typeof Map === 'function';
+        };
+        return MapPolyfill;
+    }());
+    var isNativeMapSupported = typeof Map === 'function';
     function maybeNativeMap() {
         return (isNativeMapSupported ? new Map() : new MapPolyfill());
     }
-    class HashMap {
-        constructor(obj) {
-            const isArr = isArray(obj);
+    var HashMap = (function () {
+        function HashMap(obj) {
+            var isArr = isArray(obj);
             this.data = maybeNativeMap();
-            const thisMap = this;
+            var thisMap = this;
             (obj instanceof HashMap)
                 ? obj.each(visit)
                 : (obj && each(obj, visit));
@@ -656,52 +679,53 @@
                 isArr ? thisMap.set(value, key) : thisMap.set(key, value);
             }
         }
-        hasKey(key) {
+        HashMap.prototype.hasKey = function (key) {
             return this.data.has(key);
-        }
-        get(key) {
+        };
+        HashMap.prototype.get = function (key) {
             return this.data.get(key);
-        }
-        set(key, value) {
+        };
+        HashMap.prototype.set = function (key, value) {
             this.data.set(key, value);
             return value;
-        }
-        each(cb, context) {
-            this.data.forEach((value, key) => {
+        };
+        HashMap.prototype.each = function (cb, context) {
+            this.data.forEach(function (value, key) {
                 cb.call(context, value, key);
             });
-        }
-        keys() {
-            const keys = this.data.keys();
+        };
+        HashMap.prototype.keys = function () {
+            var keys = this.data.keys();
             return isNativeMapSupported
                 ? Array.from(keys)
                 : keys;
-        }
-        removeKey(key) {
+        };
+        HashMap.prototype.removeKey = function (key) {
             this.data.delete(key);
-        }
-    }
+        };
+        return HashMap;
+    }());
     function createHashMap(obj) {
         return new HashMap(obj);
     }
     function concatArray(a, b) {
-        const newArray = new a.constructor(a.length + b.length);
-        for (let i = 0; i < a.length; i++) {
+        var newArray = new a.constructor(a.length + b.length);
+        for (var i = 0; i < a.length; i++) {
             newArray[i] = a[i];
         }
-        const offset = a.length;
-        for (let i = 0; i < b.length; i++) {
+        var offset = a.length;
+        for (var i = 0; i < b.length; i++) {
             newArray[i + offset] = b[i];
         }
         return newArray;
     }
     function createObject(proto, properties) {
-        let obj;
+        var obj;
         if (Object.create) {
             obj = Object.create(proto);
         }
         else {
-            const StyleCtor = function () { };
+            var StyleCtor = function () { };
             StyleCtor.prototype = proto;
             obj = new StyleCtor();
         }
@@ -711,7 +735,7 @@
         return obj;
     }
     function disableUserSelect(dom) {
-        const domStyle = dom.style;
+        var domStyle = dom.style;
         domStyle.webkitUserSelect = 'none';
         domStyle.userSelect = 'none';
         domStyle.webkitTapHighlightColor = 'rgba(0,0,0,0)';
@@ -721,7 +745,7 @@
         return own.hasOwnProperty(prop);
     }
     function noop() { }
-    const RADIAN_TO_DEGREE = 180 / Math.PI;
+    var RADIAN_TO_DEGREE = 180 / Math.PI;
 
     var util = /*#__PURE__*/Object.freeze({
         __proto__: null,
@@ -777,6 +801,58 @@
         RADIAN_TO_DEGREE: RADIAN_TO_DEGREE
     });
 
+    /*! *****************************************************************************
+    Copyright (c) Microsoft Corporation.
+
+    Permission to use, copy, modify, and/or distribute this software for any
+    purpose with or without fee is hereby granted.
+
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+    REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+    AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+    INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+    OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+    PERFORMANCE OF THIS SOFTWARE.
+    ***************************************************************************** */
+    /* global Reflect, Promise */
+
+    var extendStatics$1 = function(d, b) {
+        extendStatics$1 = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics$1(d, b);
+    };
+
+    function __extends$1(d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics$1(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    }
+
+    var __assign = function() {
+        __assign = Object.assign || function __assign(t) {
+            for (var s, i = 1, n = arguments.length; i < n; i++) {
+                s = arguments[i];
+                for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+            }
+            return t;
+        };
+        return __assign.apply(this, arguments);
+    };
+
+    function __spreadArray(to, from, pack) {
+        if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+            if (ar || !(i in from)) {
+                if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+                ar[i] = from[i];
+            }
+        }
+        return to.concat(ar || from);
+    }
+
     function create(x, y) {
         if (x == null) {
             x = 0;
@@ -817,11 +893,11 @@
     function len(v) {
         return Math.sqrt(lenSquare(v));
     }
-    const length = len;
+    var length = len;
     function lenSquare(v) {
         return v[0] * v[0] + v[1] * v[1];
     }
-    const lengthSquare = lenSquare;
+    var lengthSquare = lenSquare;
     function mul(out, v1, v2) {
         out[0] = v1[0] * v2[0];
         out[1] = v1[1] * v2[1];
@@ -841,7 +917,7 @@
         return out;
     }
     function normalize(out, v) {
-        const d = len(v);
+        var d = len(v);
         if (d === 0) {
             out[0] = 0;
             out[1] = 0;
@@ -856,12 +932,12 @@
         return Math.sqrt((v1[0] - v2[0]) * (v1[0] - v2[0])
             + (v1[1] - v2[1]) * (v1[1] - v2[1]));
     }
-    const dist = distance;
+    var dist = distance;
     function distanceSquare(v1, v2) {
         return (v1[0] - v2[0]) * (v1[0] - v2[0])
             + (v1[1] - v2[1]) * (v1[1] - v2[1]);
     }
-    const distSquare = distanceSquare;
+    var distSquare = distanceSquare;
     function negate(out, v) {
         out[0] = -v[0];
         out[1] = -v[1];
@@ -873,8 +949,8 @@
         return out;
     }
     function applyTransform(out, v, m) {
-        const x = v[0];
-        const y = v[1];
+        var x = v[0];
+        var y = v[1];
         out[0] = m[0] * x + m[2] * y + m[4];
         out[1] = m[1] * x + m[3] * y + m[5];
         return out;
@@ -919,21 +995,22 @@
         max: max
     });
 
-    class Param {
-        constructor(target, e) {
+    var Param = (function () {
+        function Param(target, e) {
             this.target = target;
             this.topTarget = e && e.topTarget;
         }
-    }
-    class Draggable {
-        constructor(handler) {
+        return Param;
+    }());
+    var Draggable = (function () {
+        function Draggable(handler) {
             this.handler = handler;
             handler.on('mousedown', this._dragStart, this);
             handler.on('mousemove', this._drag, this);
             handler.on('mouseup', this._dragEnd, this);
         }
-        _dragStart(e) {
-            let draggingTarget = e.target;
+        Draggable.prototype._dragStart = function (e) {
+            var draggingTarget = e.target;
             while (draggingTarget && !draggingTarget.draggable) {
                 draggingTarget = draggingTarget.parent || draggingTarget.__hostTarget;
             }
@@ -944,20 +1021,20 @@
                 this._y = e.offsetY;
                 this.handler.dispatchToElement(new Param(draggingTarget, e), 'dragstart', e.event);
             }
-        }
-        _drag(e) {
-            const draggingTarget = this._draggingTarget;
+        };
+        Draggable.prototype._drag = function (e) {
+            var draggingTarget = this._draggingTarget;
             if (draggingTarget) {
-                const x = e.offsetX;
-                const y = e.offsetY;
-                const dx = x - this._x;
-                const dy = y - this._y;
+                var x = e.offsetX;
+                var y = e.offsetY;
+                var dx = x - this._x;
+                var dy = y - this._y;
                 this._x = x;
                 this._y = y;
                 draggingTarget.drift(dx, dy, e);
                 this.handler.dispatchToElement(new Param(draggingTarget, e), 'drag', e.event);
-                const dropTarget = this.handler.findHover(x, y, draggingTarget).target;
-                const lastDropTarget = this._dropTarget;
+                var dropTarget = this.handler.findHover(x, y, draggingTarget).target;
+                var lastDropTarget = this._dropTarget;
                 this._dropTarget = dropTarget;
                 if (draggingTarget !== dropTarget) {
                     if (lastDropTarget && dropTarget !== lastDropTarget) {
@@ -968,9 +1045,9 @@
                     }
                 }
             }
-        }
-        _dragEnd(e) {
-            const draggingTarget = this._draggingTarget;
+        };
+        Draggable.prototype._dragEnd = function (e) {
+            var draggingTarget = this._draggingTarget;
             if (draggingTarget) {
                 draggingTarget.dragging = false;
             }
@@ -980,20 +1057,21 @@
             }
             this._draggingTarget = null;
             this._dropTarget = null;
-        }
-    }
+        };
+        return Draggable;
+    }());
 
-    class Eventful {
-        constructor(eventProcessors) {
+    var Eventful = (function () {
+        function Eventful(eventProcessors) {
             if (eventProcessors) {
                 this._$eventProcessor = eventProcessors;
             }
         }
-        on(event, query, handler, context) {
+        Eventful.prototype.on = function (event, query, handler, context) {
             if (!this._$handlers) {
                 this._$handlers = {};
             }
-            const _h = this._$handlers;
+            var _h = this._$handlers;
             if (typeof query === 'function') {
                 context = handler;
                 handler = query;
@@ -1002,37 +1080,37 @@
             if (!handler || !event) {
                 return this;
             }
-            const eventProcessor = this._$eventProcessor;
+            var eventProcessor = this._$eventProcessor;
             if (query != null && eventProcessor && eventProcessor.normalizeQuery) {
                 query = eventProcessor.normalizeQuery(query);
             }
             if (!_h[event]) {
                 _h[event] = [];
             }
-            for (let i = 0; i < _h[event].length; i++) {
+            for (var i = 0; i < _h[event].length; i++) {
                 if (_h[event][i].h === handler) {
                     return this;
                 }
             }
-            const wrap = {
+            var wrap = {
                 h: handler,
                 query: query,
                 ctx: (context || this),
                 callAtLast: handler.zrEventfulCallAtLast
             };
-            const lastIndex = _h[event].length - 1;
-            const lastWrap = _h[event][lastIndex];
+            var lastIndex = _h[event].length - 1;
+            var lastWrap = _h[event][lastIndex];
             (lastWrap && lastWrap.callAtLast)
                 ? _h[event].splice(lastIndex, 0, wrap)
                 : _h[event].push(wrap);
             return this;
-        }
-        isSilent(eventName) {
-            const _h = this._$handlers;
+        };
+        Eventful.prototype.isSilent = function (eventName) {
+            var _h = this._$handlers;
             return !_h || !_h[eventName] || !_h[eventName].length;
-        }
-        off(eventType, handler) {
-            const _h = this._$handlers;
+        };
+        Eventful.prototype.off = function (eventType, handler) {
+            var _h = this._$handlers;
             if (!_h) {
                 return this;
             }
@@ -1042,8 +1120,8 @@
             }
             if (handler) {
                 if (_h[eventType]) {
-                    const newList = [];
-                    for (let i = 0, l = _h[eventType].length; i < l; i++) {
+                    var newList = [];
+                    for (var i = 0, l = _h[eventType].length; i < l; i++) {
                         if (_h[eventType][i].h !== handler) {
                             newList.push(_h[eventType][i]);
                         }
@@ -1058,18 +1136,22 @@
                 delete _h[eventType];
             }
             return this;
-        }
-        trigger(eventType, ...args) {
+        };
+        Eventful.prototype.trigger = function (eventType) {
+            var args = [];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                args[_i - 1] = arguments[_i];
+            }
             if (!this._$handlers) {
                 return this;
             }
-            const _h = this._$handlers[eventType];
-            const eventProcessor = this._$eventProcessor;
+            var _h = this._$handlers[eventType];
+            var eventProcessor = this._$eventProcessor;
             if (_h) {
-                const argLen = args.length;
-                const len = _h.length;
-                for (let i = 0; i < len; i++) {
-                    const hItem = _h[i];
+                var argLen = args.length;
+                var len = _h.length;
+                for (var i = 0; i < len; i++) {
+                    var hItem = _h[i];
                     if (eventProcessor
                         && eventProcessor.filter
                         && hItem.query != null
@@ -1095,19 +1177,23 @@
             eventProcessor && eventProcessor.afterTrigger
                 && eventProcessor.afterTrigger(eventType);
             return this;
-        }
-        triggerWithContext(type, ...args) {
+        };
+        Eventful.prototype.triggerWithContext = function (type) {
+            var args = [];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                args[_i - 1] = arguments[_i];
+            }
             if (!this._$handlers) {
                 return this;
             }
-            const _h = this._$handlers[type];
-            const eventProcessor = this._$eventProcessor;
+            var _h = this._$handlers[type];
+            var eventProcessor = this._$eventProcessor;
             if (_h) {
-                const argLen = args.length;
-                const ctx = args[argLen - 1];
-                const len = _h.length;
-                for (let i = 0; i < len; i++) {
-                    const hItem = _h[i];
+                var argLen = args.length;
+                var ctx = args[argLen - 1];
+                var len = _h.length;
+                for (var i = 0; i < len; i++) {
+                    var hItem = _h[i];
                     if (eventProcessor
                         && eventProcessor.filter
                         && hItem.query != null
@@ -1133,28 +1219,29 @@
             eventProcessor && eventProcessor.afterTrigger
                 && eventProcessor.afterTrigger(type);
             return this;
-        }
-    }
+        };
+        return Eventful;
+    }());
 
-    const LN2 = Math.log(2);
+    var LN2 = Math.log(2);
     function determinant(rows, rank, rowStart, rowMask, colMask, detCache) {
-        const cacheKey = rowMask + '-' + colMask;
-        const fullRank = rows.length;
+        var cacheKey = rowMask + '-' + colMask;
+        var fullRank = rows.length;
         if (detCache.hasOwnProperty(cacheKey)) {
             return detCache[cacheKey];
         }
         if (rank === 1) {
-            const colStart = Math.round(Math.log(((1 << fullRank) - 1) & ~colMask) / LN2);
+            var colStart = Math.round(Math.log(((1 << fullRank) - 1) & ~colMask) / LN2);
             return rows[rowStart][colStart];
         }
-        const subRowMask = rowMask | (1 << rowStart);
-        let subRowStart = rowStart + 1;
+        var subRowMask = rowMask | (1 << rowStart);
+        var subRowStart = rowStart + 1;
         while (rowMask & (1 << subRowStart)) {
             subRowStart++;
         }
-        let sum = 0;
-        for (let j = 0, colLocalIdx = 0; j < fullRank; j++) {
-            const colTag = 1 << j;
+        var sum = 0;
+        for (var j = 0, colLocalIdx = 0; j < fullRank; j++) {
+            var colTag = 1 << j;
             if (!(colTag & colMask)) {
                 sum += (colLocalIdx % 2 ? -1 : 1) * rows[rowStart][j]
                     * determinant(rows, rank - 1, subRowStart, subRowMask, colMask | colTag, detCache);
@@ -1165,7 +1252,7 @@
         return sum;
     }
     function buildTransformer(src, dest) {
-        const mA = [
+        var mA = [
             [src[0], src[1], 1, 0, 0, 0, -dest[0] * src[0], -dest[0] * src[1]],
             [0, 0, 0, src[0], src[1], 1, -dest[1] * src[0], -dest[1] * src[1]],
             [src[2], src[3], 1, 0, 0, 0, -dest[2] * src[2], -dest[2] * src[3]],
@@ -1175,14 +1262,14 @@
             [src[6], src[7], 1, 0, 0, 0, -dest[6] * src[6], -dest[6] * src[7]],
             [0, 0, 0, src[6], src[7], 1, -dest[7] * src[6], -dest[7] * src[7]]
         ];
-        const detCache = {};
-        const det = determinant(mA, 8, 0, 0, 0, detCache);
+        var detCache = {};
+        var det = determinant(mA, 8, 0, 0, 0, detCache);
         if (det === 0) {
             return;
         }
-        const vh = [];
-        for (let i = 0; i < 8; i++) {
-            for (let j = 0; j < 8; j++) {
+        var vh = [];
+        for (var i = 0; i < 8; i++) {
+            for (var j = 0; j < 8; j++) {
                 vh[j] == null && (vh[j] = 0);
                 vh[j] += ((i + j) % 2 ? -1 : 1)
                     * determinant(mA, 7, i === 0 ? 1 : 0, 1 << i, 1 << j, detCache)
@@ -1190,23 +1277,23 @@
             }
         }
         return function (out, srcPointX, srcPointY) {
-            const pk = srcPointX * vh[6] + srcPointY * vh[7] + 1;
+            var pk = srcPointX * vh[6] + srcPointY * vh[7] + 1;
             out[0] = (srcPointX * vh[0] + srcPointY * vh[1] + vh[2]) / pk;
             out[1] = (srcPointX * vh[3] + srcPointY * vh[4] + vh[5]) / pk;
         };
     }
 
-    const EVENT_SAVED_PROP = '___zrEVENTSAVED';
-    const _calcOut = [];
+    var EVENT_SAVED_PROP = '___zrEVENTSAVED';
+    var _calcOut = [];
     function transformLocalCoord(out, elFrom, elTarget, inX, inY) {
         return transformCoordWithViewport(_calcOut, elFrom, inX, inY, true)
             && transformCoordWithViewport(out, elTarget, _calcOut[0], _calcOut[1]);
     }
     function transformCoordWithViewport(out, el, inX, inY, inverse) {
         if (el.getBoundingClientRect && env.domSupported && !isCanvasEl(el)) {
-            const saved = el[EVENT_SAVED_PROP] || (el[EVENT_SAVED_PROP] = {});
-            const markers = prepareCoordMarkers(el, saved);
-            const transformer = preparePointerTransformer(markers, saved, inverse);
+            var saved = el[EVENT_SAVED_PROP] || (el[EVENT_SAVED_PROP] = {});
+            var markers = prepareCoordMarkers(el, saved);
+            var transformer = preparePointerTransformer(markers, saved, inverse);
             if (transformer) {
                 transformer(out, inX, inY);
                 return true;
@@ -1215,18 +1302,18 @@
         return false;
     }
     function prepareCoordMarkers(el, saved) {
-        let markers = saved.markers;
+        var markers = saved.markers;
         if (markers) {
             return markers;
         }
         markers = saved.markers = [];
-        const propLR = ['left', 'right'];
-        const propTB = ['top', 'bottom'];
-        for (let i = 0; i < 4; i++) {
-            const marker = document.createElement('div');
-            const stl = marker.style;
-            const idxLR = i % 2;
-            const idxTB = (i >> 1) % 2;
+        var propLR = ['left', 'right'];
+        var propTB = ['top', 'bottom'];
+        for (var i = 0; i < 4; i++) {
+            var marker = document.createElement('div');
+            var stl = marker.style;
+            var idxLR = i % 2;
+            var idxTB = (i >> 1) % 2;
             stl.cssText = [
                 'position: absolute',
                 'visibility: hidden',
@@ -1248,17 +1335,17 @@
         return markers;
     }
     function preparePointerTransformer(markers, saved, inverse) {
-        const transformerName = inverse ? 'invTrans' : 'trans';
-        const transformer = saved[transformerName];
-        const oldSrcCoords = saved.srcCoords;
-        const srcCoords = [];
-        const destCoords = [];
-        let oldCoordTheSame = true;
-        for (let i = 0; i < 4; i++) {
-            const rect = markers[i].getBoundingClientRect();
-            const ii = 2 * i;
-            const x = rect.left;
-            const y = rect.top;
+        var transformerName = inverse ? 'invTrans' : 'trans';
+        var transformer = saved[transformerName];
+        var oldSrcCoords = saved.srcCoords;
+        var srcCoords = [];
+        var destCoords = [];
+        var oldCoordTheSame = true;
+        for (var i = 0; i < 4; i++) {
+            var rect = markers[i].getBoundingClientRect();
+            var ii = 2 * i;
+            var x = rect.left;
+            var y = rect.top;
             srcCoords.push(x, y);
             oldCoordTheSame = oldCoordTheSame && oldSrcCoords && x === oldSrcCoords[ii] && y === oldSrcCoords[ii + 1];
             destCoords.push(markers[i].offsetLeft, markers[i].offsetTop);
@@ -1273,8 +1360,8 @@
     function isCanvasEl(el) {
         return el.nodeName.toUpperCase() === 'CANVAS';
     }
-    const replaceReg = /([&<>"'])/g;
-    const replaceMap = {
+    var replaceReg = /([&<>"'])/g;
+    var replaceMap = {
         '&': '&amp;',
         '<': '&lt;',
         '>': '&gt;',
@@ -1289,9 +1376,9 @@
             });
     }
 
-    const MOUSE_EVENT_REG = /^(?:mouse|pointer|contextmenu|drag|drop)|click/;
-    const _calcOut$1 = [];
-    const firefoxNotSupportOffsetXY = env.browser.firefox
+    var MOUSE_EVENT_REG = /^(?:mouse|pointer|contextmenu|drag|drop)|click/;
+    var _calcOut$1 = [];
+    var firefoxNotSupportOffsetXY = env.browser.firefox
         && +env.browser.version.split('.')[0] < 39;
     function clientToLocal(el, e, out, calculate) {
         out = out || {};
@@ -1315,10 +1402,10 @@
     }
     function calculateZrXY(el, e, out) {
         if (env.domSupported && el.getBoundingClientRect) {
-            const ex = e.clientX;
-            const ey = e.clientY;
+            var ex = e.clientX;
+            var ey = e.clientY;
             if (isCanvasEl(el)) {
-                const box = el.getBoundingClientRect();
+                var box = el.getBoundingClientRect();
                 out.zrX = ex - box.left;
                 out.zrY = ey - box.top;
                 return;
@@ -1342,37 +1429,37 @@
         if (e.zrX != null) {
             return e;
         }
-        const eventType = e.type;
-        const isTouch = eventType && eventType.indexOf('touch') >= 0;
+        var eventType = e.type;
+        var isTouch = eventType && eventType.indexOf('touch') >= 0;
         if (!isTouch) {
             clientToLocal(el, e, e, calculate);
-            const wheelDelta = getWheelDeltaMayPolyfill(e);
+            var wheelDelta = getWheelDeltaMayPolyfill(e);
             e.zrDelta = wheelDelta ? wheelDelta / 120 : -(e.detail || 0) / 3;
         }
         else {
-            const touch = eventType !== 'touchend'
+            var touch = eventType !== 'touchend'
                 ? e.targetTouches[0]
                 : e.changedTouches[0];
             touch && clientToLocal(el, touch, e, calculate);
         }
-        const button = e.button;
+        var button = e.button;
         if (e.which == null && button !== undefined && MOUSE_EVENT_REG.test(e.type)) {
             e.which = (button & 1 ? 1 : (button & 2 ? 3 : (button & 4 ? 2 : 0)));
         }
         return e;
     }
     function getWheelDeltaMayPolyfill(e) {
-        const rawWheelDelta = e.wheelDelta;
+        var rawWheelDelta = e.wheelDelta;
         if (rawWheelDelta) {
             return rawWheelDelta;
         }
-        const deltaX = e.deltaX;
-        const deltaY = e.deltaY;
+        var deltaX = e.deltaX;
+        var deltaY = e.deltaY;
         if (deltaX == null || deltaY == null) {
             return rawWheelDelta;
         }
-        const delta = deltaY !== 0 ? Math.abs(deltaY) : Math.abs(deltaX);
-        const sign = deltaY > 0 ? -1
+        var delta = deltaY !== 0 ? Math.abs(deltaY) : Math.abs(deltaX);
+        var sign = deltaY > 0 ? -1
             : deltaY < 0 ? 1
                 : deltaX > 0 ? -1
                     : 1;
@@ -1384,7 +1471,7 @@
     function removeEventListener(el, name, handler, opt) {
         el.removeEventListener(name, handler, opt);
     }
-    const stop = function (e) {
+    var stop = function (e) {
         e.preventDefault();
         e.stopPropagation();
         e.cancelBubble = true;
@@ -1393,51 +1480,52 @@
         return e.which === 2 || e.which === 3;
     }
 
-    class GestureMgr {
-        constructor() {
+    var GestureMgr = (function () {
+        function GestureMgr() {
             this._track = [];
         }
-        recognize(event, target, root) {
+        GestureMgr.prototype.recognize = function (event, target, root) {
             this._doTrack(event, target, root);
             return this._recognize(event);
-        }
-        clear() {
+        };
+        GestureMgr.prototype.clear = function () {
             this._track.length = 0;
             return this;
-        }
-        _doTrack(event, target, root) {
-            const touches = event.touches;
+        };
+        GestureMgr.prototype._doTrack = function (event, target, root) {
+            var touches = event.touches;
             if (!touches) {
                 return;
             }
-            const trackItem = {
+            var trackItem = {
                 points: [],
                 touches: [],
                 target: target,
                 event: event
             };
-            for (let i = 0, len = touches.length; i < len; i++) {
-                const touch = touches[i];
-                const pos = clientToLocal(root, touch, {});
+            for (var i = 0, len = touches.length; i < len; i++) {
+                var touch = touches[i];
+                var pos = clientToLocal(root, touch, {});
                 trackItem.points.push([pos.zrX, pos.zrY]);
                 trackItem.touches.push(touch);
             }
             this._track.push(trackItem);
-        }
-        _recognize(event) {
-            for (let eventName in recognizers) {
+        };
+        GestureMgr.prototype._recognize = function (event) {
+            for (var eventName in recognizers) {
                 if (recognizers.hasOwnProperty(eventName)) {
-                    const gestureInfo = recognizers[eventName](this._track, event);
+                    var gestureInfo = recognizers[eventName](this._track, event);
                     if (gestureInfo) {
                         return gestureInfo;
                     }
                 }
             }
-        }
-    }
+        };
+        return GestureMgr;
+    }());
     function dist$1(pointPair) {
-        const dx = pointPair[1][0] - pointPair[0][0];
-        const dy = pointPair[1][1] - pointPair[0][1];
+        var dx = pointPair[1][0] - pointPair[0][0];
+        var dy = pointPair[1][1] - pointPair[0][1];
         return Math.sqrt(dx * dx + dy * dy);
     }
     function center(pointPair) {
@@ -1446,22 +1534,22 @@
             (pointPair[0][1] + pointPair[1][1]) / 2
         ];
     }
-    const recognizers = {
+    var recognizers = {
         pinch: function (tracks, event) {
-            const trackLen = tracks.length;
+            var trackLen = tracks.length;
             if (!trackLen) {
                 return;
             }
-            const pinchEnd = (tracks[trackLen - 1] || {}).points;
-            const pinchPre = (tracks[trackLen - 2] || {}).points || pinchEnd;
+            var pinchEnd = (tracks[trackLen - 1] || {}).points;
+            var pinchPre = (tracks[trackLen - 2] || {}).points || pinchEnd;
             if (pinchPre
                 && pinchPre.length > 1
                 && pinchEnd
                 && pinchEnd.length > 1) {
-                let pinchScale = dist$1(pinchEnd) / dist$1(pinchPre);
+                var pinchScale = dist$1(pinchEnd) / dist$1(pinchPre);
                 !isFinite(pinchScale) && (pinchScale = 1);
                 event.pinchScale = pinchScale;
-                const pinchCenter = center(pinchEnd);
+                var pinchCenter = center(pinchEnd);
                 event.pinchX = pinchCenter[0];
                 event.pinchY = pinchCenter[1];
                 return {
@@ -1495,12 +1583,12 @@
         return out;
     }
     function mul$1(out, m1, m2) {
-        const out0 = m1[0] * m2[0] + m1[2] * m2[1];
-        const out1 = m1[1] * m2[0] + m1[3] * m2[1];
-        const out2 = m1[0] * m2[2] + m1[2] * m2[3];
-        const out3 = m1[1] * m2[2] + m1[3] * m2[3];
-        const out4 = m1[0] * m2[4] + m1[2] * m2[5] + m1[4];
-        const out5 = m1[1] * m2[4] + m1[3] * m2[5] + m1[5];
+        var out0 = m1[0] * m2[0] + m1[2] * m2[1];
+        var out1 = m1[1] * m2[0] + m1[3] * m2[1];
+        var out2 = m1[0] * m2[2] + m1[2] * m2[3];
+        var out3 = m1[1] * m2[2] + m1[3] * m2[3];
+        var out4 = m1[0] * m2[4] + m1[2] * m2[5] + m1[4];
+        var out5 = m1[1] * m2[4] + m1[3] * m2[5] + m1[5];
         out[0] = out0;
         out[1] = out1;
         out[2] = out2;
@@ -1518,15 +1606,16 @@
         out[5] = a[5] + v[1];
         return out;
     }
-    function rotate(out, a, rad, pivot = [0, 0]) {
-        const aa = a[0];
-        const ac = a[2];
-        const atx = a[4];
-        const ab = a[1];
-        const ad = a[3];
-        const aty = a[5];
-        const st = Math.sin(rad);
-        const ct = Math.cos(rad);
+    function rotate(out, a, rad, pivot) {
+        if (pivot === void 0) { pivot = [0, 0]; }
+        var aa = a[0];
+        var ac = a[2];
+        var atx = a[4];
+        var ab = a[1];
+        var ad = a[3];
+        var aty = a[5];
+        var st = Math.sin(rad);
+        var ct = Math.cos(rad);
         out[0] = aa * ct + ab * st;
         out[1] = -aa * st + ab * ct;
         out[2] = ac * ct + ad * st;
@@ -1536,8 +1625,8 @@
         return out;
     }
     function scale$1(out, a, v) {
-        const vx = v[0];
-        const vy = v[1];
+        var vx = v[0];
+        var vy = v[1];
         out[0] = a[0] * vx;
         out[1] = a[1] * vy;
         out[2] = a[2] * vx;
@@ -1547,13 +1636,13 @@
         return out;
     }
     function invert(out, a) {
-        const aa = a[0];
-        const ac = a[2];
-        const atx = a[4];
-        const ab = a[1];
-        const ad = a[3];
-        const aty = a[5];
-        let det = aa * ad - ab * ac;
+        var aa = a[0];
+        var ac = a[2];
+        var atx = a[4];
+        var ab = a[1];
+        var ad = a[3];
+        var aty = a[5];
+        var det = aa * ad - ab * ac;
         if (!det) {
             return null;
         }
@@ -1567,7 +1656,7 @@
         return out;
     }
     function clone$2(a) {
-        const b = create$1();
+        var b = create$1();
         copy$1(b, a);
         return b;
     }
@@ -1585,144 +1674,145 @@
         clone: clone$2
     });
 
-    class Point {
-        constructor(x, y) {
+    var Point = (function () {
+        function Point(x, y) {
             this.x = x || 0;
             this.y = y || 0;
         }
-        copy(other) {
+        Point.prototype.copy = function (other) {
             this.x = other.x;
             this.y = other.y;
             return this;
-        }
-        clone() {
+        };
+        Point.prototype.clone = function () {
             return new Point(this.x, this.y);
-        }
-        set(x, y) {
+        };
+        Point.prototype.set = function (x, y) {
             this.x = x;
             this.y = y;
             return this;
-        }
-        equal(other) {
+        };
+        Point.prototype.equal = function (other) {
             return other.x === this.x && other.y === this.y;
-        }
-        add(other) {
+        };
+        Point.prototype.add = function (other) {
             this.x += other.x;
             this.y += other.y;
             return this;
-        }
-        scale(scalar) {
+        };
+        Point.prototype.scale = function (scalar) {
             this.x *= scalar;
             this.y *= scalar;
-        }
-        scaleAndAdd(other, scalar) {
+        };
+        Point.prototype.scaleAndAdd = function (other, scalar) {
             this.x += other.x * scalar;
             this.y += other.y * scalar;
-        }
-        sub(other) {
+        };
+        Point.prototype.sub = function (other) {
             this.x -= other.x;
             this.y -= other.y;
             return this;
-        }
-        dot(other) {
+        };
+        Point.prototype.dot = function (other) {
             return this.x * other.x + this.y * other.y;
-        }
-        len() {
+        };
+        Point.prototype.len = function () {
             return Math.sqrt(this.x * this.x + this.y * this.y);
-        }
-        lenSquare() {
+        };
+        Point.prototype.lenSquare = function () {
             return this.x * this.x + this.y * this.y;
-        }
-        normalize() {
-            const len = this.len();
+        };
+        Point.prototype.normalize = function () {
+            var len = this.len();
             this.x /= len;
             this.y /= len;
             return this;
-        }
-        distance(other) {
-            const dx = this.x - other.x;
-            const dy = this.y - other.y;
+        };
+        Point.prototype.distance = function (other) {
+            var dx = this.x - other.x;
+            var dy = this.y - other.y;
             return Math.sqrt(dx * dx + dy * dy);
-        }
-        distanceSquare(other) {
-            const dx = this.x - other.x;
-            const dy = this.y - other.y;
+        };
+        Point.prototype.distanceSquare = function (other) {
+            var dx = this.x - other.x;
+            var dy = this.y - other.y;
             return dx * dx + dy * dy;
-        }
-        negate() {
+        };
+        Point.prototype.negate = function () {
             this.x = -this.x;
             this.y = -this.y;
             return this;
-        }
-        transform(m) {
+        };
+        Point.prototype.transform = function (m) {
             if (!m) {
                 return;
             }
-            const x = this.x;
-            const y = this.y;
+            var x = this.x;
+            var y = this.y;
             this.x = m[0] * x + m[2] * y + m[4];
             this.y = m[1] * x + m[3] * y + m[5];
             return this;
-        }
-        toArray(out) {
+        };
+        Point.prototype.toArray = function (out) {
             out[0] = this.x;
             out[1] = this.y;
             return out;
-        }
-        fromArray(input) {
+        };
+        Point.prototype.fromArray = function (input) {
             this.x = input[0];
             this.y = input[1];
-        }
-        static set(p, x, y) {
+        };
+        Point.set = function (p, x, y) {
             p.x = x;
             p.y = y;
-        }
-        static copy(p, p2) {
+        };
+        Point.copy = function (p, p2) {
             p.x = p2.x;
             p.y = p2.y;
-        }
-        static len(p) {
+        };
+        Point.len = function (p) {
             return Math.sqrt(p.x * p.x + p.y * p.y);
-        }
-        static lenSquare(p) {
+        };
+        Point.lenSquare = function (p) {
             return p.x * p.x + p.y * p.y;
-        }
-        static dot(p0, p1) {
+        };
+        Point.dot = function (p0, p1) {
             return p0.x * p1.x + p0.y * p1.y;
-        }
-        static add(out, p0, p1) {
+        };
+        Point.add = function (out, p0, p1) {
             out.x = p0.x + p1.x;
             out.y = p0.y + p1.y;
-        }
-        static sub(out, p0, p1) {
+        };
+        Point.sub = function (out, p0, p1) {
             out.x = p0.x - p1.x;
             out.y = p0.y - p1.y;
-        }
-        static scale(out, p0, scalar) {
+        };
+        Point.scale = function (out, p0, scalar) {
             out.x = p0.x * scalar;
             out.y = p0.y * scalar;
-        }
-        static scaleAndAdd(out, p0, p1, scalar) {
+        };
+        Point.scaleAndAdd = function (out, p0, p1, scalar) {
             out.x = p0.x + p1.x * scalar;
             out.y = p0.y + p1.y * scalar;
-        }
-        static lerp(out, p0, p1, t) {
-            const onet = 1 - t;
+        };
+        Point.lerp = function (out, p0, p1, t) {
+            var onet = 1 - t;
             out.x = onet * p0.x + t * p1.x;
             out.y = onet * p0.y + t * p1.y;
-        }
-    }
+        };
+        return Point;
+    }());
 
-    const mathMin = Math.min;
-    const mathMax = Math.max;
-    const lt = new Point();
-    const rb = new Point();
-    const lb = new Point();
-    const rt = new Point();
-    const minTv = new Point();
-    const maxTv = new Point();
-    class BoundingRect {
-        constructor(x, y, width, height) {
+    var mathMin = Math.min;
+    var mathMax = Math.max;
+    var lt = new Point();
+    var rb = new Point();
+    var lb = new Point();
+    var rt = new Point();
+    var minTv = new Point();
+    var maxTv = new Point();
+    var BoundingRect = (function () {
+        function BoundingRect(x, y, width, height) {
             if (width < 0) {
                 x = x + width;
                 width = -width;
@@ -1736,9 +1826,9 @@
             this.width = width;
             this.height = height;
         }
-        union(other) {
-            const x = mathMin(other.x, this.x);
-            const y = mathMin(other.y, this.y);
+        BoundingRect.prototype.union = function (other) {
+            var x = mathMin(other.x, this.x);
+            var y = mathMin(other.y, this.y);
             if (isFinite(this.x) && isFinite(this.width)) {
                 this.width = mathMax(other.x + other.width, this.x + this.width) - x;
             }
@@ -1753,46 +1843,46 @@
             }
             this.x = x;
             this.y = y;
-        }
-        applyTransform(m) {
+        };
+        BoundingRect.prototype.applyTransform = function (m) {
             BoundingRect.applyTransform(this, this, m);
-        }
-        calculateTransform(b) {
-            const a = this;
-            const sx = b.width / a.width;
-            const sy = b.height / a.height;
-            const m = create$1();
+        };
+        BoundingRect.prototype.calculateTransform = function (b) {
+            var a = this;
+            var sx = b.width / a.width;
+            var sy = b.height / a.height;
+            var m = create$1();
             translate(m, m, [-a.x, -a.y]);
             scale$1(m, m, [sx, sy]);
             translate(m, m, [b.x, b.y]);
             return m;
-        }
-        intersect(b, mtv) {
+        };
+        BoundingRect.prototype.intersect = function (b, mtv) {
             if (!b) {
                 return false;
             }
             if (!(b instanceof BoundingRect)) {
                 b = BoundingRect.create(b);
             }
-            const a = this;
-            const ax0 = a.x;
-            const ax1 = a.x + a.width;
-            const ay0 = a.y;
-            const ay1 = a.y + a.height;
-            const bx0 = b.x;
-            const bx1 = b.x + b.width;
-            const by0 = b.y;
-            const by1 = b.y + b.height;
-            let overlap = !(ax1 < bx0 || bx1 < ax0 || ay1 < by0 || by1 < ay0);
+            var a = this;
+            var ax0 = a.x;
+            var ax1 = a.x + a.width;
+            var ay0 = a.y;
+            var ay1 = a.y + a.height;
+            var bx0 = b.x;
+            var bx1 = b.x + b.width;
+            var by0 = b.y;
+            var by1 = b.y + b.height;
+            var overlap = !(ax1 < bx0 || bx1 < ax0 || ay1 < by0 || by1 < ay0);
             if (mtv) {
-                let dMin = Infinity;
-                let dMax = 0;
-                const d0 = Math.abs(ax1 - bx0);
-                const d1 = Math.abs(bx1 - ax0);
-                const d2 = Math.abs(ay1 - by0);
-                const d3 = Math.abs(by1 - ay0);
-                const dx = Math.min(d0, d1);
-                const dy = Math.min(d2, d3);
+                var dMin = Infinity;
+                var dMax = 0;
+                var d0 = Math.abs(ax1 - bx0);
+                var d1 = Math.abs(bx1 - ax0);
+                var d2 = Math.abs(ay1 - by0);
+                var d3 = Math.abs(by1 - ay0);
+                var dx = Math.min(d0, d1);
+                var dy = Math.min(d2, d3);
                 if (ax1 < bx0 || bx1 < ax0) {
                     if (dx > dMax) {
                         dMax = dx;
@@ -1842,47 +1932,47 @@
                 Point.copy(mtv, overlap ? minTv : maxTv);
             }
             return overlap;
-        }
-        contain(x, y) {
-            const rect = this;
+        };
+        BoundingRect.prototype.contain = function (x, y) {
+            var rect = this;
             return x >= rect.x
                 && x <= (rect.x + rect.width)
                 && y >= rect.y
                 && y <= (rect.y + rect.height);
-        }
-        clone() {
+        };
+        BoundingRect.prototype.clone = function () {
             return new BoundingRect(this.x, this.y, this.width, this.height);
-        }
-        copy(other) {
+        };
+        BoundingRect.prototype.copy = function (other) {
             BoundingRect.copy(this, other);
-        }
-        plain() {
+        };
+        BoundingRect.prototype.plain = function () {
             return {
                 x: this.x,
                 y: this.y,
                 width: this.width,
                 height: this.height
             };
-        }
-        isFinite() {
+        };
+        BoundingRect.prototype.isFinite = function () {
             return isFinite(this.x)
                 && isFinite(this.y)
                 && isFinite(this.width)
                 && isFinite(this.height);
-        }
-        isZero() {
+        };
+        BoundingRect.prototype.isZero = function () {
             return this.width === 0 || this.height === 0;
-        }
-        static create(rect) {
+        };
+        BoundingRect.create = function (rect) {
             return new BoundingRect(rect.x, rect.y, rect.width, rect.height);
-        }
-        static copy(target, source) {
+        };
+        BoundingRect.copy = function (target, source) {
             target.x = source.x;
             target.y = source.y;
             target.width = source.width;
             target.height = source.height;
-        }
-        static applyTransform(target, source, m) {
+        };
+        BoundingRect.applyTransform = function (target, source, m) {
             if (!m) {
                 if (target !== source) {
                     BoundingRect.copy(target, source);
@@ -1890,10 +1980,10 @@
                 return;
             }
             if (m[1] < 1e-5 && m[1] > -1e-5 && m[2] < 1e-5 && m[2] > -1e-5) {
-                const sx = m[0];
-                const sy = m[3];
-                const tx = m[4];
-                const ty = m[5];
+                var sx = m[0];
+                var sy = m[3];
+                var tx = m[4];
+                var ty = m[5];
                 target.x = source.x * sx + tx;
                 target.y = source.y * sy + ty;
                 target.width = source.width * sx;
@@ -1918,14 +2008,15 @@
             lb.transform(m);
             target.x = mathMin(lt.x, rb.x, lb.x, rt.x);
             target.y = mathMin(lt.y, rb.y, lb.y, rt.y);
-            const maxX = mathMax(lt.x, rb.x, lb.x, rt.x);
-            const maxY = mathMax(lt.y, rb.y, lb.y, rt.y);
+            var maxX = mathMax(lt.x, rb.x, lb.x, rt.x);
+            var maxY = mathMax(lt.y, rb.y, lb.y, rt.y);
             target.width = maxX - target.x;
             target.height = maxY - target.y;
-        }
-    }
+        };
+        return BoundingRect;
+    }());
 
-    const SILENT = 'silent';
+    var SILENT = 'silent';
     function makeEventPacket(eveType, targetInfo, event) {
         return {
             type: eveType,
@@ -1948,39 +2039,45 @@
     function stopEvent() {
         stop(this.event);
     }
-    class EmptyProxy extends Eventful {
-        constructor() {
-            super(...arguments);
-            this.handler = null;
+    var EmptyProxy = (function (_super) {
+        __extends$1(EmptyProxy, _super);
+        function EmptyProxy() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.handler = null;
+            return _this;
         }
-        dispose() { }
-        setCursor() { }
-    }
-    class HoveredResult {
-        constructor(x, y) {
+        EmptyProxy.prototype.dispose = function () { };
+        EmptyProxy.prototype.setCursor = function () { };
+        return EmptyProxy;
+    }(Eventful));
+    var HoveredResult = (function () {
+        function HoveredResult(x, y) {
             this.x = x;
             this.y = y;
         }
-    }
-    const handlerNames = [
+        return HoveredResult;
+    }());
+    var handlerNames = [
         'click', 'dblclick', 'mousewheel', 'mouseout',
         'mouseup', 'mousedown', 'mousemove', 'contextmenu'
     ];
-    const tmpRect = new BoundingRect(0, 0, 0, 0);
-    class Handler extends Eventful {
-        constructor(storage, painter, proxy, painterRoot, pointerSize) {
-            super();
-            this._hovered = new HoveredResult(0, 0);
-            this.storage = storage;
-            this.painter = painter;
-            this.painterRoot = painterRoot;
-            this._pointerSize = pointerSize;
+    var tmpRect = new BoundingRect(0, 0, 0, 0);
+    var Handler = (function (_super) {
+        __extends$1(Handler, _super);
+        function Handler(storage, painter, proxy, painterRoot, pointerSize) {
+            var _this = _super.call(this) || this;
+            _this._hovered = new HoveredResult(0, 0);
+            _this.storage = storage;
+            _this.painter = painter;
+            _this.painterRoot = painterRoot;
+            _this._pointerSize = pointerSize;
             proxy = proxy || new EmptyProxy();
-            this.proxy = null;
-            this.setHandlerProxy(proxy);
-            this._draggingMgr = new Draggable(this);
+            _this.proxy = null;
+            _this.setHandlerProxy(proxy);
+            _this._draggingMgr = new Draggable(_this);
+            return _this;
         }
-        setHandlerProxy(proxy) {
+        Handler.prototype.setHandlerProxy = function (proxy) {
             if (this.proxy) {
                 this.proxy.dispose();
             }
@@ -1991,20 +2088,20 @@
                 proxy.handler = this;
             }
             this.proxy = proxy;
-        }
-        mousemove(event) {
-            const x = event.zrX;
-            const y = event.zrY;
-            const isOutside = isOutsideBoundary(this, x, y);
-            let lastHovered = this._hovered;
-            let lastHoveredTarget = lastHovered.target;
+        };
+        Handler.prototype.mousemove = function (event) {
+            var x = event.zrX;
+            var y = event.zrY;
+            var isOutside = isOutsideBoundary(this, x, y);
+            var lastHovered = this._hovered;
+            var lastHoveredTarget = lastHovered.target;
             if (lastHoveredTarget && !lastHoveredTarget.__zr) {
                 lastHovered = this.findHover(lastHovered.x, lastHovered.y);
                 lastHoveredTarget = lastHovered.target;
             }
-            const hovered = this._hovered = isOutside ? new HoveredResult(x, y) : this.findHover(x, y);
-            const hoveredTarget = hovered.target;
-            const proxy = this.proxy;
+            var hovered = this._hovered = isOutside ? new HoveredResult(x, y) : this.findHover(x, y);
+            var hoveredTarget = hovered.target;
+            var proxy = this.proxy;
             proxy.setCursor && proxy.setCursor(hoveredTarget ? hoveredTarget.cursor : 'default');
             if (lastHoveredTarget && hoveredTarget !== lastHoveredTarget) {
                 this.dispatchToElement(lastHovered, 'mouseout', event);
@@ -2013,41 +2110,41 @@
             if (hoveredTarget && hoveredTarget !== lastHoveredTarget) {
                 this.dispatchToElement(hovered, 'mouseover', event);
             }
-        }
-        mouseout(event) {
-            const eventControl = event.zrEventControl;
+        };
+        Handler.prototype.mouseout = function (event) {
+            var eventControl = event.zrEventControl;
             if (eventControl !== 'only_globalout') {
                 this.dispatchToElement(this._hovered, 'mouseout', event);
             }
             if (eventControl !== 'no_globalout') {
                 this.trigger('globalout', { type: 'globalout', event: event });
             }
-        }
-        resize() {
+        };
+        Handler.prototype.resize = function () {
             this._hovered = new HoveredResult(0, 0);
-        }
-        dispatch(eventName, eventArgs) {
-            const handler = this[eventName];
+        };
+        Handler.prototype.dispatch = function (eventName, eventArgs) {
+            var handler = this[eventName];
             handler && handler.call(this, eventArgs);
-        }
-        dispose() {
+        };
+        Handler.prototype.dispose = function () {
             this.proxy.dispose();
             this.storage = null;
             this.proxy = null;
             this.painter = null;
-        }
-        setCursorStyle(cursorStyle) {
-            const proxy = this.proxy;
+        };
+        Handler.prototype.setCursorStyle = function (cursorStyle) {
+            var proxy = this.proxy;
             proxy.setCursor && proxy.setCursor(cursorStyle);
-        }
-        dispatchToElement(targetInfo, eventName, event) {
+        };
+        Handler.prototype.dispatchToElement = function (targetInfo, eventName, event) {
             targetInfo = targetInfo || {};
-            let el = targetInfo.target;
+            var el = targetInfo.target;
             if (el && el.silent) {
                 return;
             }
-            const eventKey = ('on' + eventName);
-            const eventPacket = makeEventPacket(eventName, targetInfo, event);
+            var eventKey = ('on' + eventName);
+            var eventPacket = makeEventPacket(eventName, targetInfo, event);
             while (el) {
                 el[eventKey]
                     && (eventPacket.cancelBubble = !!el[eventKey].call(el, eventPacket));
@@ -2070,18 +2167,18 @@
                     });
                 }
             }
-        }
-        findHover(x, y, exclude) {
-            const list = this.storage.getDisplayList();
-            const out = new HoveredResult(x, y);
+        };
+        Handler.prototype.findHover = function (x, y, exclude) {
+            var list = this.storage.getDisplayList();
+            var out = new HoveredResult(x, y);
             setHoverTarget(list, out, x, y, exclude);
             if (this._pointerSize && !out.target) {
-                const candidates = [];
-                const pointerSize = this._pointerSize;
-                const targetSizeHalf = pointerSize / 2;
-                const pointerRect = new BoundingRect(x - targetSizeHalf, y - targetSizeHalf, pointerSize, pointerSize);
-                for (let i = list.length - 1; i >= 0; i--) {
-                    const el = list[i];
+                var candidates = [];
+                var pointerSize = this._pointerSize;
+                var targetSizeHalf = pointerSize / 2;
+                var pointerRect = new BoundingRect(x - targetSizeHalf, y - targetSizeHalf, pointerSize, pointerSize);
+                for (var i = list.length - 1; i >= 0; i--) {
+                    var el = list[i];
                     if (el !== exclude
                         && !el.ignore
                         && !el.ignoreCoarsePointer
@@ -2096,13 +2193,13 @@
                     }
                 }
                 if (candidates.length) {
-                    const rStep = 4;
-                    const thetaStep = Math.PI / 12;
-                    const PI2 = Math.PI * 2;
-                    for (let r = 0; r < targetSizeHalf; r += rStep) {
-                        for (let theta = 0; theta < PI2; theta += thetaStep) {
-                            const x1 = x + r * Math.cos(theta);
-                            const y1 = y + r * Math.sin(theta);
+                    var rStep = 4;
+                    var thetaStep = Math.PI / 12;
+                    var PI2 = Math.PI * 2;
+                    for (var r = 0; r < targetSizeHalf; r += rStep) {
+                        for (var theta = 0; theta < PI2; theta += thetaStep) {
+                            var x1 = x + r * Math.cos(theta);
+                            var y1 = y + r * Math.sin(theta);
                             setHoverTarget(candidates, out, x1, y1, exclude);
                             if (out.target) {
                                 return out;
@@ -2112,31 +2209,32 @@
                 }
             }
             return out;
-        }
-        processGesture(event, stage) {
+        };
+        Handler.prototype.processGesture = function (event, stage) {
             if (!this._gestureMgr) {
                 this._gestureMgr = new GestureMgr();
             }
-            const gestureMgr = this._gestureMgr;
+            var gestureMgr = this._gestureMgr;
             stage === 'start' && gestureMgr.clear();
-            const gestureInfo = gestureMgr.recognize(event, this.findHover(event.zrX, event.zrY, null).target, this.proxy.dom);
+            var gestureInfo = gestureMgr.recognize(event, this.findHover(event.zrX, event.zrY, null).target, this.proxy.dom);
             stage === 'end' && gestureMgr.clear();
             if (gestureInfo) {
-                const type = gestureInfo.type;
+                var type = gestureInfo.type;
                 event.gestureEvent = type;
-                let res = new HoveredResult();
+                var res = new HoveredResult();
                 res.target = gestureInfo.target;
                 this.dispatchToElement(res, type, gestureInfo.event);
             }
-        }
-    }
+        };
+        return Handler;
+    }(Eventful));
     each(['click', 'mousedown', 'mouseup', 'mousewheel', 'dblclick', 'contextmenu'], function (name) {
         Handler.prototype[name] = function (event) {
-            const x = event.zrX;
-            const y = event.zrY;
-            const isOutside = isOutsideBoundary(this, x, y);
-            let hovered;
-            let hoveredTarget;
+            var x = event.zrX;
+            var y = event.zrY;
+            var isOutside = isOutsideBoundary(this, x, y);
+            var hovered;
+            var hoveredTarget;
             if (name !== 'mouseup' || !isOutside) {
                 hovered = this.findHover(x, y);
                 hoveredTarget = hovered.target;
@@ -2162,15 +2260,15 @@
     });
     function isHover(displayable, x, y) {
         if (displayable[displayable.rectHover ? 'rectContain' : 'contain'](x, y)) {
-            let el = displayable;
-            let isSilent;
-            let ignoreClip = false;
+            var el = displayable;
+            var isSilent = void 0;
+            var ignoreClip = false;
             while (el) {
                 if (el.ignoreClip) {
                     ignoreClip = true;
                 }
                 if (!ignoreClip) {
-                    let clipPath = el.getClipPath();
+                    var clipPath = el.getClipPath();
                     if (clipPath && !clipPath.contain(x, y)) {
                         return false;
                     }
@@ -2178,7 +2276,7 @@
                 if (el.silent) {
                     isSilent = true;
                 }
-                const hostEl = el.__hostTarget;
+                var hostEl = el.__hostTarget;
                 el = hostEl ? hostEl : el.parent;
             }
             return isSilent ? SILENT : true;
@@ -2186,9 +2284,9 @@
         return false;
     }
     function setHoverTarget(list, out, x, y, exclude) {
-        for (let i = list.length - 1; i >= 0; i--) {
-            const el = list[i];
-            let hoverCheckResult;
+        for (var i = list.length - 1; i >= 0; i--) {
+            var el = list[i];
+            var hoverCheckResult = void 0;
             if (el !== exclude
                 && !el.ignore
                 && (hoverCheckResult = isHover(el, x, y))) {
@@ -2201,12 +2299,12 @@
         }
     }
     function isOutsideBoundary(handlerInstance, x, y) {
-        const painter = handlerInstance.painter;
+        var painter = handlerInstance.painter;
         return x < 0 || x > painter.getWidth() || y < 0 || y > painter.getHeight();
     }
 
-    const DEFAULT_MIN_MERGE = 32;
-    const DEFAULT_MIN_GALLOPING = 7;
+    var DEFAULT_MIN_MERGE = 32;
+    var DEFAULT_MIN_GALLOPING = 7;
     function minRunLength(n) {
         var r = 0;
         while (n >= DEFAULT_MIN_MERGE) {
@@ -2372,10 +2470,10 @@
         return offset;
     }
     function TimSort(array, compare) {
-        let minGallop = DEFAULT_MIN_GALLOPING;
-        let runStart;
-        let runLength;
-        let stackSize = 0;
+        var minGallop = DEFAULT_MIN_GALLOPING;
+        var runStart;
+        var runLength;
+        var stackSize = 0;
         var tmp = [];
         runStart = [];
         runLength = [];
@@ -2686,9 +2784,9 @@
             }
         }
         return {
-            mergeRuns,
-            forceMergeRuns,
-            pushRun
+            mergeRuns: mergeRuns,
+            forceMergeRuns: forceMergeRuns,
+            pushRun: pushRun
         };
     }
     function sort(array, compare, lo, hi) {
@@ -2728,11 +2826,11 @@
         ts.forceMergeRuns();
     }
 
-    const REDRAW_BIT = 1;
-    const STYLE_CHANGED_BIT = 2;
-    const SHAPE_CHANGED_BIT = 4;
+    var REDRAW_BIT = 1;
+    var STYLE_CHANGED_BIT = 2;
+    var SHAPE_CHANGED_BIT = 4;
 
-    let invalidZErrorLogged = false;
+    var invalidZErrorLogged = false;
     function logInvalidZError() {
         if (invalidZErrorLogged) {
             return;
@@ -2749,44 +2847,44 @@
         }
         return a.zlevel - b.zlevel;
     }
-    class Storage {
-        constructor() {
+    var Storage = (function () {
+        function Storage() {
             this._roots = [];
             this._displayList = [];
             this._displayListLen = 0;
             this.displayableSortFunc = shapeCompareFunc;
         }
-        traverse(cb, context) {
-            for (let i = 0; i < this._roots.length; i++) {
+        Storage.prototype.traverse = function (cb, context) {
+            for (var i = 0; i < this._roots.length; i++) {
                 this._roots[i].traverse(cb, context);
             }
-        }
-        getDisplayList(update, includeIgnore) {
+        };
+        Storage.prototype.getDisplayList = function (update, includeIgnore) {
             includeIgnore = includeIgnore || false;
-            const displayList = this._displayList;
+            var displayList = this._displayList;
             if (update || !displayList.length) {
                 this.updateDisplayList(includeIgnore);
             }
             return displayList;
-        }
-        updateDisplayList(includeIgnore) {
+        };
+        Storage.prototype.updateDisplayList = function (includeIgnore) {
             this._displayListLen = 0;
-            const roots = this._roots;
-            const displayList = this._displayList;
-            for (let i = 0, len = roots.length; i < len; i++) {
+            var roots = this._roots;
+            var displayList = this._displayList;
+            for (var i = 0, len = roots.length; i < len; i++) {
                 this._updateAndAddDisplayable(roots[i], null, includeIgnore);
             }
             displayList.length = this._displayListLen;
             sort(displayList, shapeCompareFunc);
-        }
-        _updateAndAddDisplayable(el, clipPaths, includeIgnore) {
+        };
+        Storage.prototype._updateAndAddDisplayable = function (el, clipPaths, includeIgnore) {
             if (el.ignore && !includeIgnore) {
                 return;
             }
             el.beforeUpdate();
             el.update();
             el.afterUpdate();
-            const userSetClipPath = el.getClipPath();
+            var userSetClipPath = el.getClipPath();
             if (el.ignoreClip) {
                 clipPaths = null;
             }
@@ -2797,8 +2895,8 @@
                 else {
                     clipPaths = [];
                 }
-                let currentClipPath = userSetClipPath;
-                let parentClipPath = el;
+                var currentClipPath = userSetClipPath;
+                var parentClipPath = el;
                 while (currentClipPath) {
                     currentClipPath.parent = parentClipPath;
                     currentClipPath.updateTransform();
@@ -2808,9 +2906,9 @@
                 }
             }
             if (el.childrenRef) {
-                const children = el.childrenRef();
-                for (let i = 0; i < children.length; i++) {
-                    const child = children[i];
+                var children = el.childrenRef();
+                for (var i = 0; i < children.length; i++) {
+                    var child = children[i];
                     if (el.__dirty) {
                         child.__dirty |= REDRAW_BIT;
                     }
@@ -2819,7 +2917,7 @@
                 el.__dirty = 0;
             }
             else {
-                const disp = el;
+                var disp = el;
                 if (clipPaths && clipPaths.length) {
                     disp.__clipPaths = clipPaths;
                 }
@@ -2840,53 +2938,54 @@
                 }
                 this._displayList[this._displayListLen++] = disp;
             }
-            const decalEl = el.getDecalElement && el.getDecalElement();
+            var decalEl = el.getDecalElement && el.getDecalElement();
             if (decalEl) {
                 this._updateAndAddDisplayable(decalEl, clipPaths, includeIgnore);
             }
-            const textGuide = el.getTextGuideLine();
+            var textGuide = el.getTextGuideLine();
             if (textGuide) {
                 this._updateAndAddDisplayable(textGuide, clipPaths, includeIgnore);
             }
-            const textEl = el.getTextContent();
+            var textEl = el.getTextContent();
             if (textEl) {
                 this._updateAndAddDisplayable(textEl, clipPaths, includeIgnore);
             }
-        }
-        addRoot(el) {
+        };
+        Storage.prototype.addRoot = function (el) {
             if (el.__zr && el.__zr.storage === this) {
                 return;
             }
             this._roots.push(el);
-        }
-        delRoot(el) {
+        };
+        Storage.prototype.delRoot = function (el) {
             if (el instanceof Array) {
-                for (let i = 0, l = el.length; i < l; i++) {
+                for (var i = 0, l = el.length; i < l; i++) {
                     this.delRoot(el[i]);
                 }
                 return;
             }
-            const idx = indexOf(this._roots, el);
+            var idx = indexOf(this._roots, el);
             if (idx >= 0) {
                 this._roots.splice(idx, 1);
             }
-        }
-        delAllRoots() {
+        };
+        Storage.prototype.delAllRoots = function () {
             this._roots = [];
             this._displayList = [];
             this._displayListLen = 0;
             return;
-        }
-        getRoots() {
+        };
+        Storage.prototype.getRoots = function () {
             return this._roots;
-        }
-        dispose() {
+        };
+        Storage.prototype.dispose = function () {
             this._displayList = null;
             this._roots = null;
-        }
-    }
+        };
+        return Storage;
+    }());
 
-    let requestAnimationFrame;
+    var requestAnimationFrame;
     requestAnimationFrame = (env.hasGlobalWindow
         && ((window.requestAnimationFrame && window.requestAnimationFrame.bind(window))
             || (window.msRequestAnimationFrame && window.msRequestAnimationFrame.bind(window))
@@ -2896,74 +2995,74 @@
     };
     var requestAnimationFrame$1 = requestAnimationFrame;
 
-    const easingFuncs = {
-        linear(k) {
+    var easingFuncs = {
+        linear: function (k) {
             return k;
         },
-        quadraticIn(k) {
+        quadraticIn: function (k) {
             return k * k;
         },
-        quadraticOut(k) {
+        quadraticOut: function (k) {
             return k * (2 - k);
         },
-        quadraticInOut(k) {
+        quadraticInOut: function (k) {
             if ((k *= 2) < 1) {
                 return 0.5 * k * k;
             }
             return -0.5 * (--k * (k - 2) - 1);
         },
-        cubicIn(k) {
+        cubicIn: function (k) {
             return k * k * k;
         },
-        cubicOut(k) {
+        cubicOut: function (k) {
             return --k * k * k + 1;
         },
-        cubicInOut(k) {
+        cubicInOut: function (k) {
             if ((k *= 2) < 1) {
                 return 0.5 * k * k * k;
             }
             return 0.5 * ((k -= 2) * k * k + 2);
         },
-        quarticIn(k) {
+        quarticIn: function (k) {
             return k * k * k * k;
         },
-        quarticOut(k) {
+        quarticOut: function (k) {
             return 1 - (--k * k * k * k);
         },
-        quarticInOut(k) {
+        quarticInOut: function (k) {
             if ((k *= 2) < 1) {
                 return 0.5 * k * k * k * k;
             }
             return -0.5 * ((k -= 2) * k * k * k - 2);
         },
-        quinticIn(k) {
+        quinticIn: function (k) {
             return k * k * k * k * k;
         },
-        quinticOut(k) {
+        quinticOut: function (k) {
             return --k * k * k * k * k + 1;
         },
-        quinticInOut(k) {
+        quinticInOut: function (k) {
             if ((k *= 2) < 1) {
                 return 0.5 * k * k * k * k * k;
             }
             return 0.5 * ((k -= 2) * k * k * k * k + 2);
         },
-        sinusoidalIn(k) {
+        sinusoidalIn: function (k) {
             return 1 - Math.cos(k * Math.PI / 2);
         },
-        sinusoidalOut(k) {
+        sinusoidalOut: function (k) {
             return Math.sin(k * Math.PI / 2);
         },
-        sinusoidalInOut(k) {
+        sinusoidalInOut: function (k) {
             return 0.5 * (1 - Math.cos(Math.PI * k));
         },
-        exponentialIn(k) {
+        exponentialIn: function (k) {
             return k === 0 ? 0 : Math.pow(1024, k - 1);
         },
-        exponentialOut(k) {
+        exponentialOut: function (k) {
             return k === 1 ? 1 : 1 - Math.pow(2, -10 * k);
         },
-        exponentialInOut(k) {
+        exponentialInOut: function (k) {
             if (k === 0) {
                 return 0;
             }
@@ -2975,22 +3074,22 @@
             }
             return 0.5 * (-Math.pow(2, -10 * (k - 1)) + 2);
         },
-        circularIn(k) {
+        circularIn: function (k) {
             return 1 - Math.sqrt(1 - k * k);
         },
-        circularOut(k) {
+        circularOut: function (k) {
             return Math.sqrt(1 - (--k * k));
         },
-        circularInOut(k) {
+        circularInOut: function (k) {
             if ((k *= 2) < 1) {
                 return -0.5 * (Math.sqrt(1 - k * k) - 1);
             }
             return 0.5 * (Math.sqrt(1 - (k -= 2) * k) + 1);
         },
-        elasticIn(k) {
-            let s;
-            let a = 0.1;
-            let p = 0.4;
+        elasticIn: function (k) {
+            var s;
+            var a = 0.1;
+            var p = 0.4;
             if (k === 0) {
                 return 0;
             }
@@ -3007,10 +3106,10 @@
             return -(a * Math.pow(2, 10 * (k -= 1))
                 * Math.sin((k - s) * (2 * Math.PI) / p));
         },
-        elasticOut(k) {
-            let s;
-            let a = 0.1;
-            let p = 0.4;
+        elasticOut: function (k) {
+            var s;
+            var a = 0.1;
+            var p = 0.4;
             if (k === 0) {
                 return 0;
             }
@@ -3027,10 +3126,10 @@
             return (a * Math.pow(2, -10 * k)
                 * Math.sin((k - s) * (2 * Math.PI) / p) + 1);
         },
-        elasticInOut(k) {
-            let s;
-            let a = 0.1;
-            let p = 0.4;
+        elasticInOut: function (k) {
+            var s;
+            var a = 0.1;
+            var p = 0.4;
             if (k === 0) {
                 return 0;
             }
@@ -3051,25 +3150,25 @@
             return a * Math.pow(2, -10 * (k -= 1))
                 * Math.sin((k - s) * (2 * Math.PI) / p) * 0.5 + 1;
         },
-        backIn(k) {
-            let s = 1.70158;
+        backIn: function (k) {
+            var s = 1.70158;
             return k * k * ((s + 1) * k - s);
         },
-        backOut(k) {
-            let s = 1.70158;
+        backOut: function (k) {
+            var s = 1.70158;
             return --k * k * ((s + 1) * k + s) + 1;
         },
-        backInOut(k) {
-            let s = 1.70158 * 1.525;
+        backInOut: function (k) {
+            var s = 1.70158 * 1.525;
             if ((k *= 2) < 1) {
                 return 0.5 * (k * k * ((s + 1) * k - s));
             }
             return 0.5 * ((k -= 2) * k * ((s + 1) * k + s) + 2);
         },
-        bounceIn(k) {
+        bounceIn: function (k) {
             return 1 - easingFuncs.bounceOut(1 - k);
         },
-        bounceOut(k) {
+        bounceOut: function (k) {
             if (k < (1 / 2.75)) {
                 return 7.5625 * k * k;
             }
@@ -3083,7 +3182,7 @@
                 return 7.5625 * (k -= (2.625 / 2.75)) * k + 0.984375;
             }
         },
-        bounceInOut(k) {
+        bounceInOut: function (k) {
             if (k < 0.5) {
                 return easingFuncs.bounceIn(k * 2) * 0.5;
             }
@@ -3091,15 +3190,15 @@
         }
     };
 
-    const mathPow = Math.pow;
-    const mathSqrt = Math.sqrt;
-    const EPSILON = 1e-8;
-    const EPSILON_NUMERIC = 1e-4;
-    const THREE_SQRT = mathSqrt(3);
-    const ONE_THIRD = 1 / 3;
-    const _v0 = create();
-    const _v1 = create();
-    const _v2 = create();
+    var mathPow = Math.pow;
+    var mathSqrt = Math.sqrt;
+    var EPSILON = 1e-8;
+    var EPSILON_NUMERIC = 1e-4;
+    var THREE_SQRT = mathSqrt(3);
+    var ONE_THIRD = 1 / 3;
+    var _v0 = create();
+    var _v1 = create();
+    var _v2 = create();
     function isAroundZero(val) {
         return val > -EPSILON && val < EPSILON;
     }
@@ -3107,41 +3206,41 @@
         return val > EPSILON || val < -EPSILON;
     }
     function cubicAt(p0, p1, p2, p3, t) {
-        const onet = 1 - t;
+        var onet = 1 - t;
         return onet * onet * (onet * p0 + 3 * t * p1)
             + t * t * (t * p3 + 3 * onet * p2);
     }
     function cubicDerivativeAt(p0, p1, p2, p3, t) {
-        const onet = 1 - t;
+        var onet = 1 - t;
         return 3 * (((p1 - p0) * onet + 2 * (p2 - p1) * t) * onet
             + (p3 - p2) * t * t);
     }
     function cubicRootAt(p0, p1, p2, p3, val, roots) {
-        const a = p3 + 3 * (p1 - p2) - p0;
-        const b = 3 * (p2 - p1 * 2 + p0);
-        const c = 3 * (p1 - p0);
-        const d = p0 - val;
-        const A = b * b - 3 * a * c;
-        const B = b * c - 9 * a * d;
-        const C = c * c - 3 * b * d;
-        let n = 0;
+        var a = p3 + 3 * (p1 - p2) - p0;
+        var b = 3 * (p2 - p1 * 2 + p0);
+        var c = 3 * (p1 - p0);
+        var d = p0 - val;
+        var A = b * b - 3 * a * c;
+        var B = b * c - 9 * a * d;
+        var C = c * c - 3 * b * d;
+        var n = 0;
         if (isAroundZero(A) && isAroundZero(B)) {
             if (isAroundZero(b)) {
                 roots[0] = 0;
             }
             else {
-                const t1 = -c / b;
+                var t1 = -c / b;
                 if (t1 >= 0 && t1 <= 1) {
                     roots[n++] = t1;
                 }
             }
         }
         else {
-            const disc = B * B - 4 * A * C;
+            var disc = B * B - 4 * A * C;
             if (isAroundZero(disc)) {
-                const K = B / A;
-                const t1 = -b / a + K;
-                const t2 = -K / 2;
+                var K = B / A;
+                var t1 = -b / a + K;
+                var t2 = -K / 2;
                 if (t1 >= 0 && t1 <= 1) {
                     roots[n++] = t1;
                 }
@@ -3150,9 +3249,9 @@
                 }
             }
             else if (disc > 0) {
-                const discSqrt = mathSqrt(disc);
-                let Y1 = A * b + 1.5 * a * (-B + discSqrt);
-                let Y2 = A * b + 1.5 * a * (-B - discSqrt);
+                var discSqrt = mathSqrt(disc);
+                var Y1 = A * b + 1.5 * a * (-B + discSqrt);
+                var Y2 = A * b + 1.5 * a * (-B - discSqrt);
                 if (Y1 < 0) {
                     Y1 = -mathPow(-Y1, ONE_THIRD);
                 }
@@ -3165,19 +3264,19 @@
                 else {
                     Y2 = mathPow(Y2, ONE_THIRD);
                 }
-                const t1 = (-b - (Y1 + Y2)) / (3 * a);
+                var t1 = (-b - (Y1 + Y2)) / (3 * a);
                 if (t1 >= 0 && t1 <= 1) {
                     roots[n++] = t1;
                 }
             }
             else {
-                const T = (2 * A * b - 3 * a * B) / (2 * mathSqrt(A * A * A));
-                const theta = Math.acos(T) / 3;
-                const ASqrt = mathSqrt(A);
-                const tmp = Math.cos(theta);
-                const t1 = (-b - 2 * ASqrt * tmp) / (3 * a);
-                const t2 = (-b + ASqrt * (tmp + THREE_SQRT * Math.sin(theta))) / (3 * a);
-                const t3 = (-b + ASqrt * (tmp - THREE_SQRT * Math.sin(theta))) / (3 * a);
+                var T = (2 * A * b - 3 * a * B) / (2 * mathSqrt(A * A * A));
+                var theta = Math.acos(T) / 3;
+                var ASqrt = mathSqrt(A);
+                var tmp = Math.cos(theta);
+                var t1 = (-b - 2 * ASqrt * tmp) / (3 * a);
+                var t2 = (-b + ASqrt * (tmp + THREE_SQRT * Math.sin(theta))) / (3 * a);
+                var t3 = (-b + ASqrt * (tmp - THREE_SQRT * Math.sin(theta))) / (3 * a);
                 if (t1 >= 0 && t1 <= 1) {
                     roots[n++] = t1;
                 }
@@ -3192,27 +3291,27 @@
         return n;
     }
     function cubicExtrema(p0, p1, p2, p3, extrema) {
-        const b = 6 * p2 - 12 * p1 + 6 * p0;
-        const a = 9 * p1 + 3 * p3 - 3 * p0 - 9 * p2;
-        const c = 3 * p1 - 3 * p0;
-        let n = 0;
+        var b = 6 * p2 - 12 * p1 + 6 * p0;
+        var a = 9 * p1 + 3 * p3 - 3 * p0 - 9 * p2;
+        var c = 3 * p1 - 3 * p0;
+        var n = 0;
         if (isAroundZero(a)) {
             if (isNotAroundZero(b)) {
-                const t1 = -c / b;
+                var t1 = -c / b;
                 if (t1 >= 0 && t1 <= 1) {
                     extrema[n++] = t1;
                 }
             }
         }
         else {
-            const disc = b * b - 4 * a * c;
+            var disc = b * b - 4 * a * c;
             if (isAroundZero(disc)) {
                 extrema[0] = -b / (2 * a);
             }
             else if (disc > 0) {
-                const discSqrt = mathSqrt(disc);
-                const t1 = (-b + discSqrt) / (2 * a);
-                const t2 = (-b - discSqrt) / (2 * a);
+                var discSqrt = mathSqrt(disc);
+                var t1 = (-b + discSqrt) / (2 * a);
+                var t2 = (-b - discSqrt) / (2 * a);
                 if (t1 >= 0 && t1 <= 1) {
                     extrema[n++] = t1;
                 }
@@ -3224,12 +3323,12 @@
         return n;
     }
     function cubicSubdivide(p0, p1, p2, p3, t, out) {
-        const p01 = (p1 - p0) * t + p0;
-        const p12 = (p2 - p1) * t + p1;
-        const p23 = (p3 - p2) * t + p2;
-        const p012 = (p12 - p01) * t + p01;
-        const p123 = (p23 - p12) * t + p12;
-        const p0123 = (p123 - p012) * t + p012;
+        var p01 = (p1 - p0) * t + p0;
+        var p12 = (p2 - p1) * t + p1;
+        var p23 = (p3 - p2) * t + p2;
+        var p012 = (p12 - p01) * t + p01;
+        var p123 = (p23 - p12) * t + p12;
+        var p0123 = (p123 - p012) * t + p012;
         out[0] = p0;
         out[1] = p01;
         out[2] = p012;
@@ -3240,16 +3339,16 @@
         out[7] = p3;
     }
     function cubicProjectPoint(x0, y0, x1, y1, x2, y2, x3, y3, x, y, out) {
-        let t;
-        let interval = 0.005;
-        let d = Infinity;
-        let prev;
-        let next;
-        let d1;
-        let d2;
+        var t;
+        var interval = 0.005;
+        var d = Infinity;
+        var prev;
+        var next;
+        var d1;
+        var d2;
         _v0[0] = x;
         _v0[1] = y;
-        for (let _t = 0; _t < 1; _t += 0.05) {
+        for (var _t = 0; _t < 1; _t += 0.05) {
             _v1[0] = cubicAt(x0, x1, x2, x3, _t);
             _v1[1] = cubicAt(y0, y1, y2, y3, _t);
             d1 = distSquare(_v0, _v1);
@@ -3259,7 +3358,7 @@
             }
         }
         d = Infinity;
-        for (let i = 0; i < 32; i++) {
+        for (var i = 0; i < 32; i++) {
             if (interval < EPSILON_NUMERIC) {
                 break;
             }
@@ -3292,16 +3391,16 @@
         return mathSqrt(d);
     }
     function cubicLength(x0, y0, x1, y1, x2, y2, x3, y3, iteration) {
-        let px = x0;
-        let py = y0;
-        let d = 0;
-        const step = 1 / iteration;
-        for (let i = 1; i <= iteration; i++) {
-            let t = i * step;
-            const x = cubicAt(x0, x1, x2, x3, t);
-            const y = cubicAt(y0, y1, y2, y3, t);
-            const dx = x - px;
-            const dy = y - py;
+        var px = x0;
+        var py = y0;
+        var d = 0;
+        var step = 1 / iteration;
+        for (var i = 1; i <= iteration; i++) {
+            var t = i * step;
+            var x = cubicAt(x0, x1, x2, x3, t);
+            var y = cubicAt(y0, y1, y2, y3, t);
+            var dx = x - px;
+            var dy = y - py;
             d += Math.sqrt(dx * dx + dy * dy);
             px = x;
             py = y;
@@ -3309,37 +3408,37 @@
         return d;
     }
     function quadraticAt(p0, p1, p2, t) {
-        const onet = 1 - t;
+        var onet = 1 - t;
         return onet * (onet * p0 + 2 * t * p1) + t * t * p2;
     }
     function quadraticDerivativeAt(p0, p1, p2, t) {
         return 2 * ((1 - t) * (p1 - p0) + t * (p2 - p1));
     }
     function quadraticRootAt(p0, p1, p2, val, roots) {
-        const a = p0 - 2 * p1 + p2;
-        const b = 2 * (p1 - p0);
-        const c = p0 - val;
-        let n = 0;
+        var a = p0 - 2 * p1 + p2;
+        var b = 2 * (p1 - p0);
+        var c = p0 - val;
+        var n = 0;
         if (isAroundZero(a)) {
             if (isNotAroundZero(b)) {
-                const t1 = -c / b;
+                var t1 = -c / b;
                 if (t1 >= 0 && t1 <= 1) {
                     roots[n++] = t1;
                 }
             }
         }
         else {
-            const disc = b * b - 4 * a * c;
+            var disc = b * b - 4 * a * c;
             if (isAroundZero(disc)) {
-                const t1 = -b / (2 * a);
+                var t1 = -b / (2 * a);
                 if (t1 >= 0 && t1 <= 1) {
                     roots[n++] = t1;
                 }
             }
             else if (disc > 0) {
-                const discSqrt = mathSqrt(disc);
-                const t1 = (-b + discSqrt) / (2 * a);
-                const t2 = (-b - discSqrt) / (2 * a);
+                var discSqrt = mathSqrt(disc);
+                var t1 = (-b + discSqrt) / (2 * a);
+                var t2 = (-b - discSqrt) / (2 * a);
                 if (t1 >= 0 && t1 <= 1) {
                     roots[n++] = t1;
                 }
@@ -3351,7 +3450,7 @@
         return n;
     }
     function quadraticExtremum(p0, p1, p2) {
-        const divider = p0 + p2 - 2 * p1;
+        var divider = p0 + p2 - 2 * p1;
         if (divider === 0) {
             return 0.5;
         }
@@ -3360,9 +3459,9 @@
         }
     }
     function quadraticSubdivide(p0, p1, p2, t, out) {
-        const p01 = (p1 - p0) * t + p0;
-        const p12 = (p2 - p1) * t + p1;
-        const p012 = (p12 - p01) * t + p01;
+        var p01 = (p1 - p0) * t + p0;
+        var p12 = (p2 - p1) * t + p1;
+        var p012 = (p12 - p01) * t + p01;
         out[0] = p0;
         out[1] = p01;
         out[2] = p012;
@@ -3371,30 +3470,30 @@
         out[5] = p2;
     }
     function quadraticProjectPoint(x0, y0, x1, y1, x2, y2, x, y, out) {
-        let t;
-        let interval = 0.005;
-        let d = Infinity;
+        var t;
+        var interval = 0.005;
+        var d = Infinity;
         _v0[0] = x;
         _v0[1] = y;
-        for (let _t = 0; _t < 1; _t += 0.05) {
+        for (var _t = 0; _t < 1; _t += 0.05) {
             _v1[0] = quadraticAt(x0, x1, x2, _t);
             _v1[1] = quadraticAt(y0, y1, y2, _t);
-            const d1 = distSquare(_v0, _v1);
+            var d1 = distSquare(_v0, _v1);
             if (d1 < d) {
                 t = _t;
                 d = d1;
             }
         }
         d = Infinity;
-        for (let i = 0; i < 32; i++) {
+        for (var i = 0; i < 32; i++) {
             if (interval < EPSILON_NUMERIC) {
                 break;
             }
-            const prev = t - interval;
-            const next = t + interval;
+            var prev = t - interval;
+            var next = t + interval;
             _v1[0] = quadraticAt(x0, x1, x2, prev);
             _v1[1] = quadraticAt(y0, y1, y2, prev);
-            const d1 = distSquare(_v1, _v0);
+            var d1 = distSquare(_v1, _v0);
             if (prev >= 0 && d1 < d) {
                 t = prev;
                 d = d1;
@@ -3402,7 +3501,7 @@
             else {
                 _v2[0] = quadraticAt(x0, x1, x2, next);
                 _v2[1] = quadraticAt(y0, y1, y2, next);
-                const d2 = distSquare(_v2, _v0);
+                var d2 = distSquare(_v2, _v0);
                 if (next <= 1 && d2 < d) {
                     t = next;
                     d = d2;
@@ -3419,16 +3518,16 @@
         return mathSqrt(d);
     }
     function quadraticLength(x0, y0, x1, y1, x2, y2, iteration) {
-        let px = x0;
-        let py = y0;
-        let d = 0;
-        const step = 1 / iteration;
-        for (let i = 1; i <= iteration; i++) {
-            let t = i * step;
-            const x = quadraticAt(x0, x1, x2, t);
-            const y = quadraticAt(y0, y1, y2, t);
-            const dx = x - px;
-            const dy = y - py;
+        var px = x0;
+        var py = y0;
+        var d = 0;
+        var step = 1 / iteration;
+        for (var i = 1; i <= iteration; i++) {
+            var t = i * step;
+            var x = quadraticAt(x0, x1, x2, t);
+            var y = quadraticAt(y0, y1, y2, t);
+            var dx = x - px;
+            var dy = y - py;
             d += Math.sqrt(dx * dx + dy * dy);
             px = x;
             py = y;
@@ -3436,30 +3535,30 @@
         return d;
     }
 
-    const regexp = /cubic-bezier\(([0-9,\.e ]+)\)/;
+    var regexp = /cubic-bezier\(([0-9,\.e ]+)\)/;
     function createCubicEasingFunc(cubicEasingStr) {
-        const cubic = cubicEasingStr && regexp.exec(cubicEasingStr);
+        var cubic = cubicEasingStr && regexp.exec(cubicEasingStr);
         if (cubic) {
-            const points = cubic[1].split(',');
-            const a = +trim(points[0]);
-            const b = +trim(points[1]);
-            const c = +trim(points[2]);
-            const d = +trim(points[3]);
-            if (isNaN(a + b + c + d)) {
+            var points = cubic[1].split(',');
+            var a_1 = +trim(points[0]);
+            var b_1 = +trim(points[1]);
+            var c_1 = +trim(points[2]);
+            var d_1 = +trim(points[3]);
+            if (isNaN(a_1 + b_1 + c_1 + d_1)) {
                 return;
             }
-            const roots = [];
-            return (p) => {
+            var roots_1 = [];
+            return function (p) {
                 return p <= 0
                     ? 0 : p >= 1
                     ? 1
-                    : cubicRootAt(0, a, c, 1, p, roots) && cubicAt(0, b, d, 1, roots[0]);
+                    : cubicRootAt(0, a_1, c_1, 1, p, roots_1) && cubicAt(0, b_1, d_1, 1, roots_1[0]);
             };
         }
     }
 
-    class Clip {
-        constructor(opts) {
+    var Clip = (function () {
+        function Clip(opts) {
             this._inited = false;
             this._startTime = 0;
             this._pausedTime = 0;
@@ -3472,7 +3571,7 @@
             this.onrestart = opts.onrestart || noop;
             opts.easing && this.setEasing(opts.easing);
         }
-        step(globalTime, deltaTime) {
+        Clip.prototype.step = function (globalTime, deltaTime) {
             if (!this._inited) {
                 this._startTime = globalTime + this._delay;
                 this._inited = true;
@@ -3481,19 +3580,19 @@
                 this._pausedTime += deltaTime;
                 return;
             }
-            const life = this._life;
-            let elapsedTime = globalTime - this._startTime - this._pausedTime;
-            let percent = elapsedTime / life;
+            var life = this._life;
+            var elapsedTime = globalTime - this._startTime - this._pausedTime;
+            var percent = elapsedTime / life;
             if (percent < 0) {
                 percent = 0;
             }
             percent = Math.min(percent, 1);
-            const easingFunc = this.easingFunc;
-            const schedule = easingFunc ? easingFunc(percent) : percent;
+            var easingFunc = this.easingFunc;
+            var schedule = easingFunc ? easingFunc(percent) : percent;
             this.onframe(schedule);
             if (percent === 1) {
                 if (this.loop) {
-                    const remainder = elapsedTime % life;
+                    var remainder = elapsedTime % life;
                     this._startTime = globalTime - remainder;
                     this._pausedTime = 0;
                     this.onrestart();
@@ -3503,36 +3602,38 @@
                 }
             }
             return false;
-        }
-        pause() {
+        };
+        Clip.prototype.pause = function () {
             this._paused = true;
-        }
-        resume() {
+        };
+        Clip.prototype.resume = function () {
             this._paused = false;
-        }
-        setEasing(easing) {
+        };
+        Clip.prototype.setEasing = function (easing) {
             this.easing = easing;
             this.easingFunc = isFunction(easing)
                 ? easing
                 : easingFuncs[easing] || createCubicEasingFunc(easing);
-        }
-    }
+        };
+        return Clip;
+    }());
 
-    class Entry {
-        constructor(val) {
+    var Entry = (function () {
+        function Entry(val) {
             this.value = val;
         }
-    }
-    class LinkedList {
-        constructor() {
+        return Entry;
+    }());
+    var LinkedList = (function () {
+        function LinkedList() {
             this._len = 0;
         }
-        insert(val) {
-            const entry = new Entry(val);
+        LinkedList.prototype.insert = function (val) {
+            var entry = new Entry(val);
             this.insertEntry(entry);
             return entry;
-        }
-        insertEntry(entry) {
+        };
+        LinkedList.prototype.insertEntry = function (entry) {
             if (!this.head) {
                 this.head = this.tail = entry;
             }
@@ -3543,10 +3644,10 @@
                 this.tail = entry;
             }
             this._len++;
-        }
-        remove(entry) {
-            const prev = entry.prev;
-            const next = entry.next;
+        };
+        LinkedList.prototype.remove = function (entry) {
+            var prev = entry.prev;
+            var next = entry.next;
             if (prev) {
                 prev.next = next;
             }
@@ -3561,31 +3662,32 @@
             }
             entry.next = entry.prev = null;
             this._len--;
-        }
-        len() {
+        };
+        LinkedList.prototype.len = function () {
             return this._len;
-        }
-        clear() {
+        };
+        LinkedList.prototype.clear = function () {
             this.head = this.tail = null;
             this._len = 0;
-        }
-    }
-    class LRU {
-        constructor(maxSize) {
+        };
+        return LinkedList;
+    }());
+    var LRU = (function () {
+        function LRU(maxSize) {
             this._list = new LinkedList();
             this._maxSize = 10;
             this._map = {};
             this._maxSize = maxSize;
         }
-        put(key, value) {
-            const list = this._list;
-            const map = this._map;
-            let removed = null;
+        LRU.prototype.put = function (key, value) {
+            var list = this._list;
+            var map = this._map;
+            var removed = null;
             if (map[key] == null) {
-                const len = list.len();
-                let entry = this._lastRemovedEntry;
+                var len = list.len();
+                var entry = this._lastRemovedEntry;
                 if (len >= this._maxSize && len > 0) {
-                    const leastUsedEntry = list.head;
+                    var leastUsedEntry = list.head;
                     list.remove(leastUsedEntry);
                     delete map[leastUsedEntry.key];
                     removed = leastUsedEntry.value;
@@ -3602,10 +3704,10 @@
                 map[key] = entry;
             }
             return removed;
-        }
-        get(key) {
-            const entry = this._map[key];
-            const list = this._list;
+        };
+        LRU.prototype.get = function (key) {
+            var entry = this._map[key];
+            var list = this._list;
             if (entry != null) {
                 if (entry !== list.tail) {
                     list.remove(entry);
@@ -3613,17 +3715,18 @@
                 }
                 return entry.value;
             }
-        }
-        clear() {
+        };
+        LRU.prototype.clear = function () {
             this._list.clear();
             this._map = {};
-        }
-        len() {
+        };
+        LRU.prototype.len = function () {
             return this._list.len();
-        }
-    }
+        };
+        return LRU;
+    }());
 
-    const kCSSColorTable = {
+    var kCSSColorTable = {
         'transparent': [0, 0, 0, 0], 'aliceblue': [240, 248, 255, 1],
         'antiquewhite': [250, 235, 215, 1], 'aqua': [0, 255, 255, 1],
         'aquamarine': [127, 255, 212, 1], 'azure': [240, 255, 255, 1],
@@ -3711,14 +3814,14 @@
         return f < 0 ? 0 : f > 1 ? 1 : f;
     }
     function parseCssInt(val) {
-        let str = val;
+        var str = val;
         if (str.length && str.charAt(str.length - 1) === '%') {
             return clampCssByte(parseFloat(str) / 100 * 255);
         }
         return clampCssByte(parseInt(str, 10));
     }
     function parseCssFloat(val) {
-        let str = val;
+        var str = val;
         if (str.length && str.charAt(str.length - 1) === '%') {
             return clampCssFloat(parseFloat(str) / 100);
         }
@@ -3759,8 +3862,8 @@
         out[3] = a[3];
         return out;
     }
-    const colorCache = new LRU(20);
-    let lastRemovedArr = null;
+    var colorCache = new LRU(20);
+    var lastRemovedArr = null;
     function putToCache(colorStr, rgbaArr) {
         if (lastRemovedArr) {
             copyRgba(lastRemovedArr, rgbaArr);
@@ -3772,21 +3875,21 @@
             return;
         }
         rgbaArr = rgbaArr || [];
-        let cached = colorCache.get(colorStr);
+        var cached = colorCache.get(colorStr);
         if (cached) {
             return copyRgba(rgbaArr, cached);
         }
         colorStr = colorStr + '';
-        let str = colorStr.replace(/ /g, '').toLowerCase();
+        var str = colorStr.replace(/ /g, '').toLowerCase();
         if (str in kCSSColorTable) {
             copyRgba(rgbaArr, kCSSColorTable[str]);
             putToCache(colorStr, rgbaArr);
             return rgbaArr;
         }
-        const strLen = str.length;
+        var strLen = str.length;
         if (str.charAt(0) === '#') {
             if (strLen === 4 || strLen === 5) {
-                const iv = parseInt(str.slice(1, 4), 16);
+                var iv = parseInt(str.slice(1, 4), 16);
                 if (!(iv >= 0 && iv <= 0xfff)) {
                     setRgba(rgbaArr, 0, 0, 0, 1);
                     return;
@@ -3796,7 +3899,7 @@
                 return rgbaArr;
             }
             else if (strLen === 7 || strLen === 9) {
-                const iv = parseInt(str.slice(1, 7), 16);
+                var iv = parseInt(str.slice(1, 7), 16);
                 if (!(iv >= 0 && iv <= 0xffffff)) {
                     setRgba(rgbaArr, 0, 0, 0, 1);
                     return;
@@ -3807,12 +3910,12 @@
             }
             return;
         }
-        let op = str.indexOf('(');
-        let ep = str.indexOf(')');
+        var op = str.indexOf('(');
+        var ep = str.indexOf(')');
         if (op !== -1 && ep + 1 === strLen) {
-            let fname = str.substr(0, op);
-            let params = str.substr(op + 1, ep - (op + 1)).split(',');
-            let alpha = 1;
+            var fname = str.substr(0, op);
+            var params = str.substr(op + 1, ep - (op + 1)).split(',');
+            var alpha = 1;
             switch (fname) {
                 case 'rgba':
                     if (params.length !== 4) {
@@ -3856,11 +3959,11 @@
         return;
     }
     function hsla2rgba(hsla, rgba) {
-        const h = (((parseFloat(hsla[0]) % 360) + 360) % 360) / 360;
-        const s = parseCssFloat(hsla[1]);
-        const l = parseCssFloat(hsla[2]);
-        const m2 = l <= 0.5 ? l * (s + 1) : l + s - l * s;
-        const m1 = l * 2 - m2;
+        var h = (((parseFloat(hsla[0]) % 360) + 360) % 360) / 360;
+        var s = parseCssFloat(hsla[1]);
+        var l = parseCssFloat(hsla[2]);
+        var m2 = l <= 0.5 ? l * (s + 1) : l + s - l * s;
+        var m1 = l * 2 - m2;
         rgba = rgba || [];
         setRgba(rgba, clampCssByte(cssHueToRgb(m1, m2, h + 1 / 3) * 255), clampCssByte(cssHueToRgb(m1, m2, h) * 255), clampCssByte(cssHueToRgb(m1, m2, h - 1 / 3) * 255), 1);
         if (hsla.length === 4) {
@@ -3872,15 +3975,15 @@
         if (!rgba) {
             return;
         }
-        const R = rgba[0] / 255;
-        const G = rgba[1] / 255;
-        const B = rgba[2] / 255;
-        const vMin = Math.min(R, G, B);
-        const vMax = Math.max(R, G, B);
-        const delta = vMax - vMin;
-        const L = (vMax + vMin) / 2;
-        let H;
-        let S;
+        var R = rgba[0] / 255;
+        var G = rgba[1] / 255;
+        var B = rgba[2] / 255;
+        var vMin = Math.min(R, G, B);
+        var vMax = Math.max(R, G, B);
+        var delta = vMax - vMin;
+        var L = (vMax + vMin) / 2;
+        var H;
+        var S;
         if (delta === 0) {
             H = 0;
             S = 0;
@@ -3892,9 +3995,9 @@
             else {
                 S = delta / (2 - vMax - vMin);
             }
-            const deltaR = (((vMax - R) / 6) + (delta / 2)) / delta;
-            const deltaG = (((vMax - G) / 6) + (delta / 2)) / delta;
-            const deltaB = (((vMax - B) / 6) + (delta / 2)) / delta;
+            var deltaR = (((vMax - R) / 6) + (delta / 2)) / delta;
+            var deltaG = (((vMax - G) / 6) + (delta / 2)) / delta;
+            var deltaB = (((vMax - B) / 6) + (delta / 2)) / delta;
             if (R === vMax) {
                 H = deltaB - deltaG;
             }
@@ -3911,16 +4014,16 @@
                 H -= 1;
             }
         }
-        const hsla = [H * 360, S, L];
+        var hsla = [H * 360, S, L];
         if (rgba[3] != null) {
             hsla.push(rgba[3]);
         }
         return hsla;
     }
     function lift(color, level) {
-        const colorArr = parse(color);
+        var colorArr = parse(color);
         if (colorArr) {
-            for (let i = 0; i < 3; i++) {
+            for (var i = 0; i < 3; i++) {
                 if (level < 0) {
                     colorArr[i] = colorArr[i] * (1 - level) | 0;
                 }
@@ -3938,7 +4041,7 @@
         }
     }
     function toHex(color) {
-        const colorArr = parse(color);
+        var colorArr = parse(color);
         if (colorArr) {
             return ((1 << 24) + (colorArr[0] << 16) + (colorArr[1] << 8) + (+colorArr[2])).toString(16).slice(1);
         }
@@ -3949,31 +4052,31 @@
             return;
         }
         out = out || [];
-        const value = normalizedValue * (colors.length - 1);
-        const leftIndex = Math.floor(value);
-        const rightIndex = Math.ceil(value);
-        const leftColor = colors[leftIndex];
-        const rightColor = colors[rightIndex];
-        const dv = value - leftIndex;
+        var value = normalizedValue * (colors.length - 1);
+        var leftIndex = Math.floor(value);
+        var rightIndex = Math.ceil(value);
+        var leftColor = colors[leftIndex];
+        var rightColor = colors[rightIndex];
+        var dv = value - leftIndex;
         out[0] = clampCssByte(lerpNumber(leftColor[0], rightColor[0], dv));
         out[1] = clampCssByte(lerpNumber(leftColor[1], rightColor[1], dv));
         out[2] = clampCssByte(lerpNumber(leftColor[2], rightColor[2], dv));
         out[3] = clampCssFloat(lerpNumber(leftColor[3], rightColor[3], dv));
         return out;
     }
-    const fastMapToColor = fastLerp;
+    var fastMapToColor = fastLerp;
     function lerp$1(normalizedValue, colors, fullOutput) {
         if (!(colors && colors.length)
             || !(normalizedValue >= 0 && normalizedValue <= 1)) {
             return;
         }
-        const value = normalizedValue * (colors.length - 1);
-        const leftIndex = Math.floor(value);
-        const rightIndex = Math.ceil(value);
-        const leftColor = parse(colors[leftIndex]);
-        const rightColor = parse(colors[rightIndex]);
-        const dv = value - leftIndex;
-        const color = stringify([
+        var value = normalizedValue * (colors.length - 1);
+        var leftIndex = Math.floor(value);
+        var rightIndex = Math.ceil(value);
+        var leftColor = parse(colors[leftIndex]);
+        var rightColor = parse(colors[rightIndex]);
+        var dv = value - leftIndex;
+        var color = stringify([
             clampCssByte(lerpNumber(leftColor[0], rightColor[0], dv)),
             clampCssByte(lerpNumber(leftColor[1], rightColor[1], dv)),
             clampCssByte(lerpNumber(leftColor[2], rightColor[2], dv)),
@@ -3988,9 +4091,9 @@
             }
             : color;
     }
-    const mapToColor = lerp$1;
+    var mapToColor = lerp$1;
     function modifyHSL(color, h, s, l) {
-        let colorArr = parse(color);
+        var colorArr = parse(color);
         if (color) {
             colorArr = rgba2hsla(colorArr);
             h != null && (colorArr[0] = clampCssAngle(h));
@@ -4000,7 +4103,7 @@
         }
     }
     function modifyAlpha(color, alpha) {
-        const colorArr = parse(color);
+        var colorArr = parse(color);
         if (colorArr && alpha != null) {
             colorArr[3] = clampCssFloat(alpha);
             return stringify(colorArr, 'rgba');
@@ -4010,14 +4113,14 @@
         if (!arrColor || !arrColor.length) {
             return;
         }
-        let colorStr = arrColor[0] + ',' + arrColor[1] + ',' + arrColor[2];
+        var colorStr = arrColor[0] + ',' + arrColor[1] + ',' + arrColor[2];
         if (type === 'rgba' || type === 'hsva' || type === 'hsla') {
             colorStr += ',' + arrColor[3];
         }
         return type + '(' + colorStr + ')';
     }
     function lum(color, backgroundLum) {
-        const arr = parse(color);
+        var arr = parse(color);
         return arr
             ? (0.299 * arr[0] + 0.587 * arr[1] + 0.114 * arr[2]) * arr[3] / 255
                 + (1 - arr[3]) * backgroundLum
@@ -4030,10 +4133,10 @@
             Math.round(Math.random() * 255)
         ], 'rgb');
     }
-    const liftedColorCache = new LRU(100);
+    var liftedColorCache = new LRU(100);
     function liftColor(color) {
         if (isString(color)) {
-            let liftedColor = liftedColorCache.get(color);
+            var liftedColor = liftedColorCache.get(color);
             if (!liftedColor) {
                 liftedColor = lift(color, -0.1);
                 liftedColorCache.put(color, liftedColor);
@@ -4041,11 +4144,11 @@
             return liftedColor;
         }
         else if (isGradientObject(color)) {
-            const ret = extend({}, color);
-            ret.colorStops = map(color.colorStops, stop => ({
+            var ret = extend({}, color);
+            ret.colorStops = map(color.colorStops, function (stop) { return ({
                 offset: stop.offset,
                 color: lift(stop.color, -0.1)
-            }));
+            }); });
             return ret;
         }
         return color;
@@ -4068,25 +4171,25 @@
         liftColor: liftColor
     });
 
-    const mathRound = Math.round;
+    var mathRound = Math.round;
     function normalizeColor(color) {
-        let opacity;
+        var opacity;
         if (!color || color === 'transparent') {
             color = 'none';
         }
         else if (typeof color === 'string' && color.indexOf('rgba') > -1) {
-            const arr = parse(color);
+            var arr = parse(color);
             if (arr) {
                 color = 'rgb(' + arr[0] + ',' + arr[1] + ',' + arr[2] + ')';
                 opacity = arr[3];
             }
         }
         return {
-            color,
+            color: color,
             opacity: opacity == null ? 1 : opacity
         };
     }
-    const EPSILON$1 = 1e-4;
+    var EPSILON$1 = 1e-4;
     function isAroundZero$1(transform) {
         return transform < EPSILON$1 && transform > -EPSILON$1;
     }
@@ -4106,7 +4209,7 @@
             + round4(m[5])
             + ')';
     }
-    const TEXT_ALIGN_TO_ANCHOR = {
+    var TEXT_ALIGN_TO_ANCHOR = {
         left: 'start',
         right: 'end',
         center: 'middle',
@@ -4126,8 +4229,8 @@
             && (style.shadowBlur || style.shadowOffsetX || style.shadowOffsetY);
     }
     function getShadowKey(displayable) {
-        const style = displayable.style;
-        const globalScale = displayable.getGlobalScale();
+        var style = displayable.style;
+        var globalScale = displayable.getGlobalScale();
         return [
             style.shadowColor,
             (style.shadowBlur || 0).toFixed(2),
@@ -4157,37 +4260,37 @@
             || val.type === 'radial');
     }
     function getIdURL(id) {
-        return `url(#${id})`;
+        return "url(#" + id + ")";
     }
     function getPathPrecision(el) {
-        const scale = el.getGlobalScale();
-        const size = Math.max(scale[0], scale[1]);
+        var scale = el.getGlobalScale();
+        var size = Math.max(scale[0], scale[1]);
         return Math.max(Math.ceil(Math.log(size) / Math.log(10)), 1);
     }
     function getSRTTransformString(transform) {
-        const x = transform.x || 0;
-        const y = transform.y || 0;
-        const rotation = (transform.rotation || 0) * RADIAN_TO_DEGREE;
-        const scaleX = retrieve2(transform.scaleX, 1);
-        const scaleY = retrieve2(transform.scaleY, 1);
-        const skewX = transform.skewX || 0;
-        const skewY = transform.skewY || 0;
-        const res = [];
+        var x = transform.x || 0;
+        var y = transform.y || 0;
+        var rotation = (transform.rotation || 0) * RADIAN_TO_DEGREE;
+        var scaleX = retrieve2(transform.scaleX, 1);
+        var scaleY = retrieve2(transform.scaleY, 1);
+        var skewX = transform.skewX || 0;
+        var skewY = transform.skewY || 0;
+        var res = [];
         if (x || y) {
-            res.push(`translate(${x}px,${y}px)`);
+            res.push("translate(" + x + "px," + y + "px)");
         }
         if (rotation) {
-            res.push(`rotate(${rotation})`);
+            res.push("rotate(" + rotation + ")");
         }
         if (scaleX !== 1 || scaleY !== 1) {
-            res.push(`scale(${scaleX},${scaleY})`);
+            res.push("scale(" + scaleX + "," + scaleY + ")");
         }
         if (skewX || skewY) {
-            res.push(`skew(${mathRound(skewX * RADIAN_TO_DEGREE)}deg, ${mathRound(skewY * RADIAN_TO_DEGREE)}deg)`);
+            res.push("skew(" + mathRound(skewX * RADIAN_TO_DEGREE) + "deg, " + mathRound(skewY * RADIAN_TO_DEGREE) + "deg)");
         }
         return res.join(' ');
     }
-    const encodeBase64 = (function () {
+    var encodeBase64 = (function () {
         if (env.hasGlobalWindow && isFunction(window.btoa)) {
             return function (str) {
                 return window.btoa(unescape(encodeURIComponent(str)));
@@ -4206,57 +4309,57 @@
         };
     })();
 
-    const arraySlice = Array.prototype.slice;
+    var arraySlice = Array.prototype.slice;
     function interpolateNumber(p0, p1, percent) {
         return (p1 - p0) * percent + p0;
     }
     function interpolate1DArray(out, p0, p1, percent) {
-        const len = p0.length;
-        for (let i = 0; i < len; i++) {
+        var len = p0.length;
+        for (var i = 0; i < len; i++) {
             out[i] = interpolateNumber(p0[i], p1[i], percent);
         }
         return out;
     }
     function interpolate2DArray(out, p0, p1, percent) {
-        const len = p0.length;
-        const len2 = len && p0[0].length;
-        for (let i = 0; i < len; i++) {
+        var len = p0.length;
+        var len2 = len && p0[0].length;
+        for (var i = 0; i < len; i++) {
             if (!out[i]) {
                 out[i] = [];
             }
-            for (let j = 0; j < len2; j++) {
+            for (var j = 0; j < len2; j++) {
                 out[i][j] = interpolateNumber(p0[i][j], p1[i][j], percent);
             }
         }
         return out;
     }
     function add1DArray(out, p0, p1, sign) {
-        const len = p0.length;
-        for (let i = 0; i < len; i++) {
+        var len = p0.length;
+        for (var i = 0; i < len; i++) {
             out[i] = p0[i] + p1[i] * sign;
         }
         return out;
     }
     function add2DArray(out, p0, p1, sign) {
-        const len = p0.length;
-        const len2 = len && p0[0].length;
-        for (let i = 0; i < len; i++) {
+        var len = p0.length;
+        var len2 = len && p0[0].length;
+        for (var i = 0; i < len; i++) {
             if (!out[i]) {
                 out[i] = [];
             }
-            for (let j = 0; j < len2; j++) {
+            for (var j = 0; j < len2; j++) {
                 out[i][j] = p0[i][j] + p1[i][j] * sign;
             }
         }
         return out;
     }
     function fillColorStops(val0, val1) {
-        const len0 = val0.length;
-        const len1 = val1.length;
-        const shorterArr = len0 > len1 ? val1 : val0;
-        const shorterLen = Math.min(len0, len1);
-        const last = shorterArr[shorterLen - 1] || { color: [0, 0, 0, 0], offset: 0 };
-        for (let i = shorterLen; i < Math.max(len0, len1); i++) {
+        var len0 = val0.length;
+        var len1 = val1.length;
+        var shorterArr = len0 > len1 ? val1 : val0;
+        var shorterLen = Math.min(len0, len1);
+        var last = shorterArr[shorterLen - 1] || { color: [0, 0, 0, 0], offset: 0 };
+        for (var i = shorterLen; i < Math.max(len0, len1); i++) {
             shorterArr.push({
                 offset: last.offset,
                 color: last.color.slice()
@@ -4264,33 +4367,33 @@
         }
     }
     function fillArray(val0, val1, arrDim) {
-        let arr0 = val0;
-        let arr1 = val1;
+        var arr0 = val0;
+        var arr1 = val1;
         if (!arr0.push || !arr1.push) {
             return;
         }
-        const arr0Len = arr0.length;
-        const arr1Len = arr1.length;
+        var arr0Len = arr0.length;
+        var arr1Len = arr1.length;
         if (arr0Len !== arr1Len) {
-            const isPreviousLarger = arr0Len > arr1Len;
+            var isPreviousLarger = arr0Len > arr1Len;
             if (isPreviousLarger) {
                 arr0.length = arr1Len;
             }
             else {
-                for (let i = arr0Len; i < arr1Len; i++) {
+                for (var i = arr0Len; i < arr1Len; i++) {
                     arr0.push(arrDim === 1 ? arr1[i] : arraySlice.call(arr1[i]));
                 }
             }
         }
-        const len2 = arr0[0] && arr0[0].length;
-        for (let i = 0; i < arr0.length; i++) {
+        var len2 = arr0[0] && arr0[0].length;
+        for (var i = 0; i < arr0.length; i++) {
             if (arrDim === 1) {
                 if (isNaN(arr0[i])) {
                     arr0[i] = arr1[i];
                 }
             }
             else {
-                for (let j = 0; j < len2; j++) {
+                for (var j = 0; j < len2; j++) {
                     if (isNaN(arr0[i][j])) {
                         arr0[i][j] = arr1[i][j];
                     }
@@ -4300,10 +4403,10 @@
     }
     function cloneValue(value) {
         if (isArrayLike(value)) {
-            const len = value.length;
+            var len = value.length;
             if (isArrayLike(value[0])) {
-                const ret = [];
-                for (let i = 0; i < len; i++) {
+                var ret = [];
+                for (var i = 0; i < len; i++) {
                     ret.push(arraySlice.call(value[i]));
                 }
                 return ret;
@@ -4322,22 +4425,22 @@
     function guessArrayDim(value) {
         return isArrayLike(value && value[0]) ? 2 : 1;
     }
-    const VALUE_TYPE_NUMBER = 0;
-    const VALUE_TYPE_1D_ARRAY = 1;
-    const VALUE_TYPE_2D_ARRAY = 2;
-    const VALUE_TYPE_COLOR = 3;
-    const VALUE_TYPE_LINEAR_GRADIENT = 4;
-    const VALUE_TYPE_RADIAL_GRADIENT = 5;
-    const VALUE_TYPE_UNKOWN = 6;
+    var VALUE_TYPE_NUMBER = 0;
+    var VALUE_TYPE_1D_ARRAY = 1;
+    var VALUE_TYPE_2D_ARRAY = 2;
+    var VALUE_TYPE_COLOR = 3;
+    var VALUE_TYPE_LINEAR_GRADIENT = 4;
+    var VALUE_TYPE_RADIAL_GRADIENT = 5;
+    var VALUE_TYPE_UNKOWN = 6;
     function isGradientValueType(valType) {
         return valType === VALUE_TYPE_LINEAR_GRADIENT || valType === VALUE_TYPE_RADIAL_GRADIENT;
     }
     function isArrayValueType(valType) {
         return valType === VALUE_TYPE_1D_ARRAY || valType === VALUE_TYPE_2D_ARRAY;
     }
-    let tmpRgba = [0, 0, 0, 0];
-    class Track {
-        constructor(propName) {
+    var tmpRgba = [0, 0, 0, 0];
+    var Track = (function () {
+        function Track(propName) {
             this.keyframes = [];
             this.discrete = false;
             this._invalid = false;
@@ -4346,30 +4449,30 @@
             this._lastFrP = 0;
             this.propName = propName;
         }
-        isFinished() {
+        Track.prototype.isFinished = function () {
             return this._finished;
-        }
-        setFinished() {
+        };
+        Track.prototype.setFinished = function () {
             this._finished = true;
             if (this._additiveTrack) {
                 this._additiveTrack.setFinished();
             }
-        }
-        needsAnimate() {
+        };
+        Track.prototype.needsAnimate = function () {
             return this.keyframes.length >= 1;
-        }
-        getAdditiveTrack() {
+        };
+        Track.prototype.getAdditiveTrack = function () {
             return this._additiveTrack;
-        }
-        addKeyframe(time, rawValue, easing) {
+        };
+        Track.prototype.addKeyframe = function (time, rawValue, easing) {
             this._needsSort = true;
-            let keyframes = this.keyframes;
-            let len = keyframes.length;
-            let discrete = false;
-            let valType = VALUE_TYPE_UNKOWN;
-            let value = rawValue;
+            var keyframes = this.keyframes;
+            var len = keyframes.length;
+            var discrete = false;
+            var valType = VALUE_TYPE_UNKOWN;
+            var value = rawValue;
             if (isArrayLike(rawValue)) {
-                let arrayDim = guessArrayDim(rawValue);
+                var arrayDim = guessArrayDim(rawValue);
                 valType = arrayDim;
                 if (arrayDim === 1 && !isNumber(rawValue[0])
                     || arrayDim === 2 && !isNumber(rawValue[0][0])) {
@@ -4385,7 +4488,7 @@
                         valType = VALUE_TYPE_NUMBER;
                     }
                     else {
-                        const colorArray = parse(rawValue);
+                        var colorArray = parse(rawValue);
                         if (colorArray) {
                             value = colorArray;
                             valType = VALUE_TYPE_COLOR;
@@ -4393,11 +4496,11 @@
                     }
                 }
                 else if (isGradientObject(rawValue)) {
-                    const parsedGradient = extend({}, value);
-                    parsedGradient.colorStops = map(rawValue.colorStops, colorStop => ({
+                    var parsedGradient = extend({}, value);
+                    parsedGradient.colorStops = map(rawValue.colorStops, function (colorStop) { return ({
                         offset: colorStop.offset,
                         color: parse(colorStop.color)
-                    }));
+                    }); });
                     if (isLinearGradient(rawValue)) {
                         valType = VALUE_TYPE_LINEAR_GRADIENT;
                     }
@@ -4414,10 +4517,10 @@
                 discrete = true;
             }
             this.discrete = this.discrete || discrete;
-            const kf = {
-                time,
-                value,
-                rawValue,
+            var kf = {
+                time: time,
+                value: value,
+                rawValue: rawValue,
                 percent: 0
             };
             if (easing) {
@@ -4428,24 +4531,24 @@
             }
             keyframes.push(kf);
             return kf;
-        }
-        prepare(maxTime, additiveTrack) {
-            let kfs = this.keyframes;
+        };
+        Track.prototype.prepare = function (maxTime, additiveTrack) {
+            var kfs = this.keyframes;
             if (this._needsSort) {
                 kfs.sort(function (a, b) {
                     return a.time - b.time;
                 });
             }
-            const valType = this.valType;
-            const kfsLen = kfs.length;
-            const lastKf = kfs[kfsLen - 1];
-            const isDiscrete = this.discrete;
-            const isArr = isArrayValueType(valType);
-            const isGradient = isGradientValueType(valType);
-            for (let i = 0; i < kfsLen; i++) {
-                const kf = kfs[i];
-                const value = kf.value;
-                const lastValue = lastKf.value;
+            var valType = this.valType;
+            var kfsLen = kfs.length;
+            var lastKf = kfs[kfsLen - 1];
+            var isDiscrete = this.discrete;
+            var isArr = isArrayValueType(valType);
+            var isGradient = isGradientValueType(valType);
+            for (var i = 0; i < kfsLen; i++) {
+                var kf = kfs[i];
+                var value = kf.value;
+                var lastValue = lastKf.value;
                 kf.percent = kf.time / maxTime;
                 if (!isDiscrete) {
                     if (isArr && i !== kfsLen - 1) {
@@ -4464,8 +4567,8 @@
                 && valType === additiveTrack.valType
                 && !additiveTrack._finished) {
                 this._additiveTrack = additiveTrack;
-                const startValue = kfs[0].value;
-                for (let i = 0; i < kfsLen; i++) {
+                var startValue = kfs[0].value;
+                for (var i = 0; i < kfsLen; i++) {
                     if (valType === VALUE_TYPE_NUMBER) {
                         kfs[i].additiveValue = kfs[i].value - startValue;
                     }
@@ -4480,26 +4583,26 @@
                     }
                 }
             }
-        }
-        step(target, percent) {
+        };
+        Track.prototype.step = function (target, percent) {
             if (this._finished) {
                 return;
             }
             if (this._additiveTrack && this._additiveTrack._finished) {
                 this._additiveTrack = null;
             }
-            const isAdditive = this._additiveTrack != null;
-            const valueKey = isAdditive ? 'additiveValue' : 'value';
-            const valType = this.valType;
-            const keyframes = this.keyframes;
-            const kfsNum = keyframes.length;
-            const propName = this.propName;
-            const isValueColor = valType === VALUE_TYPE_COLOR;
-            let frameIdx;
-            const lastFrame = this._lastFr;
-            const mathMin = Math.min;
-            let frame;
-            let nextFrame;
+            var isAdditive = this._additiveTrack != null;
+            var valueKey = isAdditive ? 'additiveValue' : 'value';
+            var valType = this.valType;
+            var keyframes = this.keyframes;
+            var kfsNum = keyframes.length;
+            var propName = this.propName;
+            var isValueColor = valType === VALUE_TYPE_COLOR;
+            var frameIdx;
+            var lastFrame = this._lastFr;
+            var mathMin = Math.min;
+            var frame;
+            var nextFrame;
             if (kfsNum === 1) {
                 frame = nextFrame = keyframes[0];
             }
@@ -4508,7 +4611,7 @@
                     frameIdx = 0;
                 }
                 else if (percent < this._lastFrP) {
-                    const start = mathMin(lastFrame + 1, kfsNum - 1);
+                    var start = mathMin(lastFrame + 1, kfsNum - 1);
                     for (frameIdx = start; frameIdx >= 0; frameIdx--) {
                         if (keyframes[frameIdx].percent <= percent) {
                             break;
@@ -4532,12 +4635,12 @@
             }
             this._lastFr = frameIdx;
             this._lastFrP = percent;
-            const interval = (nextFrame.percent - frame.percent);
-            let w = interval === 0 ? 1 : mathMin((percent - frame.percent) / interval, 1);
+            var interval = (nextFrame.percent - frame.percent);
+            var w = interval === 0 ? 1 : mathMin((percent - frame.percent) / interval, 1);
             if (nextFrame.easingFunc) {
                 w = nextFrame.easingFunc(w);
             }
-            let targetArr = isAdditive ? this._additiveValue
+            var targetArr = isAdditive ? this._additiveValue
                 : (isValueColor ? tmpRgba : target[propName]);
             if ((isArrayValueType(valType) || isValueColor) && !targetArr) {
                 targetArr = this._additiveValue = [];
@@ -4551,28 +4654,28 @@
                     : interpolate2DArray(targetArr, frame[valueKey], nextFrame[valueKey], w);
             }
             else if (isGradientValueType(valType)) {
-                const val = frame[valueKey];
-                const nextVal = nextFrame[valueKey];
-                const isLinearGradient = valType === VALUE_TYPE_LINEAR_GRADIENT;
+                var val = frame[valueKey];
+                var nextVal_1 = nextFrame[valueKey];
+                var isLinearGradient_1 = valType === VALUE_TYPE_LINEAR_GRADIENT;
                 target[propName] = {
-                    type: isLinearGradient ? 'linear' : 'radial',
-                    x: interpolateNumber(val.x, nextVal.x, w),
-                    y: interpolateNumber(val.y, nextVal.y, w),
-                    colorStops: map(val.colorStops, (colorStop, idx) => {
-                        const nextColorStop = nextVal.colorStops[idx];
+                    type: isLinearGradient_1 ? 'linear' : 'radial',
+                    x: interpolateNumber(val.x, nextVal_1.x, w),
+                    y: interpolateNumber(val.y, nextVal_1.y, w),
+                    colorStops: map(val.colorStops, function (colorStop, idx) {
+                        var nextColorStop = nextVal_1.colorStops[idx];
                         return {
                             offset: interpolateNumber(colorStop.offset, nextColorStop.offset, w),
                             color: rgba2String(interpolate1DArray([], colorStop.color, nextColorStop.color, w))
                         };
                     }),
-                    global: nextVal.global
+                    global: nextVal_1.global
                 };
-                if (isLinearGradient) {
-                    target[propName].x2 = interpolateNumber(val.x2, nextVal.x2, w);
-                    target[propName].y2 = interpolateNumber(val.y2, nextVal.y2, w);
+                if (isLinearGradient_1) {
+                    target[propName].x2 = interpolateNumber(val.x2, nextVal_1.x2, w);
+                    target[propName].y2 = interpolateNumber(val.y2, nextVal_1.y2, w);
                 }
                 else {
-                    target[propName].r = interpolateNumber(val.r, nextVal.r, w);
+                    target[propName].r = interpolateNumber(val.r, nextVal_1.r, w);
                 }
             }
             else if (isValueColor) {
@@ -4582,7 +4685,7 @@
                 }
             }
             else {
-                const value = interpolateNumber(frame[valueKey], nextFrame[valueKey], w);
+                var value = interpolateNumber(frame[valueKey], nextFrame[valueKey], w);
                 if (isAdditive) {
                     this._additiveValue = value;
                 }
@@ -4593,11 +4696,11 @@
             if (isAdditive) {
                 this._addToTarget(target);
             }
-        }
-        _addToTarget(target) {
-            const valType = this.valType;
-            const propName = this.propName;
-            const additiveValue = this._additiveValue;
+        };
+        Track.prototype._addToTarget = function (target) {
+            var valType = this.valType;
+            var propName = this.propName;
+            var additiveValue = this._additiveValue;
             if (valType === VALUE_TYPE_NUMBER) {
                 target[propName] = target[propName] + additiveValue;
             }
@@ -4612,10 +4715,11 @@
             else if (valType === VALUE_TYPE_2D_ARRAY) {
                 add2DArray(target[propName], target[propName], additiveValue, 1);
             }
-        }
-    }
-    class Animator {
-        constructor(target, loop, allowDiscreteAnimation, additiveTo) {
+        };
+        return Track;
+    }());
+    var Animator = (function () {
+        function Animator(target, loop, allowDiscreteAnimation, additiveTo) {
             this._tracks = {};
             this._trackKeys = [];
             this._maxTime = 0;
@@ -4630,36 +4734,36 @@
             this._additiveAnimators = additiveTo;
             this._allowDiscrete = allowDiscreteAnimation;
         }
-        getMaxTime() {
+        Animator.prototype.getMaxTime = function () {
             return this._maxTime;
-        }
-        getDelay() {
+        };
+        Animator.prototype.getDelay = function () {
             return this._delay;
-        }
-        getLoop() {
+        };
+        Animator.prototype.getLoop = function () {
             return this._loop;
-        }
-        getTarget() {
+        };
+        Animator.prototype.getTarget = function () {
             return this._target;
-        }
-        changeTarget(target) {
+        };
+        Animator.prototype.changeTarget = function (target) {
             this._target = target;
-        }
-        when(time, props, easing) {
+        };
+        Animator.prototype.when = function (time, props, easing) {
             return this.whenWithKeys(time, props, keys(props), easing);
-        }
-        whenWithKeys(time, props, propNames, easing) {
-            const tracks = this._tracks;
-            for (let i = 0; i < propNames.length; i++) {
-                const propName = propNames[i];
-                let track = tracks[propName];
+        };
+        Animator.prototype.whenWithKeys = function (time, props, propNames, easing) {
+            var tracks = this._tracks;
+            for (var i = 0; i < propNames.length; i++) {
+                var propName = propNames[i];
+                var track = tracks[propName];
                 if (!track) {
                     track = tracks[propName] = new Track(propName);
-                    let initialValue;
-                    const additiveTrack = this._getAdditiveTrack(propName);
+                    var initialValue = void 0;
+                    var additiveTrack = this._getAdditiveTrack(propName);
                     if (additiveTrack) {
-                        const addtiveTrackKfs = additiveTrack.keyframes;
-                        const lastFinalKf = addtiveTrackKfs[addtiveTrackKfs.length - 1];
+                        var addtiveTrackKfs = additiveTrack.keyframes;
+                        var lastFinalKf = addtiveTrackKfs[addtiveTrackKfs.length - 1];
                         initialValue = lastFinalKf && lastFinalKf.value;
                         if (additiveTrack.valType === VALUE_TYPE_COLOR && initialValue) {
                             initialValue = rgba2String(initialValue);
@@ -4680,86 +4784,86 @@
             }
             this._maxTime = Math.max(this._maxTime, time);
             return this;
-        }
-        pause() {
+        };
+        Animator.prototype.pause = function () {
             this._clip.pause();
             this._paused = true;
-        }
-        resume() {
+        };
+        Animator.prototype.resume = function () {
             this._clip.resume();
             this._paused = false;
-        }
-        isPaused() {
+        };
+        Animator.prototype.isPaused = function () {
             return !!this._paused;
-        }
-        duration(duration) {
+        };
+        Animator.prototype.duration = function (duration) {
             this._maxTime = duration;
             this._force = true;
             return this;
-        }
-        _doneCallback() {
+        };
+        Animator.prototype._doneCallback = function () {
             this._setTracksFinished();
             this._clip = null;
-            const doneList = this._doneCbs;
+            var doneList = this._doneCbs;
             if (doneList) {
-                const len = doneList.length;
-                for (let i = 0; i < len; i++) {
+                var len = doneList.length;
+                for (var i = 0; i < len; i++) {
                     doneList[i].call(this);
                 }
             }
-        }
-        _abortedCallback() {
+        };
+        Animator.prototype._abortedCallback = function () {
             this._setTracksFinished();
-            const animation = this.animation;
-            const abortedList = this._abortedCbs;
+            var animation = this.animation;
+            var abortedList = this._abortedCbs;
             if (animation) {
                 animation.removeClip(this._clip);
             }
             this._clip = null;
             if (abortedList) {
-                for (let i = 0; i < abortedList.length; i++) {
+                for (var i = 0; i < abortedList.length; i++) {
                     abortedList[i].call(this);
                 }
             }
-        }
-        _setTracksFinished() {
-            const tracks = this._tracks;
-            const tracksKeys = this._trackKeys;
-            for (let i = 0; i < tracksKeys.length; i++) {
+        };
+        Animator.prototype._setTracksFinished = function () {
+            var tracks = this._tracks;
+            var tracksKeys = this._trackKeys;
+            for (var i = 0; i < tracksKeys.length; i++) {
                 tracks[tracksKeys[i]].setFinished();
             }
-        }
-        _getAdditiveTrack(trackName) {
-            let additiveTrack;
-            const additiveAnimators = this._additiveAnimators;
+        };
+        Animator.prototype._getAdditiveTrack = function (trackName) {
+            var additiveTrack;
+            var additiveAnimators = this._additiveAnimators;
             if (additiveAnimators) {
-                for (let i = 0; i < additiveAnimators.length; i++) {
-                    const track = additiveAnimators[i].getTrack(trackName);
+                for (var i = 0; i < additiveAnimators.length; i++) {
+                    var track = additiveAnimators[i].getTrack(trackName);
                     if (track) {
                         additiveTrack = track;
                     }
                 }
             }
             return additiveTrack;
-        }
-        start(easing) {
+        };
+        Animator.prototype.start = function (easing) {
             if (this._started > 0) {
                 return;
             }
             this._started = 1;
-            const self = this;
-            const tracks = [];
-            const maxTime = this._maxTime || 0;
-            for (let i = 0; i < this._trackKeys.length; i++) {
-                const propName = this._trackKeys[i];
-                const track = this._tracks[propName];
-                const additiveTrack = this._getAdditiveTrack(propName);
-                const kfs = track.keyframes;
-                const kfsNum = kfs.length;
+            var self = this;
+            var tracks = [];
+            var maxTime = this._maxTime || 0;
+            for (var i = 0; i < this._trackKeys.length; i++) {
+                var propName = this._trackKeys[i];
+                var track = this._tracks[propName];
+                var additiveTrack = this._getAdditiveTrack(propName);
+                var kfs = track.keyframes;
+                var kfsNum = kfs.length;
                 track.prepare(maxTime, additiveTrack);
                 if (track.needsAnimate()) {
                     if (!this._allowDiscrete && track.discrete) {
-                        const lastKf = kfs[kfsNum - 1];
+                        var lastKf = kfs[kfsNum - 1];
                         if (lastKf) {
                             self._target[track.propName] = lastKf.rawValue;
                         }
@@ -4771,16 +4875,16 @@
                 }
             }
             if (tracks.length || this._force) {
-                const clip = new Clip({
+                var clip = new Clip({
                     life: maxTime,
                     loop: this._loop,
                     delay: this._delay || 0,
-                    onframe(percent) {
+                    onframe: function (percent) {
                         self._started = 2;
-                        const additiveAnimators = self._additiveAnimators;
+                        var additiveAnimators = self._additiveAnimators;
                         if (additiveAnimators) {
-                            let stillHasAdditiveAnimator = false;
-                            for (let i = 0; i < additiveAnimators.length; i++) {
+                            var stillHasAdditiveAnimator = false;
+                            for (var i = 0; i < additiveAnimators.length; i++) {
                                 if (additiveAnimators[i]._clip) {
                                     stillHasAdditiveAnimator = true;
                                     break;
@@ -4790,17 +4894,17 @@
                                 self._additiveAnimators = null;
                             }
                         }
-                        for (let i = 0; i < tracks.length; i++) {
+                        for (var i = 0; i < tracks.length; i++) {
                             tracks[i].step(self._target, percent);
                         }
-                        const onframeList = self._onframeCbs;
+                        var onframeList = self._onframeCbs;
                         if (onframeList) {
-                            for (let i = 0; i < onframeList.length; i++) {
+                            for (var i = 0; i < onframeList.length; i++) {
                                 onframeList[i](self._target, percent);
                             }
                         }
                     },
-                    ondestroy() {
+                    ondestroy: function () {
                         self._doneCallback();
                     }
                 });
@@ -4816,22 +4920,22 @@
                 this._doneCallback();
             }
             return this;
-        }
-        stop(forwardToLast) {
+        };
+        Animator.prototype.stop = function (forwardToLast) {
             if (!this._clip) {
                 return;
             }
-            const clip = this._clip;
+            var clip = this._clip;
             if (forwardToLast) {
                 clip.onframe(1);
             }
             this._abortedCallback();
-        }
-        delay(time) {
+        };
+        Animator.prototype.delay = function (time) {
             this._delay = time;
             return this;
-        }
-        during(cb) {
+        };
+        Animator.prototype.during = function (cb) {
             if (cb) {
                 if (!this._onframeCbs) {
                     this._onframeCbs = [];
@@ -4839,8 +4943,8 @@
                 this._onframeCbs.push(cb);
             }
             return this;
-        }
-        done(cb) {
+        };
+        Animator.prototype.done = function (cb) {
             if (cb) {
                 if (!this._doneCbs) {
                     this._doneCbs = [];
@@ -4848,8 +4952,8 @@
                 this._doneCbs.push(cb);
             }
             return this;
-        }
-        aborted(cb) {
+        };
+        Animator.prototype.aborted = function (cb) {
             if (cb) {
                 if (!this._abortedCbs) {
                     this._abortedCbs = [];
@@ -4857,24 +4961,25 @@
                 this._abortedCbs.push(cb);
             }
             return this;
-        }
-        getClip() {
+        };
+        Animator.prototype.getClip = function () {
             return this._clip;
-        }
-        getTrack(propName) {
+        };
+        Animator.prototype.getTrack = function (propName) {
             return this._tracks[propName];
-        }
-        getTracks() {
-            return map(this._trackKeys, key => this._tracks[key]);
-        }
-        stopTracks(propNames, forwardToLast) {
+        };
+        Animator.prototype.getTracks = function () {
+            var _this = this;
+            return map(this._trackKeys, function (key) { return _this._tracks[key]; });
+        };
+        Animator.prototype.stopTracks = function (propNames, forwardToLast) {
             if (!propNames.length || !this._clip) {
                 return true;
             }
-            const tracks = this._tracks;
-            const tracksKeys = this._trackKeys;
-            for (let i = 0; i < propNames.length; i++) {
-                const track = tracks[propNames[i]];
+            var tracks = this._tracks;
+            var tracksKeys = this._trackKeys;
+            for (var i = 0; i < propNames.length; i++) {
+                var track = tracks[propNames[i]];
                 if (track && !track.isFinished()) {
                     if (forwardToLast) {
                         track.step(this._target, 1);
@@ -4885,8 +4990,8 @@
                     track.setFinished();
                 }
             }
-            let allAborted = true;
-            for (let i = 0; i < tracksKeys.length; i++) {
+            var allAborted = true;
+            for (var i = 0; i < tracksKeys.length; i++) {
                 if (!tracks[tracksKeys[i]].isFinished()) {
                     allAborted = false;
                     break;
@@ -4896,58 +5001,61 @@
                 this._abortedCallback();
             }
             return allAborted;
-        }
-        saveTo(target, trackKeys, firstOrLast) {
+        };
+        Animator.prototype.saveTo = function (target, trackKeys, firstOrLast) {
             if (!target) {
                 return;
             }
             trackKeys = trackKeys || this._trackKeys;
-            for (let i = 0; i < trackKeys.length; i++) {
-                const propName = trackKeys[i];
-                const track = this._tracks[propName];
+            for (var i = 0; i < trackKeys.length; i++) {
+                var propName = trackKeys[i];
+                var track = this._tracks[propName];
                 if (!track || track.isFinished()) {
                     continue;
                 }
-                const kfs = track.keyframes;
-                const kf = kfs[firstOrLast ? 0 : kfs.length - 1];
+                var kfs = track.keyframes;
+                var kf = kfs[firstOrLast ? 0 : kfs.length - 1];
                 if (kf) {
                     target[propName] = cloneValue(kf.rawValue);
                 }
             }
-        }
-        __changeFinalValue(finalProps, trackKeys) {
+        };
+        Animator.prototype.__changeFinalValue = function (finalProps, trackKeys) {
             trackKeys = trackKeys || keys(finalProps);
-            for (let i = 0; i < trackKeys.length; i++) {
-                const propName = trackKeys[i];
-                const track = this._tracks[propName];
+            for (var i = 0; i < trackKeys.length; i++) {
+                var propName = trackKeys[i];
+                var track = this._tracks[propName];
                 if (!track) {
                     continue;
                 }
-                const kfs = track.keyframes;
+                var kfs = track.keyframes;
                 if (kfs.length > 1) {
-                    const lastKf = kfs.pop();
+                    var lastKf = kfs.pop();
                     track.addKeyframe(lastKf.time, finalProps[propName]);
                     track.prepare(this._maxTime, track.getAdditiveTrack());
                 }
             }
-        }
-    }
+        };
+        return Animator;
+    }());
 
     function getTime() {
         return new Date().getTime();
     }
-    class Animation extends Eventful {
-        constructor(opts) {
-            super();
-            this._running = false;
-            this._time = 0;
-            this._pausedTime = 0;
-            this._pauseStart = 0;
-            this._paused = false;
+    var Animation = (function (_super) {
+        __extends$1(Animation, _super);
+        function Animation(opts) {
+            var _this = _super.call(this) || this;
+            _this._running = false;
+            _this._time = 0;
+            _this._pausedTime = 0;
+            _this._pauseStart = 0;
+            _this._paused = false;
             opts = opts || {};
-            this.stage = opts.stage || {};
+            _this.stage = opts.stage || {};
+            return _this;
         }
-        addClip(clip) {
+        Animation.prototype.addClip = function (clip) {
             if (clip.animation) {
                 this.removeClip(clip);
             }
@@ -4961,20 +5069,20 @@
                 this._tail = clip;
             }
             clip.animation = this;
-        }
-        addAnimator(animator) {
+        };
+        Animation.prototype.addAnimator = function (animator) {
             animator.animation = this;
-            const clip = animator.getClip();
+            var clip = animator.getClip();
             if (clip) {
                 this.addClip(clip);
             }
-        }
-        removeClip(clip) {
+        };
+        Animation.prototype.removeClip = function (clip) {
             if (!clip.animation) {
                 return;
             }
-            const prev = clip.prev;
-            const next = clip.next;
+            var prev = clip.prev;
+            var next = clip.next;
             if (prev) {
                 prev.next = next;
             }
@@ -4988,21 +5096,21 @@
                 this._tail = prev;
             }
             clip.next = clip.prev = clip.animation = null;
-        }
-        removeAnimator(animator) {
-            const clip = animator.getClip();
+        };
+        Animation.prototype.removeAnimator = function (animator) {
+            var clip = animator.getClip();
             if (clip) {
                 this.removeClip(clip);
             }
             animator.animation = null;
-        }
-        update(notTriggerFrameAndStageUpdate) {
-            const time = getTime() - this._pausedTime;
-            const delta = time - this._time;
-            let clip = this._head;
+        };
+        Animation.prototype.update = function (notTriggerFrameAndStageUpdate) {
+            var time = getTime() - this._pausedTime;
+            var delta = time - this._time;
+            var clip = this._head;
             while (clip) {
-                const nextClip = clip.next;
-                let finished = clip.step(time, delta);
+                var nextClip = clip.next;
+                var finished = clip.step(time, delta);
                 if (finished) {
                     clip.ondestroy();
                     this.removeClip(clip);
@@ -5017,9 +5125,9 @@
                 this.trigger('frame', delta);
                 this.stage.update && this.stage.update();
             }
-        }
-        _startLoop() {
-            const self = this;
+        };
+        Animation.prototype._startLoop = function () {
+            var self = this;
             this._running = true;
             function step() {
                 if (self._running) {
@@ -5028,66 +5136,67 @@
                 }
             }
             requestAnimationFrame$1(step);
-        }
-        start() {
+        };
+        Animation.prototype.start = function () {
             if (this._running) {
                 return;
             }
             this._time = getTime();
             this._pausedTime = 0;
             this._startLoop();
-        }
-        stop() {
+        };
+        Animation.prototype.stop = function () {
             this._running = false;
-        }
-        pause() {
+        };
+        Animation.prototype.pause = function () {
             if (!this._paused) {
                 this._pauseStart = getTime();
                 this._paused = true;
             }
-        }
-        resume() {
+        };
+        Animation.prototype.resume = function () {
             if (this._paused) {
                 this._pausedTime += getTime() - this._pauseStart;
                 this._paused = false;
             }
-        }
-        clear() {
-            let clip = this._head;
+        };
+        Animation.prototype.clear = function () {
+            var clip = this._head;
             while (clip) {
-                let nextClip = clip.next;
+                var nextClip = clip.next;
                 clip.prev = clip.next = clip.animation = null;
                 clip = nextClip;
             }
             this._head = this._tail = null;
-        }
-        isFinished() {
+        };
+        Animation.prototype.isFinished = function () {
             return this._head == null;
-        }
-        animate(target, options) {
+        };
+        Animation.prototype.animate = function (target, options) {
             options = options || {};
             this.start();
-            const animator = new Animator(target, options.loop);
+            var animator = new Animator(target, options.loop);
             this.addAnimator(animator);
             return animator;
-        }
-    }
+        };
+        return Animation;
+    }(Eventful));
 
-    const TOUCH_CLICK_DELAY = 300;
-    const globalEventSupported = env.domSupported;
-    const localNativeListenerNames = (function () {
-        const mouseHandlerNames = [
+    var TOUCH_CLICK_DELAY = 300;
+    var globalEventSupported = env.domSupported;
+    var localNativeListenerNames = (function () {
+        var mouseHandlerNames = [
             'click', 'dblclick', 'mousewheel', 'wheel', 'mouseout',
             'mouseup', 'mousedown', 'mousemove', 'contextmenu'
         ];
-        const touchHandlerNames = [
+        var touchHandlerNames = [
             'touchstart', 'touchend', 'touchmove'
         ];
-        const pointerEventNameMap = {
+        var pointerEventNameMap = {
             pointerdown: 1, pointerup: 1, pointermove: 1, pointerout: 1
         };
-        const pointerHandlerNames = map(mouseHandlerNames, function (name) {
-            const nm = name.replace('mouse', 'pointer');
+        var pointerHandlerNames = map(mouseHandlerNames, function (name) {
+            var nm = name.replace('mouse', 'pointer');
             return pointerEventNameMap.hasOwnProperty(nm) ? nm : name;
         });
         return {
@@ -5096,13 +5205,13 @@
             pointer: pointerHandlerNames
         };
     })();
-    const globalNativeListenerNames = {
+    var globalNativeListenerNames = {
         mouse: ['mousemove', 'mouseup'],
         pointer: ['pointermove', 'pointerup']
     };
-    let wheelEventSupported = false;
+    var wheelEventSupported = false;
     function isPointerFromTouch(event) {
-        const pointerType = event.pointerType;
+        var pointerType = event.pointerType;
         return pointerType === 'pen' || pointerType === 'touch';
     }
     function setTouchTimer(scope) {
@@ -5123,8 +5232,8 @@
         return normalizeEvent(instance.dom, new FakeGlobalEvent(instance, event), true);
     }
     function isLocalEl(instance, el) {
-        let elTmp = el;
-        let isLocal = false;
+        var elTmp = el;
+        var isLocal = false;
         while (elTmp && elTmp.nodeType !== 9
             && !(isLocal = elTmp.domBelongToZr
                 || (elTmp !== el && elTmp === instance.painterRoot))) {
@@ -5132,8 +5241,8 @@
         }
         return isLocal;
     }
-    class FakeGlobalEvent {
-        constructor(instance, event) {
+    var FakeGlobalEvent = (function () {
+        function FakeGlobalEvent(instance, event) {
             this.stopPropagation = noop;
             this.stopImmediatePropagation = noop;
             this.preventDefault = noop;
@@ -5143,29 +5252,30 @@
             this.clientX = event.clientX;
             this.clientY = event.clientY;
         }
-    }
-    const localDOMHandlers = {
-        mousedown(event) {
+        return FakeGlobalEvent;
+    }());
+    var localDOMHandlers = {
+        mousedown: function (event) {
             event = normalizeEvent(this.dom, event);
             this.__mayPointerCapture = [event.zrX, event.zrY];
             this.trigger('mousedown', event);
         },
-        mousemove(event) {
+        mousemove: function (event) {
             event = normalizeEvent(this.dom, event);
-            const downPoint = this.__mayPointerCapture;
+            var downPoint = this.__mayPointerCapture;
             if (downPoint && (event.zrX !== downPoint[0] || event.zrY !== downPoint[1])) {
                 this.__togglePointerCapture(true);
             }
             this.trigger('mousemove', event);
         },
-        mouseup(event) {
+        mouseup: function (event) {
             event = normalizeEvent(this.dom, event);
             this.__togglePointerCapture(false);
             this.trigger('mouseup', event);
         },
-        mouseout(event) {
+        mouseout: function (event) {
             event = normalizeEvent(this.dom, event);
-            const element = event.toElement || event.relatedTarget;
+            var element = event.toElement || event.relatedTarget;
             if (!isLocalEl(this, element)) {
                 if (this.__pointerCapturing) {
                     event.zrEventControl = 'no_globalout';
@@ -5173,19 +5283,19 @@
                 this.trigger('mouseout', event);
             }
         },
-        wheel(event) {
+        wheel: function (event) {
             wheelEventSupported = true;
             event = normalizeEvent(this.dom, event);
             this.trigger('mousewheel', event);
         },
-        mousewheel(event) {
+        mousewheel: function (event) {
             if (wheelEventSupported) {
                 return;
             }
             event = normalizeEvent(this.dom, event);
             this.trigger('mousewheel', event);
         },
-        touchstart(event) {
+        touchstart: function (event) {
             event = normalizeEvent(this.dom, event);
             markTouch(event);
             this.__lastTouchMoment = new Date();
@@ -5193,13 +5303,13 @@
             localDOMHandlers.mousemove.call(this, event);
             localDOMHandlers.mousedown.call(this, event);
         },
-        touchmove(event) {
+        touchmove: function (event) {
             event = normalizeEvent(this.dom, event);
             markTouch(event);
             this.handler.processGesture(event, 'change');
             localDOMHandlers.mousemove.call(this, event);
         },
-        touchend(event) {
+        touchend: function (event) {
             event = normalizeEvent(this.dom, event);
             markTouch(event);
             this.handler.processGesture(event, 'end');
@@ -5208,18 +5318,18 @@
                 localDOMHandlers.click.call(this, event);
             }
         },
-        pointerdown(event) {
+        pointerdown: function (event) {
             localDOMHandlers.mousedown.call(this, event);
         },
-        pointermove(event) {
+        pointermove: function (event) {
             if (!isPointerFromTouch(event)) {
                 localDOMHandlers.mousemove.call(this, event);
             }
         },
-        pointerup(event) {
+        pointerup: function (event) {
             localDOMHandlers.mouseup.call(this, event);
         },
-        pointerout(event) {
+        pointerout: function (event) {
             if (!isPointerFromTouch(event)) {
                 localDOMHandlers.mouseout.call(this, event);
             }
@@ -5231,7 +5341,7 @@
             this.trigger(name, event);
         };
     });
-    const globalDOMHandlers = {
+    var globalDOMHandlers = {
         pointermove: function (event) {
             if (!isPointerFromTouch(event)) {
                 globalDOMHandlers.mousemove.call(this, event);
@@ -5244,7 +5354,7 @@
             this.trigger('mousemove', event);
         },
         mouseup: function (event) {
-            const pointerCaptureReleasing = this.__pointerCapturing;
+            var pointerCaptureReleasing = this.__pointerCapturing;
             this.__togglePointerCapture(false);
             this.trigger('mouseup', event);
             if (pointerCaptureReleasing) {
@@ -5254,7 +5364,7 @@
         }
     };
     function mountLocalDOMEventListeners(instance, scope) {
-        const domHandlers = scope.domHandlers;
+        var domHandlers = scope.domHandlers;
         if (env.pointerEventsSupported) {
             each(localNativeListenerNames.pointer, function (nativeEventName) {
                 mountSingleDOMEventListener(scope, nativeEventName, function (event) {
@@ -5305,99 +5415,105 @@
         addEventListener(scope.domTarget, nativeEventName, listener, opt);
     }
     function unmountDOMEventListeners(scope) {
-        const mounted = scope.mounted;
-        for (let nativeEventName in mounted) {
+        var mounted = scope.mounted;
+        for (var nativeEventName in mounted) {
             if (mounted.hasOwnProperty(nativeEventName)) {
                 removeEventListener(scope.domTarget, nativeEventName, mounted[nativeEventName], scope.listenerOpts[nativeEventName]);
             }
         }
         scope.mounted = {};
     }
-    class DOMHandlerScope {
-        constructor(domTarget, domHandlers) {
+    var DOMHandlerScope = (function () {
+        function DOMHandlerScope(domTarget, domHandlers) {
             this.mounted = {};
             this.listenerOpts = {};
             this.touching = false;
             this.domTarget = domTarget;
             this.domHandlers = domHandlers;
         }
-    }
-    class HandlerDomProxy extends Eventful {
-        constructor(dom, painterRoot) {
-            super();
-            this.__pointerCapturing = false;
-            this.dom = dom;
-            this.painterRoot = painterRoot;
-            this._localHandlerScope = new DOMHandlerScope(dom, localDOMHandlers);
+        return DOMHandlerScope;
+    }());
+    var HandlerDomProxy = (function (_super) {
+        __extends$1(HandlerDomProxy, _super);
+        function HandlerDomProxy(dom, painterRoot) {
+            var _this = _super.call(this) || this;
+            _this.__pointerCapturing = false;
+            _this.dom = dom;
+            _this.painterRoot = painterRoot;
+            _this._localHandlerScope = new DOMHandlerScope(dom, localDOMHandlers);
             if (globalEventSupported) {
-                this._globalHandlerScope = new DOMHandlerScope(document, globalDOMHandlers);
+                _this._globalHandlerScope = new DOMHandlerScope(document, globalDOMHandlers);
             }
-            mountLocalDOMEventListeners(this, this._localHandlerScope);
+            mountLocalDOMEventListeners(_this, _this._localHandlerScope);
+            return _this;
         }
-        dispose() {
+        HandlerDomProxy.prototype.dispose = function () {
             unmountDOMEventListeners(this._localHandlerScope);
             if (globalEventSupported) {
                 unmountDOMEventListeners(this._globalHandlerScope);
             }
-        }
-        setCursor(cursorStyle) {
+        };
+        HandlerDomProxy.prototype.setCursor = function (cursorStyle) {
             this.dom.style && (this.dom.style.cursor = cursorStyle || 'default');
-        }
-        __togglePointerCapture(isPointerCapturing) {
+        };
+        HandlerDomProxy.prototype.__togglePointerCapture = function (isPointerCapturing) {
             this.__mayPointerCapture = null;
             if (globalEventSupported
                 && ((+this.__pointerCapturing) ^ (+isPointerCapturing))) {
                 this.__pointerCapturing = isPointerCapturing;
-                const globalHandlerScope = this._globalHandlerScope;
+                var globalHandlerScope = this._globalHandlerScope;
                 isPointerCapturing
                     ? mountGlobalDOMEventListeners(this, globalHandlerScope)
                     : unmountDOMEventListeners(globalHandlerScope);
             }
-        }
-    }
+        };
+        return HandlerDomProxy;
+    }(Eventful));
 
-    let dpr = 1;
+    var dpr = 1;
     if (env.hasGlobalWindow) {
         dpr = Math.max(window.devicePixelRatio
             || (window.screen && window.screen.deviceXDPI / window.screen.logicalXDPI)
             || 1, 1);
     }
-    const devicePixelRatio = dpr;
-    const DARK_MODE_THRESHOLD = 0.4;
-    const DARK_LABEL_COLOR = '#333';
-    const LIGHT_LABEL_COLOR = '#ccc';
-    const LIGHTER_LABEL_COLOR = '#eee';
+    var devicePixelRatio = dpr;
+    var DARK_MODE_THRESHOLD = 0.4;
+    var DARK_LABEL_COLOR = '#333';
+    var LIGHT_LABEL_COLOR = '#ccc';
+    var LIGHTER_LABEL_COLOR = '#eee';
 
-    const mIdentity = identity;
-    const EPSILON$2 = 5e-5;
+    var mIdentity = identity;
+    var EPSILON$2 = 5e-5;
     function isNotAroundZero$1(val) {
         return val > EPSILON$2 || val < -EPSILON$2;
     }
-    const scaleTmp = [];
-    const tmpTransform = [];
-    const originTransform = create$1();
-    const abs = Math.abs;
-    class Transformable {
-        getLocalTransform(m) {
-            return Transformable.getLocalTransform(this, m);
+    var scaleTmp = [];
+    var tmpTransform = [];
+    var originTransform = create$1();
+    var abs = Math.abs;
+    var Transformable = (function () {
+        function Transformable() {
         }
-        setPosition(arr) {
+        Transformable.prototype.getLocalTransform = function (m) {
+            return Transformable.getLocalTransform(this, m);
+        };
+        Transformable.prototype.setPosition = function (arr) {
             this.x = arr[0];
             this.y = arr[1];
-        }
-        setScale(arr) {
+        };
+        Transformable.prototype.setScale = function (arr) {
             this.scaleX = arr[0];
             this.scaleY = arr[1];
-        }
-        setSkew(arr) {
+        };
+        Transformable.prototype.setSkew = function (arr) {
             this.skewX = arr[0];
             this.skewY = arr[1];
-        }
-        setOrigin(arr) {
+        };
+        Transformable.prototype.setOrigin = function (arr) {
             this.originX = arr[0];
             this.originY = arr[1];
-        }
-        needLocalTransform() {
+        };
+        Transformable.prototype.needLocalTransform = function () {
             return isNotAroundZero$1(this.rotation)
                 || isNotAroundZero$1(this.x)
                 || isNotAroundZero$1(this.y)
@@ -5405,11 +5521,11 @@
                 || isNotAroundZero$1(this.scaleY - 1)
                 || isNotAroundZero$1(this.skewX)
                 || isNotAroundZero$1(this.skewY);
-        }
-        updateTransform() {
-            const parentTransform = this.parent && this.parent.transform;
-            const needLocalTransform = this.needLocalTransform();
-            let m = this.transform;
+        };
+        Transformable.prototype.updateTransform = function () {
+            var parentTransform = this.parent && this.parent.transform;
+            var needLocalTransform = this.needLocalTransform();
+            var m = this.transform;
             if (!(needLocalTransform || parentTransform)) {
                 if (m) {
                     mIdentity(m);
@@ -5434,15 +5550,15 @@
             }
             this.transform = m;
             this._resolveGlobalScaleRatio(m);
-        }
-        _resolveGlobalScaleRatio(m) {
-            const globalScaleRatio = this.globalScaleRatio;
+        };
+        Transformable.prototype._resolveGlobalScaleRatio = function (m) {
+            var globalScaleRatio = this.globalScaleRatio;
             if (globalScaleRatio != null && globalScaleRatio !== 1) {
                 this.getGlobalScale(scaleTmp);
-                const relX = scaleTmp[0] < 0 ? -1 : 1;
-                const relY = scaleTmp[1] < 0 ? -1 : 1;
-                const sx = ((scaleTmp[0] - relX) * globalScaleRatio + relX) / scaleTmp[0] || 0;
-                const sy = ((scaleTmp[1] - relY) * globalScaleRatio + relY) / scaleTmp[1] || 0;
+                var relX = scaleTmp[0] < 0 ? -1 : 1;
+                var relY = scaleTmp[1] < 0 ? -1 : 1;
+                var sx = ((scaleTmp[0] - relX) * globalScaleRatio + relX) / scaleTmp[0] || 0;
+                var sy = ((scaleTmp[1] - relY) * globalScaleRatio + relY) / scaleTmp[1] || 0;
                 m[0] *= sx;
                 m[1] *= sx;
                 m[2] *= sy;
@@ -5450,10 +5566,10 @@
             }
             this.invTransform = this.invTransform || create$1();
             invert(this.invTransform, m);
-        }
-        getComputedTransform() {
-            let transformNode = this;
-            const ancestors = [];
+        };
+        Transformable.prototype.getComputedTransform = function () {
+            var transformNode = this;
+            var ancestors = [];
             while (transformNode) {
                 ancestors.push(transformNode);
                 transformNode = transformNode.parent;
@@ -5462,15 +5578,15 @@
                 transformNode.updateTransform();
             }
             return this.transform;
-        }
-        setLocalTransform(m) {
+        };
+        Transformable.prototype.setLocalTransform = function (m) {
             if (!m) {
                 return;
             }
-            let sx = m[0] * m[0] + m[1] * m[1];
-            let sy = m[2] * m[2] + m[3] * m[3];
-            const rotation = Math.atan2(m[1], m[0]);
-            const shearX = Math.PI / 2 + rotation - Math.atan2(m[3], m[2]);
+            var sx = m[0] * m[0] + m[1] * m[1];
+            var sy = m[2] * m[2] + m[3] * m[3];
+            var rotation = Math.atan2(m[1], m[0]);
+            var shearX = Math.PI / 2 + rotation - Math.atan2(m[3], m[2]);
             sy = Math.sqrt(sy) * Math.cos(shearX);
             sx = Math.sqrt(sx);
             this.skewX = shearX;
@@ -5482,20 +5598,20 @@
             this.scaleY = sy;
             this.originX = 0;
             this.originY = 0;
-        }
-        decomposeTransform() {
+        };
+        Transformable.prototype.decomposeTransform = function () {
             if (!this.transform) {
                 return;
             }
-            const parent = this.parent;
-            let m = this.transform;
+            var parent = this.parent;
+            var m = this.transform;
             if (parent && parent.transform) {
                 parent.invTransform = parent.invTransform || create$1();
                 mul$1(tmpTransform, parent.invTransform, m);
                 m = tmpTransform;
             }
-            const ox = this.originX;
-            const oy = this.originY;
+            var ox = this.originX;
+            var oy = this.originY;
             if (ox || oy) {
                 originTransform[4] = ox;
                 originTransform[5] = oy;
@@ -5505,9 +5621,9 @@
                 m = tmpTransform;
             }
             this.setLocalTransform(m);
-        }
-        getGlobalScale(out) {
-            const m = this.transform;
+        };
+        Transformable.prototype.getGlobalScale = function (out) {
+            var m = this.transform;
             out = out || [];
             if (!m) {
                 out[0] = 1;
@@ -5523,48 +5639,48 @@
                 out[1] = -out[1];
             }
             return out;
-        }
-        transformCoordToLocal(x, y) {
-            const v2 = [x, y];
-            const invTransform = this.invTransform;
+        };
+        Transformable.prototype.transformCoordToLocal = function (x, y) {
+            var v2 = [x, y];
+            var invTransform = this.invTransform;
             if (invTransform) {
                 applyTransform(v2, v2, invTransform);
             }
             return v2;
-        }
-        transformCoordToGlobal(x, y) {
-            const v2 = [x, y];
-            const transform = this.transform;
+        };
+        Transformable.prototype.transformCoordToGlobal = function (x, y) {
+            var v2 = [x, y];
+            var transform = this.transform;
             if (transform) {
                 applyTransform(v2, v2, transform);
             }
             return v2;
-        }
-        getLineScale() {
-            const m = this.transform;
+        };
+        Transformable.prototype.getLineScale = function () {
+            var m = this.transform;
             return m && abs(m[0] - 1) > 1e-10 && abs(m[3] - 1) > 1e-10
                 ? Math.sqrt(abs(m[0] * m[3] - m[2] * m[1]))
                 : 1;
-        }
-        copyTransform(source) {
+        };
+        Transformable.prototype.copyTransform = function (source) {
             copyTransform(this, source);
-        }
-        static getLocalTransform(target, m) {
+        };
+        Transformable.getLocalTransform = function (target, m) {
             m = m || [];
-            const ox = target.originX || 0;
-            const oy = target.originY || 0;
-            const sx = target.scaleX;
-            const sy = target.scaleY;
-            const ax = target.anchorX;
-            const ay = target.anchorY;
-            const rotation = target.rotation || 0;
-            const x = target.x;
-            const y = target.y;
-            const skewX = target.skewX ? Math.tan(target.skewX) : 0;
-            const skewY = target.skewY ? Math.tan(-target.skewY) : 0;
+            var ox = target.originX || 0;
+            var oy = target.originY || 0;
+            var sx = target.scaleX;
+            var sy = target.scaleY;
+            var ax = target.anchorX;
+            var ay = target.anchorY;
+            var rotation = target.rotation || 0;
+            var x = target.x;
+            var y = target.y;
+            var skewX = target.skewX ? Math.tan(target.skewX) : 0;
+            var skewY = target.skewY ? Math.tan(-target.skewY) : 0;
             if (ox || oy || ax || ay) {
-                const dx = ox + ax;
-                const dy = oy + ay;
+                var dx = ox + ax;
+                var dy = oy + ay;
                 m[4] = -dx * sx - skewX * dy * sy;
                 m[5] = -dy * sy - skewY * dx * sx;
             }
@@ -5579,41 +5695,42 @@
             m[4] += ox + x;
             m[5] += oy + y;
             return m;
-        }
-    }
-    Transformable.initDefaultProps = (function () {
-        const proto = Transformable.prototype;
-        proto.scaleX =
-            proto.scaleY =
-                proto.globalScaleRatio = 1;
-        proto.x =
-            proto.y =
-                proto.originX =
-                    proto.originY =
-                        proto.skewX =
-                            proto.skewY =
-                                proto.rotation =
-                                    proto.anchorX =
-                                        proto.anchorY = 0;
-    })();
-    const TRANSFORMABLE_PROPS = [
+        };
+        Transformable.initDefaultProps = (function () {
+            var proto = Transformable.prototype;
+            proto.scaleX =
+                proto.scaleY =
+                    proto.globalScaleRatio = 1;
+            proto.x =
+                proto.y =
+                    proto.originX =
+                        proto.originY =
+                            proto.skewX =
+                                proto.skewY =
+                                    proto.rotation =
+                                        proto.anchorX =
+                                            proto.anchorY = 0;
+        })();
+        return Transformable;
+    }());
+    var TRANSFORMABLE_PROPS = [
         'x', 'y', 'originX', 'originY', 'anchorX', 'anchorY', 'rotation', 'scaleX', 'scaleY', 'skewX', 'skewY'
     ];
     function copyTransform(target, source) {
-        for (let i = 0; i < TRANSFORMABLE_PROPS.length; i++) {
-            const propName = TRANSFORMABLE_PROPS[i];
+        for (var i = 0; i < TRANSFORMABLE_PROPS.length; i++) {
+            var propName = TRANSFORMABLE_PROPS[i];
             target[propName] = source[propName];
         }
     }
 
-    let textWidthCache = {};
+    var textWidthCache = {};
     function getWidth(text, font) {
         font = font || DEFAULT_FONT;
-        let cacheOfFont = textWidthCache[font];
+        var cacheOfFont = textWidthCache[font];
         if (!cacheOfFont) {
             cacheOfFont = textWidthCache[font] = new LRU(500);
         }
-        let width = cacheOfFont.get(text);
+        var width = cacheOfFont.get(text);
         if (width == null) {
             width = platformApi.measureText(text, font).width;
             cacheOfFont.put(text, width);
@@ -5621,23 +5738,23 @@
         return width;
     }
     function innerGetBoundingRect(text, font, textAlign, textBaseline) {
-        const width = getWidth(text, font);
-        const height = getLineHeight(font);
-        const x = adjustTextX(0, width, textAlign);
-        const y = adjustTextY$1(0, height, textBaseline);
-        const rect = new BoundingRect(x, y, width, height);
+        var width = getWidth(text, font);
+        var height = getLineHeight(font);
+        var x = adjustTextX(0, width, textAlign);
+        var y = adjustTextY$1(0, height, textBaseline);
+        var rect = new BoundingRect(x, y, width, height);
         return rect;
     }
     function getBoundingRect(text, font, textAlign, textBaseline) {
-        const textLines = ((text || '') + '').split('\n');
-        const len = textLines.length;
+        var textLines = ((text || '') + '').split('\n');
+        var len = textLines.length;
         if (len === 1) {
             return innerGetBoundingRect(textLines[0], font, textAlign, textBaseline);
         }
         else {
-            const uniondRect = new BoundingRect(0, 0, 0, 0);
-            for (let i = 0; i < textLines.length; i++) {
-                const rect = innerGetBoundingRect(textLines[i], font, textAlign, textBaseline);
+            var uniondRect = new BoundingRect(0, 0, 0, 0);
+            for (var i = 0; i < textLines.length; i++) {
+                var rect = innerGetBoundingRect(textLines[i], font, textAlign, textBaseline);
                 i === 0 ? uniondRect.copy(rect) : uniondRect.union(rect);
             }
             return uniondRect;
@@ -5674,15 +5791,15 @@
         return value;
     }
     function calculateTextPosition(out, opts, rect) {
-        const textPosition = opts.position || 'inside';
-        const distance = opts.distance != null ? opts.distance : 5;
-        const height = rect.height;
-        const width = rect.width;
-        const halfHeight = height / 2;
-        let x = rect.x;
-        let y = rect.y;
-        let textAlign = 'left';
-        let textVerticalAlign = 'top';
+        var textPosition = opts.position || 'inside';
+        var distance = opts.distance != null ? opts.distance : 5;
+        var height = rect.height;
+        var width = rect.width;
+        var halfHeight = height / 2;
+        var x = rect.x;
+        var y = rect.y;
+        var textAlign = 'left';
+        var textVerticalAlign = 'top';
         if (textPosition instanceof Array) {
             x += parsePercent(textPosition[0], rect.width);
             y += parsePercent(textPosition[1], rect.height);
@@ -5771,26 +5888,26 @@
         return out;
     }
 
-    const PRESERVED_NORMAL_STATE = '__zr_normal__';
-    const PRIMARY_STATES_KEYS = TRANSFORMABLE_PROPS.concat(['ignore']);
-    const DEFAULT_ANIMATABLE_MAP = reduce(TRANSFORMABLE_PROPS, (obj, key) => {
+    var PRESERVED_NORMAL_STATE = '__zr_normal__';
+    var PRIMARY_STATES_KEYS = TRANSFORMABLE_PROPS.concat(['ignore']);
+    var DEFAULT_ANIMATABLE_MAP = reduce(TRANSFORMABLE_PROPS, function (obj, key) {
         obj[key] = true;
         return obj;
     }, { ignore: false });
-    let tmpTextPosCalcRes = {};
-    let tmpBoundingRect = new BoundingRect(0, 0, 0, 0);
-    class Element {
-        constructor(props) {
+    var tmpTextPosCalcRes = {};
+    var tmpBoundingRect = new BoundingRect(0, 0, 0, 0);
+    var Element = (function () {
+        function Element(props) {
             this.id = guid();
             this.animators = [];
             this.currentStates = [];
             this.states = {};
             this._init(props);
         }
-        _init(props) {
+        Element.prototype._init = function (props) {
             this.attr(props);
-        }
-        drift(dx, dy, e) {
+        };
+        Element.prototype.drift = function (dx, dy, e) {
             switch (this.draggable) {
                 case 'horizontal':
                     dy = 0;
@@ -5799,7 +5916,7 @@
                     dx = 0;
                     break;
             }
-            let m = this.transform;
+            var m = this.transform;
             if (!m) {
                 m = this.transform = [1, 0, 0, 1, 0, 0];
             }
@@ -5807,32 +5924,32 @@
             m[5] += dy;
             this.decomposeTransform();
             this.markRedraw();
-        }
-        beforeUpdate() { }
-        afterUpdate() { }
-        update() {
+        };
+        Element.prototype.beforeUpdate = function () { };
+        Element.prototype.afterUpdate = function () { };
+        Element.prototype.update = function () {
             this.updateTransform();
             if (this.__dirty) {
                 this.updateInnerText();
             }
-        }
-        updateInnerText(forceUpdate) {
-            const textEl = this._textContent;
+        };
+        Element.prototype.updateInnerText = function (forceUpdate) {
+            var textEl = this._textContent;
             if (textEl && (!textEl.ignore || forceUpdate)) {
                 if (!this.textConfig) {
                     this.textConfig = {};
                 }
-                const textConfig = this.textConfig;
-                const isLocal = textConfig.local;
-                const innerTransformable = textEl.innerTransformable;
-                let textAlign;
-                let textVerticalAlign;
-                let textStyleChanged = false;
+                var textConfig = this.textConfig;
+                var isLocal = textConfig.local;
+                var innerTransformable = textEl.innerTransformable;
+                var textAlign = void 0;
+                var textVerticalAlign = void 0;
+                var textStyleChanged = false;
                 innerTransformable.parent = isLocal ? this : null;
-                let innerOrigin = false;
+                var innerOrigin = false;
                 innerTransformable.copyTransform(textEl);
                 if (textConfig.position != null) {
-                    let layoutRect = tmpBoundingRect;
+                    var layoutRect = tmpBoundingRect;
                     if (textConfig.layoutRect) {
                         layoutRect.copy(textConfig.layoutRect);
                     }
@@ -5852,10 +5969,10 @@
                     innerTransformable.y = tmpTextPosCalcRes.y;
                     textAlign = tmpTextPosCalcRes.align;
                     textVerticalAlign = tmpTextPosCalcRes.verticalAlign;
-                    const textOrigin = textConfig.origin;
+                    var textOrigin = textConfig.origin;
                     if (textOrigin && textConfig.rotation != null) {
-                        let relOriginX;
-                        let relOriginY;
+                        var relOriginX = void 0;
+                        var relOriginY = void 0;
                         if (textOrigin === 'center') {
                             relOriginX = layoutRect.width * 0.5;
                             relOriginY = layoutRect.height * 0.5;
@@ -5872,7 +5989,7 @@
                 if (textConfig.rotation != null) {
                     innerTransformable.rotation = textConfig.rotation;
                 }
-                const textOffset = textConfig.offset;
+                var textOffset = textConfig.offset;
                 if (textOffset) {
                     innerTransformable.x += textOffset[0];
                     innerTransformable.y += textOffset[1];
@@ -5881,13 +5998,13 @@
                         innerTransformable.originY = -textOffset[1];
                     }
                 }
-                const isInside = textConfig.inside == null
+                var isInside = textConfig.inside == null
                     ? (typeof textConfig.position === 'string' && textConfig.position.indexOf('inside') >= 0)
                     : textConfig.inside;
-                const innerTextDefaultStyle = this._innerTextDefaultStyle || (this._innerTextDefaultStyle = {});
-                let textFill;
-                let textStroke;
-                let autoStroke;
+                var innerTextDefaultStyle = this._innerTextDefaultStyle || (this._innerTextDefaultStyle = {});
+                var textFill = void 0;
+                var textStroke = void 0;
+                var autoStroke = void 0;
                 if (isInside && this.canBeInsideText()) {
                     textFill = textConfig.insideFill;
                     textStroke = textConfig.insideStroke;
@@ -5929,35 +6046,35 @@
                     textEl.dirtyStyle(true);
                 }
             }
-        }
-        canBeInsideText() {
+        };
+        Element.prototype.canBeInsideText = function () {
             return true;
-        }
-        getInsideTextFill() {
+        };
+        Element.prototype.getInsideTextFill = function () {
             return '#fff';
-        }
-        getInsideTextStroke(textFill) {
+        };
+        Element.prototype.getInsideTextStroke = function (textFill) {
             return '#000';
-        }
-        getOutsideFill() {
+        };
+        Element.prototype.getOutsideFill = function () {
             return this.__zr && this.__zr.isDarkMode() ? LIGHT_LABEL_COLOR : DARK_LABEL_COLOR;
-        }
-        getOutsideStroke(textFill) {
-            const backgroundColor = this.__zr && this.__zr.getBackgroundColor();
-            let colorArr = typeof backgroundColor === 'string' && parse(backgroundColor);
+        };
+        Element.prototype.getOutsideStroke = function (textFill) {
+            var backgroundColor = this.__zr && this.__zr.getBackgroundColor();
+            var colorArr = typeof backgroundColor === 'string' && parse(backgroundColor);
             if (!colorArr) {
                 colorArr = [255, 255, 255, 1];
             }
-            const alpha = colorArr[3];
-            const isDark = this.__zr.isDarkMode();
-            for (let i = 0; i < 3; i++) {
+            var alpha = colorArr[3];
+            var isDark = this.__zr.isDarkMode();
+            for (var i = 0; i < 3; i++) {
                 colorArr[i] = colorArr[i] * alpha + (isDark ? 0 : 255) * (1 - alpha);
             }
             colorArr[3] = 1;
             return stringify(colorArr, 'rgba');
-        }
-        traverse(cb, context) { }
-        attrKV(key, value) {
+        };
+        Element.prototype.traverse = function (cb, context) { };
+        Element.prototype.attrKV = function (key, value) {
             if (key === 'textConfig') {
                 this.setTextConfig(value);
             }
@@ -5974,47 +6091,47 @@
             else {
                 this[key] = value;
             }
-        }
-        hide() {
+        };
+        Element.prototype.hide = function () {
             this.ignore = true;
             this.markRedraw();
-        }
-        show() {
+        };
+        Element.prototype.show = function () {
             this.ignore = false;
             this.markRedraw();
-        }
-        attr(keyOrObj, value) {
+        };
+        Element.prototype.attr = function (keyOrObj, value) {
             if (typeof keyOrObj === 'string') {
                 this.attrKV(keyOrObj, value);
             }
             else if (isObject(keyOrObj)) {
-                let obj = keyOrObj;
-                let keysArr = keys(obj);
-                for (let i = 0; i < keysArr.length; i++) {
-                    let key = keysArr[i];
+                var obj = keyOrObj;
+                var keysArr = keys(obj);
+                for (var i = 0; i < keysArr.length; i++) {
+                    var key = keysArr[i];
                     this.attrKV(key, keyOrObj[key]);
                 }
             }
             this.markRedraw();
             return this;
-        }
-        saveCurrentToNormalState(toState) {
+        };
+        Element.prototype.saveCurrentToNormalState = function (toState) {
             this._innerSaveToNormal(toState);
-            const normalState = this._normalState;
-            for (let i = 0; i < this.animators.length; i++) {
-                const animator = this.animators[i];
-                const fromStateTransition = animator.__fromStateTransition;
+            var normalState = this._normalState;
+            for (var i = 0; i < this.animators.length; i++) {
+                var animator = this.animators[i];
+                var fromStateTransition = animator.__fromStateTransition;
                 if (animator.getLoop() || fromStateTransition && fromStateTransition !== PRESERVED_NORMAL_STATE) {
                     continue;
                 }
-                const targetName = animator.targetName;
-                const target = targetName
+                var targetName = animator.targetName;
+                var target = targetName
                     ? normalState[targetName] : normalState;
                 animator.saveTo(target);
             }
-        }
-        _innerSaveToNormal(toState) {
-            let normalState = this._normalState;
+        };
+        Element.prototype._innerSaveToNormal = function (toState) {
+            var normalState = this._normalState;
             if (!normalState) {
                 normalState = this._normalState = {};
             }
@@ -6022,43 +6139,43 @@
                 normalState.textConfig = this.textConfig;
             }
             this._savePrimaryToNormal(toState, normalState, PRIMARY_STATES_KEYS);
-        }
-        _savePrimaryToNormal(toState, normalState, primaryKeys) {
-            for (let i = 0; i < primaryKeys.length; i++) {
-                let key = primaryKeys[i];
+        };
+        Element.prototype._savePrimaryToNormal = function (toState, normalState, primaryKeys) {
+            for (var i = 0; i < primaryKeys.length; i++) {
+                var key = primaryKeys[i];
                 if (toState[key] != null && !(key in normalState)) {
                     normalState[key] = this[key];
                 }
             }
-        }
-        hasState() {
+        };
+        Element.prototype.hasState = function () {
             return this.currentStates.length > 0;
-        }
-        getState(name) {
+        };
+        Element.prototype.getState = function (name) {
             return this.states[name];
-        }
-        ensureState(name) {
-            const states = this.states;
+        };
+        Element.prototype.ensureState = function (name) {
+            var states = this.states;
             if (!states[name]) {
                 states[name] = {};
             }
             return states[name];
-        }
-        clearStates(noAnimation) {
+        };
+        Element.prototype.clearStates = function (noAnimation) {
             this.useState(PRESERVED_NORMAL_STATE, false, noAnimation);
-        }
-        useState(stateName, keepCurrentStates, noAnimation, forceUseHoverLayer) {
-            const toNormalState = stateName === PRESERVED_NORMAL_STATE;
-            const hasStates = this.hasState();
+        };
+        Element.prototype.useState = function (stateName, keepCurrentStates, noAnimation, forceUseHoverLayer) {
+            var toNormalState = stateName === PRESERVED_NORMAL_STATE;
+            var hasStates = this.hasState();
             if (!hasStates && toNormalState) {
                 return;
             }
-            const currentStates = this.currentStates;
-            const animationCfg = this.stateTransition;
+            var currentStates = this.currentStates;
+            var animationCfg = this.stateTransition;
             if (indexOf(currentStates, stateName) >= 0 && (keepCurrentStates || currentStates.length === 1)) {
                 return;
             }
-            let state;
+            var state;
             if (this.stateProxy && !toNormalState) {
                 state = this.stateProxy(stateName);
             }
@@ -6066,19 +6183,19 @@
                 state = (this.states && this.states[stateName]);
             }
             if (!state && !toNormalState) {
-                logError(`State ${stateName} not exists.`);
+                logError("State " + stateName + " not exists.");
                 return;
             }
             if (!toNormalState) {
                 this.saveCurrentToNormalState(state);
             }
-            const useHoverLayer = !!((state && state.hoverLayer) || forceUseHoverLayer);
+            var useHoverLayer = !!((state && state.hoverLayer) || forceUseHoverLayer);
             if (useHoverLayer) {
                 this._toggleHoverLayerFlag(true);
             }
             this._applyStateObj(stateName, state, this._normalState, keepCurrentStates, !noAnimation && !this.__inHover && animationCfg && animationCfg.duration > 0, animationCfg);
-            const textContent = this._textContent;
-            const textGuide = this._textGuide;
+            var textContent = this._textContent;
+            var textGuide = this._textGuide;
             if (textContent) {
                 textContent.useState(stateName, keepCurrentStates, noAnimation, useHoverLayer);
             }
@@ -6104,18 +6221,18 @@
                 this.__dirty &= ~REDRAW_BIT;
             }
             return state;
-        }
-        useStates(states, noAnimation, forceUseHoverLayer) {
+        };
+        Element.prototype.useStates = function (states, noAnimation, forceUseHoverLayer) {
             if (!states.length) {
                 this.clearStates();
             }
             else {
-                const stateObjects = [];
-                const currentStates = this.currentStates;
-                const len = states.length;
-                let notChange = len === currentStates.length;
+                var stateObjects = [];
+                var currentStates = this.currentStates;
+                var len = states.length;
+                var notChange = len === currentStates.length;
                 if (notChange) {
-                    for (let i = 0; i < len; i++) {
+                    for (var i = 0; i < len; i++) {
                         if (states[i] !== currentStates[i]) {
                             notChange = false;
                             break;
@@ -6125,9 +6242,9 @@
                 if (notChange) {
                     return;
                 }
-                for (let i = 0; i < len; i++) {
-                    const stateName = states[i];
-                    let stateObj;
+                for (var i = 0; i < len; i++) {
+                    var stateName = states[i];
+                    var stateObj = void 0;
                     if (this.stateProxy) {
                         stateObj = this.stateProxy(stateName, states);
                     }
@@ -6138,17 +6255,17 @@
                         stateObjects.push(stateObj);
                     }
                 }
-                const lastStateObj = stateObjects[len - 1];
-                const useHoverLayer = !!((lastStateObj && lastStateObj.hoverLayer) || forceUseHoverLayer);
+                var lastStateObj = stateObjects[len - 1];
+                var useHoverLayer = !!((lastStateObj && lastStateObj.hoverLayer) || forceUseHoverLayer);
                 if (useHoverLayer) {
                     this._toggleHoverLayerFlag(true);
                 }
-                const mergedState = this._mergeStates(stateObjects);
-                const animationCfg = this.stateTransition;
+                var mergedState = this._mergeStates(stateObjects);
+                var animationCfg = this.stateTransition;
                 this.saveCurrentToNormalState(mergedState);
                 this._applyStateObj(states.join(','), mergedState, this._normalState, false, !noAnimation && !this.__inHover && animationCfg && animationCfg.duration > 0, animationCfg);
-                const textContent = this._textContent;
-                const textGuide = this._textGuide;
+                var textContent = this._textContent;
+                var textGuide = this._textGuide;
                 if (textContent) {
                     textContent.useStates(states, noAnimation, useHoverLayer);
                 }
@@ -6163,10 +6280,10 @@
                     this.__dirty &= ~REDRAW_BIT;
                 }
             }
-        }
-        isSilent() {
-            let isSilent = this.silent;
-            let ancestor = this.parent;
+        };
+        Element.prototype.isSilent = function () {
+            var isSilent = this.silent;
+            var ancestor = this.parent;
             while (!isSilent && ancestor) {
                 if (ancestor.silent) {
                     isSilent = true;
@@ -6175,27 +6292,27 @@
                 ancestor = ancestor.parent;
             }
             return isSilent;
-        }
-        _updateAnimationTargets() {
-            for (let i = 0; i < this.animators.length; i++) {
-                const animator = this.animators[i];
+        };
+        Element.prototype._updateAnimationTargets = function () {
+            for (var i = 0; i < this.animators.length; i++) {
+                var animator = this.animators[i];
                 if (animator.targetName) {
                     animator.changeTarget(this[animator.targetName]);
                 }
             }
-        }
-        removeState(state) {
-            const idx = indexOf(this.currentStates, state);
+        };
+        Element.prototype.removeState = function (state) {
+            var idx = indexOf(this.currentStates, state);
             if (idx >= 0) {
-                const currentStates = this.currentStates.slice();
+                var currentStates = this.currentStates.slice();
                 currentStates.splice(idx, 1);
                 this.useStates(currentStates);
             }
-        }
-        replaceState(oldState, newState, forceAdd) {
-            const currentStates = this.currentStates.slice();
-            const idx = indexOf(currentStates, oldState);
-            const newStateExists = indexOf(currentStates, newState) >= 0;
+        };
+        Element.prototype.replaceState = function (oldState, newState, forceAdd) {
+            var currentStates = this.currentStates.slice();
+            var idx = indexOf(currentStates, oldState);
+            var newStateExists = indexOf(currentStates, newState) >= 0;
             if (idx >= 0) {
                 if (!newStateExists) {
                     currentStates[idx] = newState;
@@ -6208,20 +6325,20 @@
                 currentStates.push(newState);
             }
             this.useStates(currentStates);
-        }
-        toggleState(state, enable) {
+        };
+        Element.prototype.toggleState = function (state, enable) {
             if (enable) {
                 this.useState(state, true);
             }
             else {
                 this.removeState(state);
             }
-        }
-        _mergeStates(states) {
-            const mergedState = {};
-            let mergedTextConfig;
-            for (let i = 0; i < states.length; i++) {
-                const state = states[i];
+        };
+        Element.prototype._mergeStates = function (states) {
+            var mergedState = {};
+            var mergedTextConfig;
+            for (var i = 0; i < states.length; i++) {
+                var state = states[i];
                 extend(mergedState, state);
                 if (state.textConfig) {
                     mergedTextConfig = mergedTextConfig || {};
@@ -6232,9 +6349,9 @@
                 mergedState.textConfig = mergedTextConfig;
             }
             return mergedState;
-        }
-        _applyStateObj(stateName, state, normalState, keepCurrentStates, transition, animationCfg) {
-            const needsRestoreToNormal = !(state && keepCurrentStates);
+        };
+        Element.prototype._applyStateObj = function (stateName, state, normalState, keepCurrentStates, transition, animationCfg) {
+            var needsRestoreToNormal = !(state && keepCurrentStates);
             if (state && state.textConfig) {
                 this.textConfig = extend({}, keepCurrentStates ? this.textConfig : normalState.textConfig);
                 extend(this.textConfig, state.textConfig);
@@ -6244,11 +6361,11 @@
                     this.textConfig = normalState.textConfig;
                 }
             }
-            const transitionTarget = {};
-            let hasTransition = false;
-            for (let i = 0; i < PRIMARY_STATES_KEYS.length; i++) {
-                const key = PRIMARY_STATES_KEYS[i];
-                const propNeedsTransition = transition && DEFAULT_ANIMATABLE_MAP[key];
+            var transitionTarget = {};
+            var hasTransition = false;
+            for (var i = 0; i < PRIMARY_STATES_KEYS.length; i++) {
+                var key = PRIMARY_STATES_KEYS[i];
+                var propNeedsTransition = transition && DEFAULT_ANIMATABLE_MAP[key];
                 if (state && state[key] != null) {
                     if (propNeedsTransition) {
                         hasTransition = true;
@@ -6271,9 +6388,9 @@
                 }
             }
             if (!transition) {
-                for (let i = 0; i < this.animators.length; i++) {
-                    const animator = this.animators[i];
-                    const targetName = animator.targetName;
+                for (var i = 0; i < this.animators.length; i++) {
+                    var animator = this.animators[i];
+                    var targetName = animator.targetName;
                     if (!animator.getLoop()) {
                         animator.__changeFinalValue(targetName
                             ? (state || normalState)[targetName]
@@ -6284,8 +6401,8 @@
             if (hasTransition) {
                 this._transitionState(stateName, transitionTarget, animationCfg);
             }
-        }
-        _attachComponent(componentEl) {
+        };
+        Element.prototype._attachComponent = function (componentEl) {
             if (componentEl.__zr && !componentEl.__hostTarget) {
                 if ("development" !== 'production') {
                     throw new Error('Text element has been added to zrender.');
@@ -6298,44 +6415,44 @@
                 }
                 return;
             }
-            const zr = this.__zr;
+            var zr = this.__zr;
             if (zr) {
                 componentEl.addSelfToZr(zr);
             }
             componentEl.__zr = zr;
             componentEl.__hostTarget = this;
-        }
-        _detachComponent(componentEl) {
+        };
+        Element.prototype._detachComponent = function (componentEl) {
             if (componentEl.__zr) {
                 componentEl.removeSelfFromZr(componentEl.__zr);
             }
             componentEl.__zr = null;
             componentEl.__hostTarget = null;
-        }
-        getClipPath() {
+        };
+        Element.prototype.getClipPath = function () {
             return this._clipPath;
-        }
-        setClipPath(clipPath) {
+        };
+        Element.prototype.setClipPath = function (clipPath) {
             if (this._clipPath && this._clipPath !== clipPath) {
                 this.removeClipPath();
             }
             this._attachComponent(clipPath);
             this._clipPath = clipPath;
             this.markRedraw();
-        }
-        removeClipPath() {
-            const clipPath = this._clipPath;
+        };
+        Element.prototype.removeClipPath = function () {
+            var clipPath = this._clipPath;
             if (clipPath) {
                 this._detachComponent(clipPath);
                 this._clipPath = null;
                 this.markRedraw();
             }
-        }
-        getTextContent() {
+        };
+        Element.prototype.getTextContent = function () {
             return this._textContent;
-        }
-        setTextContent(textEl) {
-            const previousTextContent = this._textContent;
+        };
+        Element.prototype.setTextContent = function (textEl) {
+            var previousTextContent = this._textContent;
             if (previousTextContent === textEl) {
                 return;
             }
@@ -6351,20 +6468,20 @@
             this._attachComponent(textEl);
             this._textContent = textEl;
             this.markRedraw();
-        }
-        setTextConfig(cfg) {
+        };
+        Element.prototype.setTextConfig = function (cfg) {
             if (!this.textConfig) {
                 this.textConfig = {};
             }
             extend(this.textConfig, cfg);
             this.markRedraw();
-        }
-        removeTextConfig() {
+        };
+        Element.prototype.removeTextConfig = function () {
             this.textConfig = null;
             this.markRedraw();
-        }
-        removeTextContent() {
-            const textEl = this._textContent;
+        };
+        Element.prototype.removeTextContent = function () {
+            var textEl = this._textContent;
             if (textEl) {
                 textEl.innerTransformable = null;
                 this._detachComponent(textEl);
@@ -6372,29 +6489,29 @@
                 this._innerTextDefaultStyle = null;
                 this.markRedraw();
             }
-        }
-        getTextGuideLine() {
+        };
+        Element.prototype.getTextGuideLine = function () {
             return this._textGuide;
-        }
-        setTextGuideLine(guideLine) {
+        };
+        Element.prototype.setTextGuideLine = function (guideLine) {
             if (this._textGuide && this._textGuide !== guideLine) {
                 this.removeTextGuideLine();
             }
             this._attachComponent(guideLine);
             this._textGuide = guideLine;
             this.markRedraw();
-        }
-        removeTextGuideLine() {
-            const textGuide = this._textGuide;
+        };
+        Element.prototype.removeTextGuideLine = function () {
+            var textGuide = this._textGuide;
             if (textGuide) {
                 this._detachComponent(textGuide);
                 this._textGuide = null;
                 this.markRedraw();
             }
-        }
-        markRedraw() {
+        };
+        Element.prototype.markRedraw = function () {
             this.__dirty |= REDRAW_BIT;
-            const zr = this.__zr;
+            var zr = this.__zr;
             if (zr) {
                 if (this.__inHover) {
                     zr.refreshHover();
@@ -6406,29 +6523,35 @@
             if (this.__hostTarget) {
                 this.__hostTarget.markRedraw();
             }
-        }
-        dirty() {
+        };
+        Element.prototype.dirty = function () {
             this.markRedraw();
-        }
-        _toggleHoverLayerFlag(inHover) {
+        };
+        Element.prototype._toggleHoverLayerFlag = function (inHover) {
             this.__inHover = inHover;
-            const textContent = this._textContent;
-            const textGuide = this._textGuide;
+            var textContent = this._textContent;
+            var textGuide = this._textGuide;
             if (textContent) {
                 textContent.__inHover = inHover;
             }
             if (textGuide) {
                 textGuide.__inHover = inHover;
             }
-        }
-        addSelfToZr(zr) {
+        };
+        Element.prototype.addSelfToZr = function (zr) {
+            if (zr.roughness != null && this.roughness == null) {
+                this.roughness = zr.roughness;
+            }
+            if (zr.filler != null && this.filler == null) {
+                this.filler = zr.filler;
+            }
             if (this.__zr === zr) {
                 return;
             }
             this.__zr = zr;
-            const animators = this.animators;
+            var animators = this.animators;
             if (animators) {
-                for (let i = 0; i < animators.length; i++) {
+                for (var i = 0; i < animators.length; i++) {
                     zr.animation.addAnimator(animators[i]);
                 }
             }
@@ -6441,15 +6564,15 @@
             if (this._textGuide) {
                 this._textGuide.addSelfToZr(zr);
             }
-        }
-        removeSelfFromZr(zr) {
+        };
+        Element.prototype.removeSelfFromZr = function (zr) {
             if (!this.__zr) {
                 return;
             }
             this.__zr = null;
-            const animators = this.animators;
+            var animators = this.animators;
             if (animators) {
-                for (let i = 0; i < animators.length; i++) {
+                for (var i = 0; i < animators.length; i++) {
                     zr.animation.removeAnimator(animators[i]);
                 }
             }
@@ -6462,9 +6585,9 @@
             if (this._textGuide) {
                 this._textGuide.removeSelfFromZr(zr);
             }
-        }
-        animate(key, loop, allowDiscreteAnimation) {
-            let target = key ? this[key] : this;
+        };
+        Element.prototype.animate = function (key, loop, allowDiscreteAnimation) {
+            var target = key ? this[key] : this;
             if ("development" !== 'production') {
                 if (!target) {
                     logError('Property "'
@@ -6474,19 +6597,19 @@
                     return;
                 }
             }
-            const animator = new Animator(target, loop, allowDiscreteAnimation);
+            var animator = new Animator(target, loop, allowDiscreteAnimation);
             key && (animator.targetName = key);
             this.addAnimator(animator, key);
             return animator;
-        }
-        addAnimator(animator, key) {
-            const zr = this.__zr;
-            const el = this;
+        };
+        Element.prototype.addAnimator = function (animator, key) {
+            var zr = this.__zr;
+            var el = this;
             animator.during(function () {
                 el.updateDuringAnimation(key);
             }).done(function () {
-                const animators = el.animators;
-                const idx = indexOf(animators, animator);
+                var animators = el.animators;
+                var idx = indexOf(animators, animator);
                 if (idx >= 0) {
                     animators.splice(idx, 1);
                 }
@@ -6496,16 +6619,16 @@
                 zr.animation.addAnimator(animator);
             }
             zr && zr.wakeUp();
-        }
-        updateDuringAnimation(key) {
+        };
+        Element.prototype.updateDuringAnimation = function (key) {
             this.markRedraw();
-        }
-        stopAnimation(scope, forwardToLast) {
-            const animators = this.animators;
-            const len = animators.length;
-            const leftAnimators = [];
-            for (let i = 0; i < len; i++) {
-                const animator = animators[i];
+        };
+        Element.prototype.stopAnimation = function (scope, forwardToLast) {
+            var animators = this.animators;
+            var len = animators.length;
+            var leftAnimators = [];
+            for (var i = 0; i < len; i++) {
+                var animator = animators[i];
                 if (!scope || scope === animator.scope) {
                     animator.stop(forwardToLast);
                 }
@@ -6515,103 +6638,104 @@
             }
             this.animators = leftAnimators;
             return this;
-        }
-        animateTo(target, cfg, animationProps) {
+        };
+        Element.prototype.animateTo = function (target, cfg, animationProps) {
             animateTo(this, target, cfg, animationProps);
-        }
-        animateFrom(target, cfg, animationProps) {
+        };
+        Element.prototype.animateFrom = function (target, cfg, animationProps) {
             animateTo(this, target, cfg, animationProps, true);
-        }
-        _transitionState(stateName, target, cfg, animationProps) {
-            const animators = animateTo(this, target, cfg, animationProps);
-            for (let i = 0; i < animators.length; i++) {
+        };
+        Element.prototype._transitionState = function (stateName, target, cfg, animationProps) {
+            var animators = animateTo(this, target, cfg, animationProps);
+            for (var i = 0; i < animators.length; i++) {
                 animators[i].__fromStateTransition = stateName;
             }
-        }
-        getBoundingRect() {
+        };
+        Element.prototype.getBoundingRect = function () {
             return null;
-        }
-        getPaintRect() {
+        };
+        Element.prototype.getPaintRect = function () {
             return null;
-        }
-    }
-    Element.initDefaultProps = (function () {
-        const elProto = Element.prototype;
-        elProto.type = 'element';
-        elProto.name = '';
-        elProto.ignore =
-            elProto.silent =
-                elProto.isGroup =
-                    elProto.draggable =
-                        elProto.dragging =
-                            elProto.ignoreClip =
-                                elProto.__inHover = false;
-        elProto.__dirty = REDRAW_BIT;
-        const logs = {};
-        function logDeprecatedError(key, xKey, yKey) {
-            if (!logs[key + xKey + yKey]) {
-                console.warn(`DEPRECATED: '${key}' has been deprecated. use '${xKey}', '${yKey}' instead`);
-                logs[key + xKey + yKey] = true;
+        };
+        Element.initDefaultProps = (function () {
+            var elProto = Element.prototype;
+            elProto.type = 'element';
+            elProto.name = '';
+            elProto.ignore =
+                elProto.silent =
+                    elProto.isGroup =
+                        elProto.draggable =
+                            elProto.dragging =
+                                elProto.ignoreClip =
+                                    elProto.__inHover = false;
+            elProto.__dirty = REDRAW_BIT;
+            var logs = {};
+            function logDeprecatedError(key, xKey, yKey) {
+                if (!logs[key + xKey + yKey]) {
+                    console.warn("DEPRECATED: '" + key + "' has been deprecated. use '" + xKey + "', '" + yKey + "' instead");
+                    logs[key + xKey + yKey] = true;
+                }
             }
-        }
-        function createLegacyProperty(key, privateKey, xKey, yKey) {
-            Object.defineProperty(elProto, key, {
-                get() {
-                    if ("development" !== 'production') {
-                        logDeprecatedError(key, xKey, yKey);
-                    }
-                    if (!this[privateKey]) {
-                        const pos = this[privateKey] = [];
+            function createLegacyProperty(key, privateKey, xKey, yKey) {
+                Object.defineProperty(elProto, key, {
+                    get: function () {
+                        if ("development" !== 'production') {
+                            logDeprecatedError(key, xKey, yKey);
+                        }
+                        if (!this[privateKey]) {
+                            var pos = this[privateKey] = [];
+                            enhanceArray(this, pos);
+                        }
+                        return this[privateKey];
+                    },
+                    set: function (pos) {
+                        if ("development" !== 'production') {
+                            logDeprecatedError(key, xKey, yKey);
+                        }
+                        this[xKey] = pos[0];
+                        this[yKey] = pos[1];
+                        this[privateKey] = pos;
                         enhanceArray(this, pos);
                     }
-                    return this[privateKey];
-                },
-                set(pos) {
-                    if ("development" !== 'production') {
-                        logDeprecatedError(key, xKey, yKey);
-                    }
-                    this[xKey] = pos[0];
-                    this[yKey] = pos[1];
-                    this[privateKey] = pos;
-                    enhanceArray(this, pos);
+                });
+                function enhanceArray(self, pos) {
+                    Object.defineProperty(pos, 0, {
+                        get: function () {
+                            return self[xKey];
+                        },
+                        set: function (val) {
+                            self[xKey] = val;
+                        }
+                    });
+                    Object.defineProperty(pos, 1, {
+                        get: function () {
+                            return self[yKey];
+                        },
+                        set: function (val) {
+                            self[yKey] = val;
+                        }
+                    });
                 }
-            });
-            function enhanceArray(self, pos) {
-                Object.defineProperty(pos, 0, {
-                    get() {
-                        return self[xKey];
-                    },
-                    set(val) {
-                        self[xKey] = val;
-                    }
-                });
-                Object.defineProperty(pos, 1, {
-                    get() {
-                        return self[yKey];
-                    },
-                    set(val) {
-                        self[yKey] = val;
-                    }
-                });
             }
-        }
-        if (Object.defineProperty) {
-            createLegacyProperty('position', '_legacyPos', 'x', 'y');
-            createLegacyProperty('scale', '_legacyScale', 'scaleX', 'scaleY');
-            createLegacyProperty('origin', '_legacyOrigin', 'originX', 'originY');
-        }
-    })();
+            if (Object.defineProperty) {
+                createLegacyProperty('position', '_legacyPos', 'x', 'y');
+                createLegacyProperty('scale', '_legacyScale', 'scaleX', 'scaleY');
+                createLegacyProperty('origin', '_legacyOrigin', 'originX', 'originY');
+            }
+        })();
+        return Element;
+    }());
     mixin(Element, Eventful);
     mixin(Element, Transformable);
     function animateTo(animatable, target, cfg, animationProps, reverse) {
         cfg = cfg || {};
-        const animators = [];
+        var animators = [];
         animateToShallow(animatable, '', animatable, target, cfg, animationProps, animators, reverse);
-        let finishCount = animators.length;
-        let doneHappened = false;
-        const cfgDone = cfg.done;
-        const cfgAborted = cfg.aborted;
-        const doneCb = () => {
+        var finishCount = animators.length;
+        var doneHappened = false;
+        var cfgDone = cfg.done;
+        var cfgAborted = cfg.aborted;
+        var doneCb = function () {
             doneHappened = true;
             finishCount--;
             if (finishCount <= 0) {
@@ -6620,7 +6744,7 @@
                     : (cfgAborted && cfgAborted());
             }
         };
-        const abortedCb = () => {
+        var abortedCb = function () {
             finishCount--;
             if (finishCount <= 0) {
                 doneHappened
@@ -6632,12 +6756,12 @@
             cfgDone && cfgDone();
         }
         if (animators.length > 0 && cfg.during) {
-            animators[0].during((target, percent) => {
+            animators[0].during(function (target, percent) {
                 cfg.during(percent);
             });
         }
-        for (let i = 0; i < animators.length; i++) {
-            const animator = animators[i];
+        for (var i = 0; i < animators.length; i++) {
+            var animator = animators[i];
             if (doneCb) {
                 animator.done(doneCb);
             }
@@ -6652,7 +6776,7 @@
         return animators;
     }
     function copyArrShallow(source, target, len) {
-        for (let i = 0; i < len; i++) {
+        for (var i = 0; i < len; i++) {
             source[i] = target[i];
         }
     }
@@ -6665,19 +6789,19 @@
                 target[key] = [];
             }
             if (isTypedArray(source[key])) {
-                const len = source[key].length;
+                var len = source[key].length;
                 if (target[key].length !== len) {
-                    target[key] = new (source[key].constructor)(len);
+                    target[key] = new source[key].constructor(len);
                     copyArrShallow(target[key], source[key], len);
                 }
             }
             else {
-                const sourceArr = source[key];
-                const targetArr = target[key];
-                const len0 = sourceArr.length;
+                var sourceArr = source[key];
+                var targetArr = target[key];
+                var len0 = sourceArr.length;
                 if (is2DArray(sourceArr)) {
-                    const len1 = sourceArr[0].length;
-                    for (let i = 0; i < len0; i++) {
+                    var len1 = sourceArr[0].length;
+                    for (var i = 0; i < len0; i++) {
                         if (!targetArr[i]) {
                             targetArr[i] = Array.prototype.slice.call(sourceArr[i]);
                         }
@@ -6701,11 +6825,11 @@
             || isArrayLike(val1) && isArrayLike(val2) && is1DArraySame(val1, val2);
     }
     function is1DArraySame(arr0, arr1) {
-        const len = arr0.length;
+        var len = arr0.length;
         if (len !== arr1.length) {
             return false;
         }
-        for (let i = 0; i < len; i++) {
+        for (var i = 0; i < len; i++) {
             if (arr0[i] !== arr1[i]) {
                 return false;
             }
@@ -6713,17 +6837,17 @@
         return true;
     }
     function animateToShallow(animatable, topKey, animateObj, target, cfg, animationProps, animators, reverse) {
-        const targetKeys = keys(target);
-        const duration = cfg.duration;
-        const delay = cfg.delay;
-        const additive = cfg.additive;
-        const setToFinal = cfg.setToFinal;
-        const animateAll = !isObject(animationProps);
-        const existsAnimators = animatable.animators;
-        let animationKeys = [];
-        for (let k = 0; k < targetKeys.length; k++) {
-            const innerKey = targetKeys[k];
-            const targetVal = target[innerKey];
+        var targetKeys = keys(target);
+        var duration = cfg.duration;
+        var delay = cfg.delay;
+        var additive = cfg.additive;
+        var setToFinal = cfg.setToFinal;
+        var animateAll = !isObject(animationProps);
+        var existsAnimators = animatable.animators;
+        var animationKeys = [];
+        for (var k = 0; k < targetKeys.length; k++) {
+            var innerKey = targetKeys[k];
+            var targetVal = target[innerKey];
             if (targetVal != null && animateObj[innerKey] != null
                 && (animateAll || animationProps[innerKey])) {
                 if (isObject(targetVal)
@@ -6748,35 +6872,35 @@
                 animationKeys.push(innerKey);
             }
         }
-        let keyLen = animationKeys.length;
+        var keyLen = animationKeys.length;
         if (!additive && keyLen) {
-            for (let i = 0; i < existsAnimators.length; i++) {
-                const animator = existsAnimators[i];
+            for (var i = 0; i < existsAnimators.length; i++) {
+                var animator = existsAnimators[i];
                 if (animator.targetName === topKey) {
-                    const allAborted = animator.stopTracks(animationKeys);
+                    var allAborted = animator.stopTracks(animationKeys);
                     if (allAborted) {
-                        const idx = indexOf(existsAnimators, animator);
+                        var idx = indexOf(existsAnimators, animator);
                         existsAnimators.splice(idx, 1);
                     }
                 }
             }
         }
         if (!cfg.force) {
-            animationKeys = filter(animationKeys, key => !isValueSame(target[key], animateObj[key]));
+            animationKeys = filter(animationKeys, function (key) { return !isValueSame(target[key], animateObj[key]); });
             keyLen = animationKeys.length;
         }
         if (keyLen > 0
             || (cfg.force && !animators.length)) {
-            let revertedSource;
-            let reversedTarget;
-            let sourceClone;
+            var revertedSource = void 0;
+            var reversedTarget = void 0;
+            var sourceClone = void 0;
             if (reverse) {
                 reversedTarget = {};
                 if (setToFinal) {
                     revertedSource = {};
                 }
-                for (let i = 0; i < keyLen; i++) {
-                    const innerKey = animationKeys[i];
+                for (var i = 0; i < keyLen; i++) {
+                    var innerKey = animationKeys[i];
                     reversedTarget[innerKey] = animateObj[innerKey];
                     if (setToFinal) {
                         revertedSource[innerKey] = target[innerKey];
@@ -6788,13 +6912,13 @@
             }
             else if (setToFinal) {
                 sourceClone = {};
-                for (let i = 0; i < keyLen; i++) {
-                    const innerKey = animationKeys[i];
+                for (var i = 0; i < keyLen; i++) {
+                    var innerKey = animationKeys[i];
                     sourceClone[innerKey] = cloneValue(animateObj[innerKey]);
                     copyValue(animateObj, target, innerKey);
                 }
             }
-            const animator = new Animator(animateObj, false, false, additive ? filter(existsAnimators, animator => animator.targetName === topKey) : null);
+            var animator = new Animator(animateObj, false, false, additive ? filter(existsAnimators, function (animator) { return animator.targetName === topKey; }) : null);
             animator.targetName = topKey;
             if (cfg.scope) {
                 animator.scope = cfg.scope;
@@ -6811,34 +6935,36 @@
         }
     }
 
-    class Group extends Element {
-        constructor(opts) {
-            super();
-            this.isGroup = true;
-            this._children = [];
-            this.attr(opts);
+    var Group = (function (_super) {
+        __extends$1(Group, _super);
+        function Group(opts) {
+            var _this = _super.call(this) || this;
+            _this.isGroup = true;
+            _this._children = [];
+            _this.attr(opts);
+            return _this;
         }
-        childrenRef() {
+        Group.prototype.childrenRef = function () {
             return this._children;
-        }
-        children() {
+        };
+        Group.prototype.children = function () {
             return this._children.slice();
-        }
-        childAt(idx) {
+        };
+        Group.prototype.childAt = function (idx) {
             return this._children[idx];
-        }
-        childOfName(name) {
-            const children = this._children;
-            for (let i = 0; i < children.length; i++) {
+        };
+        Group.prototype.childOfName = function (name) {
+            var children = this._children;
+            for (var i = 0; i < children.length; i++) {
                 if (children[i].name === name) {
                     return children[i];
                 }
             }
-        }
-        childCount() {
+        };
+        Group.prototype.childCount = function () {
             return this._children.length;
-        }
-        add(child) {
+        };
+        Group.prototype.add = function (child) {
             if (child) {
                 if (child !== this && child.parent !== this) {
                     this._children.push(child);
@@ -6851,55 +6977,63 @@
                 }
             }
             return this;
-        }
-        addBefore(child, nextSibling) {
+        };
+        Group.prototype.addBefore = function (child, nextSibling) {
             if (child && child !== this && child.parent !== this
                 && nextSibling && nextSibling.parent === this) {
-                const children = this._children;
-                const idx = children.indexOf(nextSibling);
+                var children = this._children;
+                var idx = children.indexOf(nextSibling);
                 if (idx >= 0) {
                     children.splice(idx, 0, child);
                     this._doAdd(child);
                 }
             }
             return this;
-        }
-        replace(oldChild, newChild) {
-            const idx = indexOf(this._children, oldChild);
+        };
+        Group.prototype.replace = function (oldChild, newChild) {
+            var idx = indexOf(this._children, oldChild);
             if (idx >= 0) {
                 this.replaceAt(newChild, idx);
             }
             return this;
-        }
-        replaceAt(child, index) {
-            const children = this._children;
-            const old = children[index];
+        };
+        Group.prototype.replaceAt = function (child, index) {
+            var children = this._children;
+            var old = children[index];
             if (child && child !== this && child.parent !== this && child !== old) {
                 children[index] = child;
                 old.parent = null;
-                const zr = this.__zr;
+                var zr = this.__zr;
                 if (zr) {
                     old.removeSelfFromZr(zr);
                 }
                 this._doAdd(child);
             }
             return this;
-        }
-        _doAdd(child) {
+        };
+        Group.prototype._doAdd = function (child) {
             if (child.parent) {
                 child.parent.remove(child);
             }
             child.parent = this;
-            const zr = this.__zr;
+            var zr = this.__zr;
             if (zr && zr !== child.__zr) {
                 child.addSelfToZr(zr);
             }
+            else if (zr && zr === child.__zr) {
+                if (zr.roughness != null && child.roughness == null) {
+                    child.roughness = zr.roughness;
+                }
+                if (zr.filler != null && child.filler == null) {
+                    child.filler = zr.filler;
+                }
+            }
             zr && zr.refresh();
-        }
-        remove(child) {
-            const zr = this.__zr;
-            const children = this._children;
-            const idx = indexOf(children, child);
+        };
+        Group.prototype.remove = function (child) {
+            var zr = this.__zr;
+            var children = this._children;
+            var idx = indexOf(children, child);
             if (idx < 0) {
                 return this;
             }
@@ -6910,12 +7044,12 @@
             }
             zr && zr.refresh();
             return this;
-        }
-        removeAll() {
-            const children = this._children;
-            const zr = this.__zr;
-            for (let i = 0; i < children.length; i++) {
-                const child = children[i];
+        };
+        Group.prototype.removeAll = function () {
+            var children = this._children;
+            var zr = this.__zr;
+            for (var i = 0; i < children.length; i++) {
+                var child = children[i];
                 if (zr) {
                     child.removeSelfFromZr(zr);
                 }
@@ -6923,51 +7057,51 @@
             }
             children.length = 0;
             return this;
-        }
-        eachChild(cb, context) {
-            const children = this._children;
-            for (let i = 0; i < children.length; i++) {
-                const child = children[i];
+        };
+        Group.prototype.eachChild = function (cb, context) {
+            var children = this._children;
+            for (var i = 0; i < children.length; i++) {
+                var child = children[i];
                 cb.call(context, child, i);
             }
             return this;
-        }
-        traverse(cb, context) {
-            for (let i = 0; i < this._children.length; i++) {
-                const child = this._children[i];
-                const stopped = cb.call(context, child);
+        };
+        Group.prototype.traverse = function (cb, context) {
+            for (var i = 0; i < this._children.length; i++) {
+                var child = this._children[i];
+                var stopped = cb.call(context, child);
                 if (child.isGroup && !stopped) {
                     child.traverse(cb, context);
                 }
             }
             return this;
-        }
-        addSelfToZr(zr) {
-            super.addSelfToZr(zr);
-            for (let i = 0; i < this._children.length; i++) {
-                const child = this._children[i];
+        };
+        Group.prototype.addSelfToZr = function (zr) {
+            _super.prototype.addSelfToZr.call(this, zr);
+            for (var i = 0; i < this._children.length; i++) {
+                var child = this._children[i];
                 child.addSelfToZr(zr);
             }
-        }
-        removeSelfFromZr(zr) {
-            super.removeSelfFromZr(zr);
-            for (let i = 0; i < this._children.length; i++) {
-                const child = this._children[i];
+        };
+        Group.prototype.removeSelfFromZr = function (zr) {
+            _super.prototype.removeSelfFromZr.call(this, zr);
+            for (var i = 0; i < this._children.length; i++) {
+                var child = this._children[i];
                 child.removeSelfFromZr(zr);
             }
-        }
-        getBoundingRect(includeChildren) {
-            const tmpRect = new BoundingRect(0, 0, 0, 0);
-            const children = includeChildren || this._children;
-            const tmpMat = [];
-            let rect = null;
-            for (let i = 0; i < children.length; i++) {
-                const child = children[i];
+        };
+        Group.prototype.getBoundingRect = function (includeChildren) {
+            var tmpRect = new BoundingRect(0, 0, 0, 0);
+            var children = includeChildren || this._children;
+            var tmpMat = [];
+            var rect = null;
+            for (var i = 0; i < children.length; i++) {
+                var child = children[i];
                 if (child.ignore || child.invisible) {
                     continue;
                 }
-                const childRect = child.getBoundingRect();
-                const transform = child.getLocalTransform(tmpMat);
+                var childRect = child.getBoundingRect();
+                var transform = child.getLocalTransform(tmpMat);
                 if (transform) {
                     BoundingRect.applyTransform(tmpRect, childRect, transform);
                     rect = rect || tmpRect.clone();
@@ -6979,8 +7113,9 @@
                 }
             }
             return rect || tmpRect;
-        }
-    }
+        };
+        return Group;
+    }(Element));
     Group.prototype.type = 'group';
 
     /*!
@@ -6992,8 +7127,8 @@
      * LICENSE
      * https://github.com/ecomfe/zrender/blob/master/LICENSE.txt
      */
-    const painterCtors = {};
-    let instances = {};
+    var painterCtors = {};
+    var instances = {};
     function delInstance(id) {
         delete instances[id];
     }
@@ -7001,14 +7136,14 @@
         if (!backgroundColor) {
             return false;
         }
-        if (typeof backgroundColor === "string") {
+        if (typeof backgroundColor === 'string') {
             return lum(backgroundColor, 1) < DARK_MODE_THRESHOLD;
         }
         else if (backgroundColor.colorStops) {
-            const colorStops = backgroundColor.colorStops;
-            let totalLum = 0;
-            const len = colorStops.length;
-            for (let i = 0; i < len; i++) {
+            var colorStops = backgroundColor.colorStops;
+            var totalLum = 0;
+            var len = colorStops.length;
+            for (var i = 0; i < len; i++) {
                 totalLum += lum(colorStops[i].color, 1);
             }
             totalLum /= len;
@@ -7016,8 +7151,9 @@
         }
         return false;
     }
-    class ZRender {
-        constructor(id, dom, opts) {
+    var ZRender = (function () {
+        function ZRender(id, dom, opts) {
+            var _this = this;
             this._sleepAfterStill = 10;
             this._stillFrameAccum = 0;
             this._needsRefresh = true;
@@ -7026,64 +7162,64 @@
             opts = opts || {};
             this.dom = dom;
             this.id = id;
-            const storage = new Storage();
-            let rendererType = opts.renderer || "canvas";
-            console.log("opts.roughness", opts.roughness);
+            var storage = new Storage();
+            var rendererType = opts.renderer || 'canvas';
             this.roughness = opts.roughness || 0;
+            this.filler = opts.filler || 'hachure';
             if (!painterCtors[rendererType]) {
                 rendererType = keys(painterCtors)[0];
             }
-            if ("development" !== "production") {
+            if ("development" !== 'production') {
                 if (!painterCtors[rendererType]) {
-                    throw new Error(`Renderer '${rendererType}' is not imported. Please import it first.`);
+                    throw new Error("Renderer '" + rendererType + "' is not imported. Please import it first.");
                 }
             }
             opts.useDirtyRect = opts.useDirtyRect == null ? false : opts.useDirtyRect;
-            const painter = new painterCtors[rendererType](dom, storage, opts, id);
-            const ssrMode = opts.ssr || painter.ssrOnly;
+            var painter = new painterCtors[rendererType](dom, storage, opts, id);
+            var ssrMode = opts.ssr || painter.ssrOnly;
             this.storage = storage;
             this.painter = painter;
-            const handlerProxy = !env.node && !env.worker && !ssrMode
+            var handlerProxy = !env.node && !env.worker && !ssrMode
                 ? new HandlerDomProxy(painter.getViewportRoot(), painter.root)
                 : null;
-            const useCoarsePointer = opts.useCoarsePointer;
-            const usePointerSize = useCoarsePointer == null || useCoarsePointer === "auto"
+            var useCoarsePointer = opts.useCoarsePointer;
+            var usePointerSize = useCoarsePointer == null || useCoarsePointer === 'auto'
                 ? env.touchEventsSupported
                 : !!useCoarsePointer;
-            const defaultPointerSize = 44;
-            let pointerSize;
+            var defaultPointerSize = 44;
+            var pointerSize;
             if (usePointerSize) {
                 pointerSize = retrieve2(opts.pointerSize, defaultPointerSize);
             }
             this.handler = new Handler(storage, painter, handlerProxy, painter.root, pointerSize);
             this.animation = new Animation({
                 stage: {
-                    update: ssrMode ? null : () => this._flush(true),
+                    update: ssrMode ? null : function () { return _this._flush(true); },
                 },
             });
             if (!ssrMode) {
                 this.animation.start();
             }
         }
-        add(el) {
-            console.log("zrender init add", el.id, el);
+        ZRender.prototype.add = function (el) {
             if (this._disposed || !el) {
                 return;
             }
             el.roughness = this.roughness;
+            el.filler = this.filler;
             this.storage.addRoot(el);
             el.addSelfToZr(this);
             this.refresh();
-        }
-        remove(el) {
+        };
+        ZRender.prototype.remove = function (el) {
             if (this._disposed || !el) {
                 return;
             }
             this.storage.delRoot(el);
             el.removeSelfFromZr(this);
             this.refresh();
-        }
-        configLayer(zLevel, config) {
+        };
+        ZRender.prototype.configLayer = function (zLevel, config) {
             if (this._disposed) {
                 return;
             }
@@ -7091,8 +7227,8 @@
                 this.painter.configLayer(zLevel, config);
             }
             this.refresh();
-        }
-        setBackgroundColor(backgroundColor) {
+        };
+        ZRender.prototype.setBackgroundColor = function (backgroundColor) {
             if (this._disposed) {
                 return;
             }
@@ -7102,17 +7238,17 @@
             this.refresh();
             this._backgroundColor = backgroundColor;
             this._darkMode = isDarkMode(backgroundColor);
-        }
-        getBackgroundColor() {
+        };
+        ZRender.prototype.getBackgroundColor = function () {
             return this._backgroundColor;
-        }
-        setDarkMode(darkMode) {
+        };
+        ZRender.prototype.setDarkMode = function (darkMode) {
             this._darkMode = darkMode;
-        }
-        isDarkMode() {
+        };
+        ZRender.prototype.isDarkMode = function () {
             return this._darkMode;
-        }
-        refreshImmediately(fromInside) {
+        };
+        ZRender.prototype.refreshImmediately = function (fromInside) {
             if (this._disposed) {
                 return;
             }
@@ -7122,23 +7258,23 @@
             this._needsRefresh = false;
             this.painter.refresh();
             this._needsRefresh = false;
-        }
-        refresh() {
+        };
+        ZRender.prototype.refresh = function () {
             if (this._disposed) {
                 return;
             }
             this._needsRefresh = true;
             this.animation.start();
-        }
-        flush() {
+        };
+        ZRender.prototype.flush = function () {
             if (this._disposed) {
                 return;
             }
             this._flush(false);
-        }
-        _flush(fromInside) {
-            let triggerRendered;
-            const start = getTime();
+        };
+        ZRender.prototype._flush = function (fromInside) {
+            var triggerRendered;
+            var start = getTime();
             if (this._needsRefresh) {
                 triggerRendered = true;
                 this.refreshImmediately(fromInside);
@@ -7147,7 +7283,7 @@
                 triggerRendered = true;
                 this.refreshHoverImmediately();
             }
-            const end = getTime();
+            var end = getTime();
             if (triggerRendered) {
                 this._stillFrameAccum = 0;
                 this.trigger("rendered", {
@@ -7160,21 +7296,21 @@
                     this.animation.stop();
                 }
             }
-        }
-        setSleepAfterStill(stillFramesCount) {
+        };
+        ZRender.prototype.setSleepAfterStill = function (stillFramesCount) {
             this._sleepAfterStill = stillFramesCount;
-        }
-        wakeUp() {
+        };
+        ZRender.prototype.wakeUp = function () {
             if (this._disposed) {
                 return;
             }
             this.animation.start();
             this._stillFrameAccum = 0;
-        }
-        refreshHover() {
+        };
+        ZRender.prototype.refreshHover = function () {
             this._needsRefreshHover = true;
-        }
-        refreshHoverImmediately() {
+        };
+        ZRender.prototype.refreshHoverImmediately = function () {
             if (this._disposed) {
                 return;
             }
@@ -7182,77 +7318,77 @@
             if (this.painter.refreshHover && this.painter.getType() === "canvas") {
                 this.painter.refreshHover();
             }
-        }
-        resize(opts) {
+        };
+        ZRender.prototype.resize = function (opts) {
             if (this._disposed) {
                 return;
             }
             opts = opts || {};
             this.painter.resize(opts.width, opts.height);
             this.handler.resize();
-        }
-        clearAnimation() {
+        };
+        ZRender.prototype.clearAnimation = function () {
             if (this._disposed) {
                 return;
             }
             this.animation.clear();
-        }
-        getWidth() {
+        };
+        ZRender.prototype.getWidth = function () {
             if (this._disposed) {
                 return;
             }
             return this.painter.getWidth();
-        }
-        getHeight() {
+        };
+        ZRender.prototype.getHeight = function () {
             if (this._disposed) {
                 return;
             }
             return this.painter.getHeight();
-        }
-        setCursorStyle(cursorStyle) {
+        };
+        ZRender.prototype.setCursorStyle = function (cursorStyle) {
             if (this._disposed) {
                 return;
             }
             this.handler.setCursorStyle(cursorStyle);
-        }
-        findHover(x, y) {
+        };
+        ZRender.prototype.findHover = function (x, y) {
             if (this._disposed) {
                 return;
             }
             return this.handler.findHover(x, y);
-        }
-        on(eventName, eventHandler, context) {
+        };
+        ZRender.prototype.on = function (eventName, eventHandler, context) {
             if (!this._disposed) {
                 this.handler.on(eventName, eventHandler, context);
             }
             return this;
-        }
-        off(eventName, eventHandler) {
+        };
+        ZRender.prototype.off = function (eventName, eventHandler) {
             if (this._disposed) {
                 return;
             }
             this.handler.off(eventName, eventHandler);
-        }
-        trigger(eventName, event) {
+        };
+        ZRender.prototype.trigger = function (eventName, event) {
             if (this._disposed) {
                 return;
             }
             this.handler.trigger(eventName, event);
-        }
-        clear() {
+        };
+        ZRender.prototype.clear = function () {
             if (this._disposed) {
                 return;
             }
-            const roots = this.storage.getRoots();
-            for (let i = 0; i < roots.length; i++) {
+            var roots = this.storage.getRoots();
+            for (var i = 0; i < roots.length; i++) {
                 if (roots[i] instanceof Group) {
                     roots[i].removeSelfFromZr(this);
                 }
             }
             this.storage.delAllRoots();
             this.painter.clear();
-        }
-        dispose() {
+        };
+        ZRender.prototype.dispose = function () {
             if (this._disposed) {
                 return;
             }
@@ -7264,10 +7400,12 @@
             this.animation = this.storage = this.painter = this.handler = null;
             this._disposed = true;
             delInstance(this.id);
-        }
-    }
+        };
+        return ZRender;
+    }());
     function init(dom, opts) {
-        const zr = new ZRender(guid(), dom, opts);
+        console.log("zrender init opts", opts);
+        var zr = new ZRender(guid(), dom, opts);
         instances[zr.id] = zr;
         return zr;
     }
@@ -7275,7 +7413,7 @@
         zr.dispose();
     }
     function disposeAll() {
-        for (let key in instances) {
+        for (var key in instances) {
             if (instances.hasOwnProperty(key)) {
                 instances[key].dispose();
             }
@@ -7288,16 +7426,16 @@
     function registerPainter(name, Ctor) {
         painterCtors[name] = Ctor;
     }
-    let ssrDataGetter;
+    var ssrDataGetter;
     function getElementSSRData(el) {
-        if (typeof ssrDataGetter === "function") {
+        if (typeof ssrDataGetter === 'function') {
             return ssrDataGetter(el);
         }
     }
     function registerSSRDataGetter(getter) {
         ssrDataGetter = getter;
     }
-    const version = "5.6.0";
+    var version = '5.6.0';
 
     var zrender = /*#__PURE__*/Object.freeze({
         __proto__: null,
@@ -8862,10 +9000,10 @@
       return AreaStyleMixin;
     }();
 
-    const globalImageCache = new LRU(50);
+    var globalImageCache = new LRU(50);
     function findExistImage(newImageOrSrc) {
         if (typeof newImageOrSrc === 'string') {
-            const cachedImgObj = globalImageCache.get(newImageOrSrc);
+            var cachedImgObj = globalImageCache.get(newImageOrSrc);
             return cachedImgObj && cachedImgObj.image;
         }
         else {
@@ -8880,8 +9018,8 @@
             if ((image && image.__zrImageSrc === newImageOrSrc) || !hostEl) {
                 return image;
             }
-            const cachedImgObj = globalImageCache.get(newImageOrSrc);
-            const pendingWrap = { hostEl: hostEl, cb: onload, cbPayload: cbPayload };
+            var cachedImgObj = globalImageCache.get(newImageOrSrc);
+            var pendingWrap = { hostEl: hostEl, cb: onload, cbPayload: cbPayload };
             if (cachedImgObj) {
                 image = cachedImgObj.image;
                 !isImageReady(image) && cachedImgObj.pending.push(pendingWrap);
@@ -8901,11 +9039,11 @@
         }
     }
     function imageOnLoad() {
-        const cachedImgObj = this.__cachedImgObj;
+        var cachedImgObj = this.__cachedImgObj;
         this.onload = this.onerror = this.__cachedImgObj = null;
-        for (let i = 0; i < cachedImgObj.pending.length; i++) {
-            const pendingWrap = cachedImgObj.pending[i];
-            const cb = pendingWrap.cb;
+        for (var i = 0; i < cachedImgObj.pending.length; i++) {
+            var pendingWrap = cachedImgObj.pending[i];
+            var cb = pendingWrap.cb;
             cb && cb(this, pendingWrap.cbPayload);
             pendingWrap.hostEl.dirty();
         }
@@ -8915,33 +9053,33 @@
         return image && image.width && image.height;
     }
 
-    const STYLE_REG = /\{([a-zA-Z0-9_]+)\|([^}]*)\}/g;
+    var STYLE_REG = /\{([a-zA-Z0-9_]+)\|([^}]*)\}/g;
     function truncateText(text, containerWidth, font, ellipsis, options) {
         if (!containerWidth) {
             return '';
         }
-        const textLines = (text + '').split('\n');
+        var textLines = (text + '').split('\n');
         options = prepareTruncateOptions(containerWidth, font, ellipsis, options);
-        for (let i = 0, len = textLines.length; i < len; i++) {
+        for (var i = 0, len = textLines.length; i < len; i++) {
             textLines[i] = truncateSingleLine(textLines[i], options);
         }
         return textLines.join('\n');
     }
     function prepareTruncateOptions(containerWidth, font, ellipsis, options) {
         options = options || {};
-        let preparedOpts = extend({}, options);
+        var preparedOpts = extend({}, options);
         preparedOpts.font = font;
         ellipsis = retrieve2(ellipsis, '...');
         preparedOpts.maxIterations = retrieve2(options.maxIterations, 2);
-        const minChar = preparedOpts.minChar = retrieve2(options.minChar, 0);
+        var minChar = preparedOpts.minChar = retrieve2(options.minChar, 0);
         preparedOpts.cnCharWidth = getWidth('国', font);
-        const ascCharWidth = preparedOpts.ascCharWidth = getWidth('a', font);
+        var ascCharWidth = preparedOpts.ascCharWidth = getWidth('a', font);
         preparedOpts.placeholder = retrieve2(options.placeholder, '');
-        let contentWidth = containerWidth = Math.max(0, containerWidth - 1);
-        for (let i = 0; i < minChar && contentWidth >= ascCharWidth; i++) {
+        var contentWidth = containerWidth = Math.max(0, containerWidth - 1);
+        for (var i = 0; i < minChar && contentWidth >= ascCharWidth; i++) {
             contentWidth -= ascCharWidth;
         }
-        let ellipsisWidth = getWidth(ellipsis, font);
+        var ellipsisWidth = getWidth(ellipsis, font);
         if (ellipsisWidth > contentWidth) {
             ellipsis = '';
             ellipsisWidth = 0;
@@ -8954,22 +9092,22 @@
         return preparedOpts;
     }
     function truncateSingleLine(textLine, options) {
-        const containerWidth = options.containerWidth;
-        const font = options.font;
-        const contentWidth = options.contentWidth;
+        var containerWidth = options.containerWidth;
+        var font = options.font;
+        var contentWidth = options.contentWidth;
         if (!containerWidth) {
             return '';
         }
-        let lineWidth = getWidth(textLine, font);
+        var lineWidth = getWidth(textLine, font);
         if (lineWidth <= containerWidth) {
             return textLine;
         }
-        for (let j = 0;; j++) {
+        for (var j = 0;; j++) {
             if (lineWidth <= contentWidth || j >= options.maxIterations) {
                 textLine += options.ellipsis;
                 break;
             }
-            const subLength = j === 0
+            var subLength = j === 0
                 ? estimateLength(textLine, contentWidth, options.ascCharWidth, options.cnCharWidth)
                 : lineWidth > 0
                     ? Math.floor(textLine.length * contentWidth / lineWidth)
@@ -8983,56 +9121,56 @@
         return textLine;
     }
     function estimateLength(text, contentWidth, ascCharWidth, cnCharWidth) {
-        let width = 0;
-        let i = 0;
-        for (let len = text.length; i < len && width < contentWidth; i++) {
-            const charCode = text.charCodeAt(i);
+        var width = 0;
+        var i = 0;
+        for (var len = text.length; i < len && width < contentWidth; i++) {
+            var charCode = text.charCodeAt(i);
             width += (0 <= charCode && charCode <= 127) ? ascCharWidth : cnCharWidth;
         }
         return i;
     }
     function parsePlainText(text, style) {
         text != null && (text += '');
-        const overflow = style.overflow;
-        const padding = style.padding;
-        const font = style.font;
-        const truncate = overflow === 'truncate';
-        const calculatedLineHeight = getLineHeight(font);
-        const lineHeight = retrieve2(style.lineHeight, calculatedLineHeight);
-        const bgColorDrawn = !!(style.backgroundColor);
-        const truncateLineOverflow = style.lineOverflow === 'truncate';
-        let width = style.width;
-        let lines;
+        var overflow = style.overflow;
+        var padding = style.padding;
+        var font = style.font;
+        var truncate = overflow === 'truncate';
+        var calculatedLineHeight = getLineHeight(font);
+        var lineHeight = retrieve2(style.lineHeight, calculatedLineHeight);
+        var bgColorDrawn = !!(style.backgroundColor);
+        var truncateLineOverflow = style.lineOverflow === 'truncate';
+        var width = style.width;
+        var lines;
         if (width != null && (overflow === 'break' || overflow === 'breakAll')) {
             lines = text ? wrapText(text, style.font, width, overflow === 'breakAll', 0).lines : [];
         }
         else {
             lines = text ? text.split('\n') : [];
         }
-        const contentHeight = lines.length * lineHeight;
-        const height = retrieve2(style.height, contentHeight);
+        var contentHeight = lines.length * lineHeight;
+        var height = retrieve2(style.height, contentHeight);
         if (contentHeight > height && truncateLineOverflow) {
-            const lineCount = Math.floor(height / lineHeight);
+            var lineCount = Math.floor(height / lineHeight);
             lines = lines.slice(0, lineCount);
         }
         if (text && truncate && width != null) {
-            const options = prepareTruncateOptions(width, font, style.ellipsis, {
+            var options = prepareTruncateOptions(width, font, style.ellipsis, {
                 minChar: style.truncateMinChar,
                 placeholder: style.placeholder
             });
-            for (let i = 0; i < lines.length; i++) {
+            for (var i = 0; i < lines.length; i++) {
                 lines[i] = truncateSingleLine(lines[i], options);
             }
         }
-        let outerHeight = height;
-        let contentWidth = 0;
-        for (let i = 0; i < lines.length; i++) {
+        var outerHeight = height;
+        var contentWidth = 0;
+        for (var i = 0; i < lines.length; i++) {
             contentWidth = Math.max(getWidth(lines[i], font), contentWidth);
         }
         if (width == null) {
             width = contentWidth;
         }
-        let outerWidth = contentWidth;
+        var outerWidth = contentWidth;
         if (padding) {
             outerHeight += padding[0] + padding[2];
             outerWidth += padding[1] + padding[3];
@@ -9053,18 +9191,22 @@
             width: width
         };
     }
-    class RichTextToken {
-    }
-    class RichTextLine {
-        constructor(tokens) {
+    var RichTextToken = (function () {
+        function RichTextToken() {
+        }
+        return RichTextToken;
+    }());
+    var RichTextLine = (function () {
+        function RichTextLine(tokens) {
             this.tokens = [];
             if (tokens) {
                 this.tokens = tokens;
             }
         }
-    }
-    class RichTextContentBlock {
-        constructor() {
+        return RichTextLine;
+    }());
+    var RichTextContentBlock = (function () {
+        function RichTextContentBlock() {
             this.width = 0;
             this.height = 0;
             this.contentWidth = 0;
@@ -9073,23 +9215,24 @@
             this.outerHeight = 0;
             this.lines = [];
         }
-    }
+        return RichTextContentBlock;
+    }());
     function parseRichText(text, style) {
-        const contentBlock = new RichTextContentBlock();
+        var contentBlock = new RichTextContentBlock();
         text != null && (text += '');
         if (!text) {
             return contentBlock;
         }
-        const topWidth = style.width;
-        const topHeight = style.height;
-        const overflow = style.overflow;
-        let wrapInfo = (overflow === 'break' || overflow === 'breakAll') && topWidth != null
+        var topWidth = style.width;
+        var topHeight = style.height;
+        var overflow = style.overflow;
+        var wrapInfo = (overflow === 'break' || overflow === 'breakAll') && topWidth != null
             ? { width: topWidth, accumWidth: 0, breakAll: overflow === 'breakAll' }
             : null;
-        let lastIndex = STYLE_REG.lastIndex = 0;
-        let result;
+        var lastIndex = STYLE_REG.lastIndex = 0;
+        var result;
         while ((result = STYLE_REG.exec(text)) != null) {
-            const matchedIndex = result.index;
+            var matchedIndex = result.index;
             if (matchedIndex > lastIndex) {
                 pushTokens(contentBlock, text.substring(lastIndex, matchedIndex), style, wrapInfo);
             }
@@ -9099,30 +9242,30 @@
         if (lastIndex < text.length) {
             pushTokens(contentBlock, text.substring(lastIndex, text.length), style, wrapInfo);
         }
-        let pendingList = [];
-        let calculatedHeight = 0;
-        let calculatedWidth = 0;
-        const stlPadding = style.padding;
-        const truncate = overflow === 'truncate';
-        const truncateLine = style.lineOverflow === 'truncate';
+        var pendingList = [];
+        var calculatedHeight = 0;
+        var calculatedWidth = 0;
+        var stlPadding = style.padding;
+        var truncate = overflow === 'truncate';
+        var truncateLine = style.lineOverflow === 'truncate';
         function finishLine(line, lineWidth, lineHeight) {
             line.width = lineWidth;
             line.lineHeight = lineHeight;
             calculatedHeight += lineHeight;
             calculatedWidth = Math.max(calculatedWidth, lineWidth);
         }
-        outer: for (let i = 0; i < contentBlock.lines.length; i++) {
-            const line = contentBlock.lines[i];
-            let lineHeight = 0;
-            let lineWidth = 0;
-            for (let j = 0; j < line.tokens.length; j++) {
-                const token = line.tokens[j];
-                const tokenStyle = token.styleName && style.rich[token.styleName] || {};
-                const textPadding = token.textPadding = tokenStyle.padding;
-                const paddingH = textPadding ? textPadding[1] + textPadding[3] : 0;
-                const font = token.font = tokenStyle.font || style.font;
+        outer: for (var i = 0; i < contentBlock.lines.length; i++) {
+            var line = contentBlock.lines[i];
+            var lineHeight = 0;
+            var lineWidth = 0;
+            for (var j = 0; j < line.tokens.length; j++) {
+                var token = line.tokens[j];
+                var tokenStyle = token.styleName && style.rich[token.styleName] || {};
+                var textPadding = token.textPadding = tokenStyle.padding;
+                var paddingH = textPadding ? textPadding[1] + textPadding[3] : 0;
+                var font = token.font = tokenStyle.font || style.font;
                 token.contentHeight = getLineHeight(font);
-                let tokenHeight = retrieve2(tokenStyle.height, token.contentHeight);
+                var tokenHeight = retrieve2(tokenStyle.height, token.contentHeight);
                 token.innerHeight = tokenHeight;
                 textPadding && (tokenHeight += textPadding[0] + textPadding[2]);
                 token.height = tokenHeight;
@@ -9140,8 +9283,8 @@
                     }
                     break outer;
                 }
-                let styleTokenWidth = tokenStyle.width;
-                let tokenWidthNotSpecified = styleTokenWidth == null || styleTokenWidth === 'auto';
+                var styleTokenWidth = tokenStyle.width;
+                var tokenWidthNotSpecified = styleTokenWidth == null || styleTokenWidth === 'auto';
                 if (typeof styleTokenWidth === 'string' && styleTokenWidth.charAt(styleTokenWidth.length - 1) === '%') {
                     token.percentWidth = styleTokenWidth;
                     pendingList.push(token);
@@ -9149,8 +9292,8 @@
                 }
                 else {
                     if (tokenWidthNotSpecified) {
-                        const textBackgroundColor = tokenStyle.backgroundColor;
-                        let bgImg = textBackgroundColor && textBackgroundColor.image;
+                        var textBackgroundColor = tokenStyle.backgroundColor;
+                        var bgImg = textBackgroundColor && textBackgroundColor.image;
                         if (bgImg) {
                             bgImg = findExistImage(bgImg);
                             if (isImageReady(bgImg)) {
@@ -9158,7 +9301,7 @@
                             }
                         }
                     }
-                    const remainTruncWidth = truncate && topWidth != null
+                    var remainTruncWidth = truncate && topWidth != null
                         ? topWidth - lineWidth : null;
                     if (remainTruncWidth != null && remainTruncWidth < token.width) {
                         if (!tokenWidthNotSpecified || remainTruncWidth < paddingH) {
@@ -9188,36 +9331,36 @@
             contentBlock.outerWidth += stlPadding[1] + stlPadding[3];
             contentBlock.outerHeight += stlPadding[0] + stlPadding[2];
         }
-        for (let i = 0; i < pendingList.length; i++) {
-            const token = pendingList[i];
-            const percentWidth = token.percentWidth;
+        for (var i = 0; i < pendingList.length; i++) {
+            var token = pendingList[i];
+            var percentWidth = token.percentWidth;
             token.width = parseInt(percentWidth, 10) / 100 * contentBlock.width;
         }
         return contentBlock;
     }
     function pushTokens(block, str, style, wrapInfo, styleName) {
-        const isEmptyStr = str === '';
-        const tokenStyle = styleName && style.rich[styleName] || {};
-        const lines = block.lines;
-        const font = tokenStyle.font || style.font;
-        let newLine = false;
-        let strLines;
-        let linesWidths;
+        var isEmptyStr = str === '';
+        var tokenStyle = styleName && style.rich[styleName] || {};
+        var lines = block.lines;
+        var font = tokenStyle.font || style.font;
+        var newLine = false;
+        var strLines;
+        var linesWidths;
         if (wrapInfo) {
-            const tokenPadding = tokenStyle.padding;
-            let tokenPaddingH = tokenPadding ? tokenPadding[1] + tokenPadding[3] : 0;
+            var tokenPadding = tokenStyle.padding;
+            var tokenPaddingH = tokenPadding ? tokenPadding[1] + tokenPadding[3] : 0;
             if (tokenStyle.width != null && tokenStyle.width !== 'auto') {
-                const outerWidth = parsePercent(tokenStyle.width, wrapInfo.width) + tokenPaddingH;
+                var outerWidth_1 = parsePercent(tokenStyle.width, wrapInfo.width) + tokenPaddingH;
                 if (lines.length > 0) {
-                    if (outerWidth + wrapInfo.accumWidth > wrapInfo.width) {
+                    if (outerWidth_1 + wrapInfo.accumWidth > wrapInfo.width) {
                         strLines = str.split('\n');
                         newLine = true;
                     }
                 }
-                wrapInfo.accumWidth = outerWidth;
+                wrapInfo.accumWidth = outerWidth_1;
             }
             else {
-                const res = wrapText(str, font, wrapInfo.width, wrapInfo.breakAll, wrapInfo.accumWidth);
+                var res = wrapText(str, font, wrapInfo.width, wrapInfo.breakAll, wrapInfo.accumWidth);
                 wrapInfo.accumWidth = res.accumWidth + tokenPaddingH;
                 linesWidths = res.linesWidths;
                 strLines = res.lines;
@@ -9226,9 +9369,9 @@
         else {
             strLines = str.split('\n');
         }
-        for (let i = 0; i < strLines.length; i++) {
-            const text = strLines[i];
-            const token = new RichTextToken();
+        for (var i = 0; i < strLines.length; i++) {
+            var text = strLines[i];
+            var token = new RichTextToken();
             token.styleName = styleName;
             token.text = text;
             token.isLineHolder = !text && !isEmptyStr;
@@ -9241,8 +9384,8 @@
                     : getWidth(text, font);
             }
             if (!i && !newLine) {
-                const tokens = (lines[lines.length - 1] || (lines[0] = new RichTextLine())).tokens;
-                const tokensLen = tokens.length;
+                var tokens = (lines[lines.length - 1] || (lines[0] = new RichTextLine())).tokens;
+                var tokensLen = tokens.length;
                 (tokensLen === 1 && tokens[0].isLineHolder)
                     ? (tokens[0] = token)
                     : ((text || !tokensLen || isEmptyStr) && tokens.push(token));
@@ -9253,13 +9396,13 @@
         }
     }
     function isAlphabeticLetter(ch) {
-        let code = ch.charCodeAt(0);
+        var code = ch.charCodeAt(0);
         return code >= 0x20 && code <= 0x24F
             || code >= 0x370 && code <= 0x10FF
             || code >= 0x1200 && code <= 0x13FF
             || code >= 0x1E00 && code <= 0x206F;
     }
-    const breakCharMap = reduce(',&?/;] '.split(''), function (obj, ch) {
+    var breakCharMap = reduce(',&?/;] '.split(''), function (obj, ch) {
         obj[ch] = true;
         return obj;
     }, {});
@@ -9273,14 +9416,14 @@
         return true;
     }
     function wrapText(text, font, lineWidth, isBreakAll, lastAccumWidth) {
-        let lines = [];
-        let linesWidths = [];
-        let line = '';
-        let currentWord = '';
-        let currentWordWidth = 0;
-        let accumWidth = 0;
-        for (let i = 0; i < text.length; i++) {
-            const ch = text.charAt(i);
+        var lines = [];
+        var linesWidths = [];
+        var line = '';
+        var currentWord = '';
+        var currentWordWidth = 0;
+        var accumWidth = 0;
+        for (var i = 0; i < text.length; i++) {
+            var ch = text.charAt(i);
             if (ch === '\n') {
                 if (currentWord) {
                     line += currentWord;
@@ -9294,8 +9437,8 @@
                 accumWidth = 0;
                 continue;
             }
-            const chWidth = getWidth(ch, font);
-            const inWord = isBreakAll ? false : !isWordBreakChar(ch);
+            var chWidth = getWidth(ch, font);
+            var inWord = isBreakAll ? false : !isWordBreakChar(ch);
             if (!lines.length
                 ? lastAccumWidth + accumWidth + chWidth > lineWidth
                 : accumWidth + chWidth > lineWidth) {
@@ -9370,14 +9513,14 @@
             accumWidth += lastAccumWidth;
         }
         return {
-            accumWidth,
+            accumWidth: accumWidth,
             lines: lines,
-            linesWidths
+            linesWidths: linesWidths
         };
     }
 
-    const STYLE_MAGIC_KEY = '__zr_style_' + Math.round((Math.random() * 10));
-    const DEFAULT_COMMON_STYLE = {
+    var STYLE_MAGIC_KEY = '__zr_style_' + Math.round((Math.random() * 10));
+    var DEFAULT_COMMON_STYLE = {
         shadowBlur: 0,
         shadowOffsetX: 0,
         shadowOffsetY: 0,
@@ -9385,7 +9528,7 @@
         opacity: 1,
         blend: 'source-over'
     };
-    const DEFAULT_COMMON_ANIMATION_PROPS = {
+    var DEFAULT_COMMON_ANIMATION_PROPS = {
         style: {
             shadowBlur: true,
             shadowOffsetX: true,
@@ -9395,33 +9538,34 @@
         }
     };
     DEFAULT_COMMON_STYLE[STYLE_MAGIC_KEY] = true;
-    const PRIMARY_STATES_KEYS$1 = ['z', 'z2', 'invisible'];
-    const PRIMARY_STATES_KEYS_IN_HOVER_LAYER = ['invisible'];
-    class Displayable extends Element {
-        constructor(props) {
-            super(props);
+    var PRIMARY_STATES_KEYS$1 = ['z', 'z2', 'invisible'];
+    var PRIMARY_STATES_KEYS_IN_HOVER_LAYER = ['invisible'];
+    var Displayable = (function (_super) {
+        __extends$1(Displayable, _super);
+        function Displayable(props) {
+            return _super.call(this, props) || this;
         }
-        _init(props) {
-            const keysArr = keys(props);
-            for (let i = 0; i < keysArr.length; i++) {
-                const key = keysArr[i];
+        Displayable.prototype._init = function (props) {
+            var keysArr = keys(props);
+            for (var i = 0; i < keysArr.length; i++) {
+                var key = keysArr[i];
                 if (key === 'style') {
                     this.useStyle(props[key]);
                 }
                 else {
-                    super.attrKV(key, props[key]);
+                    _super.prototype.attrKV.call(this, key, props[key]);
                 }
             }
             if (!this.style) {
                 this.useStyle({});
             }
-        }
-        beforeBrush() { }
-        afterBrush() { }
-        innerBeforeBrush() { }
-        innerAfterBrush() { }
-        shouldBePainted(viewWidth, viewHeight, considerClipPath, considerAncestors) {
-            const m = this.transform;
+        };
+        Displayable.prototype.beforeBrush = function () { };
+        Displayable.prototype.afterBrush = function () { };
+        Displayable.prototype.innerBeforeBrush = function () { };
+        Displayable.prototype.innerAfterBrush = function () { };
+        Displayable.prototype.shouldBePainted = function (viewWidth, viewHeight, considerClipPath, considerAncestors) {
+            var m = this.transform;
             if (this.ignore
                 || this.invisible
                 || this.style.opacity === 0
@@ -9431,43 +9575,43 @@
                 return false;
             }
             if (considerClipPath && this.__clipPaths) {
-                for (let i = 0; i < this.__clipPaths.length; ++i) {
+                for (var i = 0; i < this.__clipPaths.length; ++i) {
                     if (this.__clipPaths[i].isZeroArea()) {
                         return false;
                     }
                 }
             }
             if (considerAncestors && this.parent) {
-                let parent = this.parent;
-                while (parent) {
-                    if (parent.ignore) {
+                var parent_1 = this.parent;
+                while (parent_1) {
+                    if (parent_1.ignore) {
                         return false;
                     }
-                    parent = parent.parent;
+                    parent_1 = parent_1.parent;
                 }
             }
             return true;
-        }
-        contain(x, y) {
+        };
+        Displayable.prototype.contain = function (x, y) {
             return this.rectContain(x, y);
-        }
-        traverse(cb, context) {
+        };
+        Displayable.prototype.traverse = function (cb, context) {
             cb.call(context, this);
-        }
-        rectContain(x, y) {
-            const coord = this.transformCoordToLocal(x, y);
-            const rect = this.getBoundingRect();
+        };
+        Displayable.prototype.rectContain = function (x, y) {
+            var coord = this.transformCoordToLocal(x, y);
+            var rect = this.getBoundingRect();
             return rect.contain(coord[0], coord[1]);
-        }
-        getPaintRect() {
-            let rect = this._paintRect;
+        };
+        Displayable.prototype.getPaintRect = function () {
+            var rect = this._paintRect;
             if (!this._paintRect || this.__dirty) {
-                const transform = this.transform;
-                const elRect = this.getBoundingRect();
-                const style = this.style;
-                const shadowSize = style.shadowBlur || 0;
-                const shadowOffsetX = style.shadowOffsetX || 0;
-                const shadowOffsetY = style.shadowOffsetY || 0;
+                var transform = this.transform;
+                var elRect = this.getBoundingRect();
+                var style = this.style;
+                var shadowSize = style.shadowBlur || 0;
+                var shadowOffsetX = style.shadowOffsetX || 0;
+                var shadowOffsetY = style.shadowOffsetY || 0;
                 rect = this._paintRect || (this._paintRect = new BoundingRect(0, 0, 0, 0));
                 if (transform) {
                     BoundingRect.applyTransform(rect, elRect, transform);
@@ -9481,7 +9625,7 @@
                     rect.x = Math.min(rect.x, rect.x + shadowOffsetX - shadowSize);
                     rect.y = Math.min(rect.y, rect.y + shadowOffsetY - shadowSize);
                 }
-                const tolerance = this.dirtyRectTolerance;
+                var tolerance = this.dirtyRectTolerance;
                 if (!rect.isZero()) {
                     rect.x = Math.floor(rect.x - tolerance);
                     rect.y = Math.floor(rect.y - tolerance);
@@ -9490,8 +9634,8 @@
                 }
             }
             return rect;
-        }
-        setPrevPaintRect(paintRect) {
+        };
+        Displayable.prototype.setPrevPaintRect = function (paintRect) {
             if (paintRect) {
                 this._prevPaintRect = this._prevPaintRect || new BoundingRect(0, 0, 0, 0);
                 this._prevPaintRect.copy(paintRect);
@@ -9499,24 +9643,24 @@
             else {
                 this._prevPaintRect = null;
             }
-        }
-        getPrevPaintRect() {
+        };
+        Displayable.prototype.getPrevPaintRect = function () {
             return this._prevPaintRect;
-        }
-        animateStyle(loop) {
+        };
+        Displayable.prototype.animateStyle = function (loop) {
             return this.animate('style', loop);
-        }
-        updateDuringAnimation(targetKey) {
+        };
+        Displayable.prototype.updateDuringAnimation = function (targetKey) {
             if (targetKey === 'style') {
                 this.dirtyStyle();
             }
             else {
                 this.markRedraw();
             }
-        }
-        attrKV(key, value) {
+        };
+        Displayable.prototype.attrKV = function (key, value) {
             if (key !== 'style') {
-                super.attrKV(key, value);
+                _super.prototype.attrKV.call(this, key, value);
             }
             else {
                 if (!this.style) {
@@ -9526,8 +9670,8 @@
                     this.setStyle(value);
                 }
             }
-        }
-        setStyle(keyOrObj, value) {
+        };
+        Displayable.prototype.setStyle = function (keyOrObj, value) {
             if (typeof keyOrObj === 'string') {
                 this.style[keyOrObj] = value;
             }
@@ -9536,8 +9680,8 @@
             }
             this.dirtyStyle();
             return this;
-        }
-        dirtyStyle(notRedraw) {
+        };
+        Displayable.prototype.dirtyStyle = function (notRedraw) {
             if (!notRedraw) {
                 this.markRedraw();
             }
@@ -9545,20 +9689,20 @@
             if (this._rect) {
                 this._rect = null;
             }
-        }
-        dirty() {
+        };
+        Displayable.prototype.dirty = function () {
             this.dirtyStyle();
-        }
-        styleChanged() {
+        };
+        Displayable.prototype.styleChanged = function () {
             return !!(this.__dirty & STYLE_CHANGED_BIT);
-        }
-        styleUpdated() {
+        };
+        Displayable.prototype.styleUpdated = function () {
             this.__dirty &= ~STYLE_CHANGED_BIT;
-        }
-        createStyle(obj) {
+        };
+        Displayable.prototype.createStyle = function (obj) {
             return createObject(DEFAULT_COMMON_STYLE, obj);
-        }
-        useStyle(obj) {
+        };
+        Displayable.prototype.useStyle = function (obj) {
             if (!obj[STYLE_MAGIC_KEY]) {
                 obj = this.createStyle(obj);
             }
@@ -9569,22 +9713,22 @@
                 this.style = obj;
             }
             this.dirtyStyle();
-        }
-        isStyleObject(obj) {
+        };
+        Displayable.prototype.isStyleObject = function (obj) {
             return obj[STYLE_MAGIC_KEY];
-        }
-        _innerSaveToNormal(toState) {
-            super._innerSaveToNormal(toState);
-            const normalState = this._normalState;
+        };
+        Displayable.prototype._innerSaveToNormal = function (toState) {
+            _super.prototype._innerSaveToNormal.call(this, toState);
+            var normalState = this._normalState;
             if (toState.style && !normalState.style) {
                 normalState.style = this._mergeStyle(this.createStyle(), this.style);
             }
             this._savePrimaryToNormal(toState, normalState, PRIMARY_STATES_KEYS$1);
-        }
-        _applyStateObj(stateName, state, normalState, keepCurrentStates, transition, animationCfg) {
-            super._applyStateObj(stateName, state, normalState, keepCurrentStates, transition, animationCfg);
-            const needsRestoreToNormal = !(state && keepCurrentStates);
-            let targetStyle;
+        };
+        Displayable.prototype._applyStateObj = function (stateName, state, normalState, keepCurrentStates, transition, animationCfg) {
+            _super.prototype._applyStateObj.call(this, stateName, state, normalState, keepCurrentStates, transition, animationCfg);
+            var needsRestoreToNormal = !(state && keepCurrentStates);
+            var targetStyle;
             if (state && state.style) {
                 if (transition) {
                     if (keepCurrentStates) {
@@ -9605,21 +9749,21 @@
             }
             if (targetStyle) {
                 if (transition) {
-                    const sourceStyle = this.style;
+                    var sourceStyle = this.style;
                     this.style = this.createStyle(needsRestoreToNormal ? {} : sourceStyle);
                     if (needsRestoreToNormal) {
-                        const changedKeys = keys(sourceStyle);
-                        for (let i = 0; i < changedKeys.length; i++) {
-                            const key = changedKeys[i];
+                        var changedKeys = keys(sourceStyle);
+                        for (var i = 0; i < changedKeys.length; i++) {
+                            var key = changedKeys[i];
                             if (key in targetStyle) {
                                 targetStyle[key] = targetStyle[key];
                                 this.style[key] = sourceStyle[key];
                             }
                         }
                     }
-                    const targetKeys = keys(targetStyle);
-                    for (let i = 0; i < targetKeys.length; i++) {
-                        const key = targetKeys[i];
+                    var targetKeys = keys(targetStyle);
+                    for (var i = 0; i < targetKeys.length; i++) {
+                        var key = targetKeys[i];
                         this.style[key] = this.style[key];
                     }
                     this._transitionState(stateName, {
@@ -9630,9 +9774,9 @@
                     this.useStyle(targetStyle);
                 }
             }
-            const statesKeys = this.__inHover ? PRIMARY_STATES_KEYS_IN_HOVER_LAYER : PRIMARY_STATES_KEYS$1;
-            for (let i = 0; i < statesKeys.length; i++) {
-                let key = statesKeys[i];
+            var statesKeys = this.__inHover ? PRIMARY_STATES_KEYS_IN_HOVER_LAYER : PRIMARY_STATES_KEYS$1;
+            for (var i = 0; i < statesKeys.length; i++) {
+                var key = statesKeys[i];
                 if (state && state[key] != null) {
                     this[key] = state[key];
                 }
@@ -9642,12 +9786,12 @@
                     }
                 }
             }
-        }
-        _mergeStates(states) {
-            const mergedState = super._mergeStates(states);
-            let mergedStyle;
-            for (let i = 0; i < states.length; i++) {
-                const state = states[i];
+        };
+        Displayable.prototype._mergeStates = function (states) {
+            var mergedState = _super.prototype._mergeStates.call(this, states);
+            var mergedStyle;
+            for (var i = 0; i < states.length; i++) {
+                var state = states[i];
                 if (state.style) {
                     mergedStyle = mergedStyle || {};
                     this._mergeStyle(mergedStyle, state.style);
@@ -9657,32 +9801,33 @@
                 mergedState.style = mergedStyle;
             }
             return mergedState;
-        }
-        _mergeStyle(targetStyle, sourceStyle) {
+        };
+        Displayable.prototype._mergeStyle = function (targetStyle, sourceStyle) {
             extend(targetStyle, sourceStyle);
             return targetStyle;
-        }
-        getAnimationStyleProps() {
+        };
+        Displayable.prototype.getAnimationStyleProps = function () {
             return DEFAULT_COMMON_ANIMATION_PROPS;
-        }
-    }
-    Displayable.initDefaultProps = (function () {
-        const dispProto = Displayable.prototype;
-        dispProto.type = 'displayable';
-        dispProto.invisible = false;
-        dispProto.z = 0;
-        dispProto.z2 = 0;
-        dispProto.zlevel = 0;
-        dispProto.culling = false;
-        dispProto.cursor = 'pointer';
-        dispProto.rectHover = false;
-        dispProto.incremental = false;
-        dispProto._rect = null;
-        dispProto.dirtyRectTolerance = 0;
-        dispProto.__dirty = REDRAW_BIT | STYLE_CHANGED_BIT;
-    })();
-    const tmpRect$1 = new BoundingRect(0, 0, 0, 0);
-    const viewRect = new BoundingRect(0, 0, 0, 0);
+        };
+        Displayable.initDefaultProps = (function () {
+            var dispProto = Displayable.prototype;
+            dispProto.type = 'displayable';
+            dispProto.invisible = false;
+            dispProto.z = 0;
+            dispProto.z2 = 0;
+            dispProto.zlevel = 0;
+            dispProto.culling = false;
+            dispProto.cursor = 'pointer';
+            dispProto.rectHover = false;
+            dispProto.incremental = false;
+            dispProto._rect = null;
+            dispProto.dirtyRectTolerance = 0;
+            dispProto.__dirty = REDRAW_BIT | STYLE_CHANGED_BIT;
+        })();
+        return Displayable;
+    }(Element));
+    var tmpRect$1 = new BoundingRect(0, 0, 0, 0);
+    var viewRect = new BoundingRect(0, 0, 0, 0);
     function isDisplayableCulled(el, width, height) {
         tmpRect$1.copy(el.getBoundingRect());
         if (el.transform) {
@@ -9693,24 +9838,24 @@
         return !tmpRect$1.intersect(viewRect);
     }
 
-    const mathMin$1 = Math.min;
-    const mathMax$1 = Math.max;
-    const mathSin = Math.sin;
-    const mathCos = Math.cos;
-    const PI2 = Math.PI * 2;
-    const start = create();
-    const end = create();
-    const extremity = create();
+    var mathMin$1 = Math.min;
+    var mathMax$1 = Math.max;
+    var mathSin = Math.sin;
+    var mathCos = Math.cos;
+    var PI2 = Math.PI * 2;
+    var start = create();
+    var end = create();
+    var extremity = create();
     function fromPoints(points, min, max) {
         if (points.length === 0) {
             return;
         }
-        let p = points[0];
-        let left = p[0];
-        let right = p[0];
-        let top = p[1];
-        let bottom = p[1];
-        for (let i = 1; i < points.length; i++) {
+        var p = points[0];
+        var left = p[0];
+        var right = p[0];
+        var top = p[1];
+        var bottom = p[1];
+        for (var i = 1; i < points.length; i++) {
             p = points[i];
             left = mathMin$1(left, p[0]);
             right = mathMax$1(right, p[0]);
@@ -9728,24 +9873,24 @@
         max[0] = mathMax$1(x0, x1);
         max[1] = mathMax$1(y0, y1);
     }
-    const xDim = [];
-    const yDim = [];
+    var xDim = [];
+    var yDim = [];
     function fromCubic(x0, y0, x1, y1, x2, y2, x3, y3, min, max) {
-        const cubicExtrema$1 = cubicExtrema;
-        const cubicAt$1 = cubicAt;
-        let n = cubicExtrema$1(x0, x1, x2, x3, xDim);
+        var cubicExtrema$1 = cubicExtrema;
+        var cubicAt$1 = cubicAt;
+        var n = cubicExtrema$1(x0, x1, x2, x3, xDim);
         min[0] = Infinity;
         min[1] = Infinity;
         max[0] = -Infinity;
         max[1] = -Infinity;
-        for (let i = 0; i < n; i++) {
-            const x = cubicAt$1(x0, x1, x2, x3, xDim[i]);
+        for (var i = 0; i < n; i++) {
+            var x = cubicAt$1(x0, x1, x2, x3, xDim[i]);
             min[0] = mathMin$1(x, min[0]);
             max[0] = mathMax$1(x, max[0]);
         }
         n = cubicExtrema$1(y0, y1, y2, y3, yDim);
-        for (let i = 0; i < n; i++) {
-            const y = cubicAt$1(y0, y1, y2, y3, yDim[i]);
+        for (var i = 0; i < n; i++) {
+            var y = cubicAt$1(y0, y1, y2, y3, yDim[i]);
             min[1] = mathMin$1(y, min[1]);
             max[1] = mathMax$1(y, max[1]);
         }
@@ -9759,21 +9904,21 @@
         max[1] = mathMax$1(y3, max[1]);
     }
     function fromQuadratic(x0, y0, x1, y1, x2, y2, min, max) {
-        const quadraticExtremum$1 = quadraticExtremum;
-        const quadraticAt$1 = quadraticAt;
-        const tx = mathMax$1(mathMin$1(quadraticExtremum$1(x0, x1, x2), 1), 0);
-        const ty = mathMax$1(mathMin$1(quadraticExtremum$1(y0, y1, y2), 1), 0);
-        const x = quadraticAt$1(x0, x1, x2, tx);
-        const y = quadraticAt$1(y0, y1, y2, ty);
+        var quadraticExtremum$1 = quadraticExtremum;
+        var quadraticAt$1 = quadraticAt;
+        var tx = mathMax$1(mathMin$1(quadraticExtremum$1(x0, x1, x2), 1), 0);
+        var ty = mathMax$1(mathMin$1(quadraticExtremum$1(y0, y1, y2), 1), 0);
+        var x = quadraticAt$1(x0, x1, x2, tx);
+        var y = quadraticAt$1(y0, y1, y2, ty);
         min[0] = mathMin$1(x0, x2, x);
         min[1] = mathMin$1(y0, y2, y);
         max[0] = mathMax$1(x0, x2, x);
         max[1] = mathMax$1(y0, y2, y);
     }
     function fromArc(x, y, rx, ry, startAngle, endAngle, anticlockwise, min$1, max$1) {
-        const vec2Min = min;
-        const vec2Max = max;
-        const diff = Math.abs(startAngle - endAngle);
+        var vec2Min = min;
+        var vec2Max = max;
+        var diff = Math.abs(startAngle - endAngle);
         if (diff % PI2 < 1e-4 && diff > 1e-4) {
             min$1[0] = x - rx;
             min$1[1] = y - ry;
@@ -9802,11 +9947,11 @@
             startAngle += PI2;
         }
         if (anticlockwise) {
-            const tmp = endAngle;
+            var tmp = endAngle;
             endAngle = startAngle;
             startAngle = tmp;
         }
-        for (let angle = 0; angle < endAngle; angle += Math.PI / 2) {
+        for (var angle = 0; angle < endAngle; angle += Math.PI / 2) {
             if (angle > startAngle) {
                 extremity[0] = mathCos(angle) * rx + x;
                 extremity[1] = mathSin(angle) * ry + y;
@@ -9816,7 +9961,7 @@
         }
     }
 
-    const CMD = {
+    var CMD = {
         M: 1,
         L: 2,
         C: 3,
@@ -9825,32 +9970,32 @@
         Z: 6,
         R: 7
     };
-    const tmpOutX = [];
-    const tmpOutY = [];
-    const min$1 = [];
-    const max$1 = [];
-    const min2 = [];
-    const max2 = [];
-    const mathMin$2 = Math.min;
-    const mathMax$2 = Math.max;
-    const mathCos$1 = Math.cos;
-    const mathSin$1 = Math.sin;
-    const mathAbs = Math.abs;
-    const PI = Math.PI;
-    const PI2$1 = PI * 2;
-    const hasTypedArray = typeof Float32Array !== 'undefined';
-    const tmpAngles = [];
+    var tmpOutX = [];
+    var tmpOutY = [];
+    var min$1 = [];
+    var max$1 = [];
+    var min2 = [];
+    var max2 = [];
+    var mathMin$2 = Math.min;
+    var mathMax$2 = Math.max;
+    var mathCos$1 = Math.cos;
+    var mathSin$1 = Math.sin;
+    var mathAbs = Math.abs;
+    var PI = Math.PI;
+    var PI2$1 = PI * 2;
+    var hasTypedArray = typeof Float32Array !== 'undefined';
+    var tmpAngles = [];
     function modPI2(radian) {
-        const n = Math.round(radian / PI * 1e8) / 1e8;
+        var n = Math.round(radian / PI * 1e8) / 1e8;
         return (n % 2) * PI;
     }
     function normalizeArcAngles(angles, anticlockwise) {
-        let newStartAngle = modPI2(angles[0]);
+        var newStartAngle = modPI2(angles[0]);
         if (newStartAngle < 0) {
             newStartAngle += PI2$1;
         }
-        let delta = newStartAngle - angles[0];
-        let newEndAngle = angles[1];
+        var delta = newStartAngle - angles[0];
+        var newEndAngle = angles[1];
         newEndAngle += delta;
         if (!anticlockwise && newEndAngle - newStartAngle >= PI2$1) {
             newEndAngle = newStartAngle + PI2$1;
@@ -9867,8 +10012,8 @@
         angles[0] = newStartAngle;
         angles[1] = newEndAngle;
     }
-    class PathProxy {
-        constructor(notSaveData) {
+    var PathProxy = (function () {
+        function PathProxy(notSaveData) {
             this.dpr = 1;
             this._xi = 0;
             this._yi = 0;
@@ -9883,34 +10028,34 @@
                 this.data = [];
             }
         }
-        increaseVersion() {
+        PathProxy.prototype.increaseVersion = function () {
             this._version++;
-        }
-        getVersion() {
+        };
+        PathProxy.prototype.getVersion = function () {
             return this._version;
-        }
-        setScale(sx, sy, segmentIgnoreThreshold) {
+        };
+        PathProxy.prototype.setScale = function (sx, sy, segmentIgnoreThreshold) {
             segmentIgnoreThreshold = segmentIgnoreThreshold || 0;
             if (segmentIgnoreThreshold > 0) {
                 this._ux = mathAbs(segmentIgnoreThreshold / devicePixelRatio / sx) || 0;
                 this._uy = mathAbs(segmentIgnoreThreshold / devicePixelRatio / sy) || 0;
             }
-        }
-        setDPR(dpr) {
+        };
+        PathProxy.prototype.setDPR = function (dpr) {
             this.dpr = dpr;
-        }
-        setContext(ctx) {
+        };
+        PathProxy.prototype.setContext = function (ctx) {
             this._ctx = ctx;
-        }
-        getContext() {
+        };
+        PathProxy.prototype.getContext = function () {
             return this._ctx;
-        }
-        beginPath() {
+        };
+        PathProxy.prototype.beginPath = function () {
             this._ctx && this._ctx.beginPath();
             this.reset();
             return this;
-        }
-        reset() {
+        };
+        PathProxy.prototype.reset = function () {
             if (this._saveData) {
                 this._len = 0;
             }
@@ -9919,8 +10064,8 @@
                 this._pathLen = 0;
             }
             this._version++;
-        }
-        moveTo(x, y) {
+        };
+        PathProxy.prototype.moveTo = function (x, y) {
             console.log("PathProxy moveTo", x, y);
             this._drawPendingPt();
             this.addData(CMD.M, x, y);
@@ -9930,12 +10075,12 @@
             this._xi = x;
             this._yi = y;
             return this;
-        }
-        lineTo(x, y) {
+        };
+        PathProxy.prototype.lineTo = function (x, y) {
             console.log("PathProxy lineTo", x, y);
-            const dx = mathAbs(x - this._xi);
-            const dy = mathAbs(y - this._yi);
-            const exceedUnit = dx > this._ux || dy > this._uy;
+            var dx = mathAbs(x - this._xi);
+            var dy = mathAbs(y - this._yi);
+            var exceedUnit = dx > this._ux || dy > this._uy;
             this.addData(CMD.L, x, y);
             if (this._ctx && exceedUnit) {
                 this._ctx.lineTo(x, y);
@@ -9946,7 +10091,7 @@
                 this._pendingPtDist = 0;
             }
             else {
-                const d2 = dx * dx + dy * dy;
+                var d2 = dx * dx + dy * dy;
                 if (d2 > this._pendingPtDist) {
                     this._pendingPtX = x;
                     this._pendingPtY = y;
@@ -9954,8 +10099,8 @@
                 }
             }
             return this;
-        }
-        bezierCurveTo(x1, y1, x2, y2, x3, y3) {
+        };
+        PathProxy.prototype.bezierCurveTo = function (x1, y1, x2, y2, x3, y3) {
             this._drawPendingPt();
             this.addData(CMD.C, x1, y1, x2, y2, x3, y3);
             if (this._ctx) {
@@ -9964,8 +10109,8 @@
             this._xi = x3;
             this._yi = y3;
             return this;
-        }
-        quadraticCurveTo(x1, y1, x2, y2) {
+        };
+        PathProxy.prototype.quadraticCurveTo = function (x1, y1, x2, y2) {
             this._drawPendingPt();
             this.addData(CMD.Q, x1, y1, x2, y2);
             if (this._ctx) {
@@ -9974,142 +10119,142 @@
             this._xi = x2;
             this._yi = y2;
             return this;
-        }
-        arc(cx, cy, r, startAngle, endAngle, anticlockwise) {
+        };
+        PathProxy.prototype.arc = function (cx, cy, r, startAngle, endAngle, anticlockwise) {
             this._drawPendingPt();
             tmpAngles[0] = startAngle;
             tmpAngles[1] = endAngle;
             normalizeArcAngles(tmpAngles, anticlockwise);
             startAngle = tmpAngles[0];
             endAngle = tmpAngles[1];
-            let delta = endAngle - startAngle;
+            var delta = endAngle - startAngle;
             this.addData(CMD.A, cx, cy, r, r, startAngle, delta, 0, anticlockwise ? 0 : 1);
             this._ctx && this._ctx.arc(cx, cy, r, startAngle, endAngle, anticlockwise);
             this._xi = mathCos$1(endAngle) * r + cx;
             this._yi = mathSin$1(endAngle) * r + cy;
             return this;
-        }
-        arcTo(x1, y1, x2, y2, radius) {
+        };
+        PathProxy.prototype.arcTo = function (x1, y1, x2, y2, radius) {
             this._drawPendingPt();
             if (this._ctx) {
                 this._ctx.arcTo(x1, y1, x2, y2, radius);
             }
             return this;
-        }
-        rect(x, y, w, h) {
+        };
+        PathProxy.prototype.rect = function (x, y, w, h) {
             this._drawPendingPt();
             this._ctx && this._ctx.rect(x, y, w, h);
             this.addData(CMD.R, x, y, w, h);
             return this;
-        }
-        closePath() {
+        };
+        PathProxy.prototype.closePath = function () {
             this._drawPendingPt();
             this.addData(CMD.Z);
-            const ctx = this._ctx;
-            const x0 = this._x0;
-            const y0 = this._y0;
+            var ctx = this._ctx;
+            var x0 = this._x0;
+            var y0 = this._y0;
             if (ctx) {
                 ctx.closePath();
             }
             this._xi = x0;
             this._yi = y0;
             return this;
-        }
-        fill(ctx) {
+        };
+        PathProxy.prototype.fill = function (ctx) {
             ctx && ctx.fill();
             this.toStatic();
-        }
-        stroke(ctx) {
+        };
+        PathProxy.prototype.stroke = function (ctx) {
             ctx && ctx.stroke();
             this.toStatic();
-        }
-        len() {
+        };
+        PathProxy.prototype.len = function () {
             return this._len;
-        }
-        setData(data) {
-            const len = data.length;
+        };
+        PathProxy.prototype.setData = function (data) {
+            var len = data.length;
             if (!(this.data && this.data.length === len) && hasTypedArray) {
                 this.data = new Float32Array(len);
             }
-            for (let i = 0; i < len; i++) {
+            for (var i = 0; i < len; i++) {
                 this.data[i] = data[i];
             }
             this._len = len;
-        }
-        appendPath(path) {
+        };
+        PathProxy.prototype.appendPath = function (path) {
             if (!(path instanceof Array)) {
                 path = [path];
             }
-            const len = path.length;
-            let appendSize = 0;
-            let offset = this._len;
-            for (let i = 0; i < len; i++) {
+            var len = path.length;
+            var appendSize = 0;
+            var offset = this._len;
+            for (var i = 0; i < len; i++) {
                 appendSize += path[i].len();
             }
             if (hasTypedArray && (this.data instanceof Float32Array)) {
                 this.data = new Float32Array(offset + appendSize);
             }
-            for (let i = 0; i < len; i++) {
-                const appendPathData = path[i].data;
-                for (let k = 0; k < appendPathData.length; k++) {
+            for (var i = 0; i < len; i++) {
+                var appendPathData = path[i].data;
+                for (var k = 0; k < appendPathData.length; k++) {
                     this.data[offset++] = appendPathData[k];
                 }
             }
             this._len = offset;
-        }
-        addData(cmd, a, b, c, d, e, f, g, h) {
+        };
+        PathProxy.prototype.addData = function (cmd, a, b, c, d, e, f, g, h) {
             if (!this._saveData) {
                 return;
             }
-            let data = this.data;
+            var data = this.data;
             if (this._len + arguments.length > data.length) {
                 this._expandData();
                 data = this.data;
             }
-            for (let i = 0; i < arguments.length; i++) {
+            for (var i = 0; i < arguments.length; i++) {
                 data[this._len++] = arguments[i];
             }
-        }
-        _drawPendingPt() {
+        };
+        PathProxy.prototype._drawPendingPt = function () {
             if (this._pendingPtDist > 0) {
                 this._ctx && this._ctx.lineTo(this._pendingPtX, this._pendingPtY);
                 this._pendingPtDist = 0;
             }
-        }
-        _expandData() {
+        };
+        PathProxy.prototype._expandData = function () {
             if (!(this.data instanceof Array)) {
-                const newData = [];
-                for (let i = 0; i < this._len; i++) {
+                var newData = [];
+                for (var i = 0; i < this._len; i++) {
                     newData[i] = this.data[i];
                 }
                 this.data = newData;
             }
-        }
-        toStatic() {
+        };
+        PathProxy.prototype.toStatic = function () {
             if (!this._saveData) {
                 return;
             }
             this._drawPendingPt();
-            const data = this.data;
+            var data = this.data;
             if (data instanceof Array) {
                 data.length = this._len;
                 if (hasTypedArray && this._len > 11) {
                     this.data = new Float32Array(data);
                 }
             }
-        }
-        getBoundingRect() {
+        };
+        PathProxy.prototype.getBoundingRect = function () {
             min$1[0] = min$1[1] = min2[0] = min2[1] = Number.MAX_VALUE;
             max$1[0] = max$1[1] = max2[0] = max2[1] = -Number.MAX_VALUE;
-            const data = this.data;
-            let xi = 0;
-            let yi = 0;
-            let x0 = 0;
-            let y0 = 0;
-            let i;
+            var data = this.data;
+            var xi = 0;
+            var yi = 0;
+            var x0 = 0;
+            var y0 = 0;
+            var i;
             for (i = 0; i < this._len;) {
-                const cmd = data[i++];
-                const isFirst = i === 1;
+                var cmd = data[i++];
+                var isFirst = i === 1;
                 if (isFirst) {
                     xi = data[i];
                     yi = data[i + 1];
@@ -10141,14 +10286,14 @@
                         yi = data[i++];
                         break;
                     case CMD.A:
-                        const cx = data[i++];
-                        const cy = data[i++];
-                        const rx = data[i++];
-                        const ry = data[i++];
-                        const startAngle = data[i++];
-                        const endAngle = data[i++] + startAngle;
+                        var cx = data[i++];
+                        var cy = data[i++];
+                        var rx = data[i++];
+                        var ry = data[i++];
+                        var startAngle = data[i++];
+                        var endAngle = data[i++] + startAngle;
                         i += 1;
-                        const anticlockwise = !data[i++];
+                        var anticlockwise = !data[i++];
                         if (isFirst) {
                             x0 = mathCos$1(startAngle) * rx + cx;
                             y0 = mathSin$1(startAngle) * ry + cy;
@@ -10160,8 +10305,8 @@
                     case CMD.R:
                         x0 = xi = data[i++];
                         y0 = yi = data[i++];
-                        const width = data[i++];
-                        const height = data[i++];
+                        var width = data[i++];
+                        var height = data[i++];
                         fromLine(x0, y0, x0 + width, y0 + height, min2, max2);
                         break;
                     case CMD.Z:
@@ -10176,42 +10321,42 @@
                 min$1[0] = min$1[1] = max$1[0] = max$1[1] = 0;
             }
             return new BoundingRect(min$1[0], min$1[1], max$1[0] - min$1[0], max$1[1] - min$1[1]);
-        }
-        _calculateLength() {
-            const data = this.data;
-            const len = this._len;
-            const ux = this._ux;
-            const uy = this._uy;
-            let xi = 0;
-            let yi = 0;
-            let x0 = 0;
-            let y0 = 0;
+        };
+        PathProxy.prototype._calculateLength = function () {
+            var data = this.data;
+            var len = this._len;
+            var ux = this._ux;
+            var uy = this._uy;
+            var xi = 0;
+            var yi = 0;
+            var x0 = 0;
+            var y0 = 0;
             if (!this._pathSegLen) {
                 this._pathSegLen = [];
             }
-            const pathSegLen = this._pathSegLen;
-            let pathTotalLen = 0;
-            let segCount = 0;
-            for (let i = 0; i < len;) {
-                const cmd = data[i++];
-                const isFirst = i === 1;
+            var pathSegLen = this._pathSegLen;
+            var pathTotalLen = 0;
+            var segCount = 0;
+            for (var i = 0; i < len;) {
+                var cmd = data[i++];
+                var isFirst = i === 1;
                 if (isFirst) {
                     xi = data[i];
                     yi = data[i + 1];
                     x0 = xi;
                     y0 = yi;
                 }
-                let l = -1;
+                var l = -1;
                 switch (cmd) {
                     case CMD.M:
                         xi = x0 = data[i++];
                         yi = y0 = data[i++];
                         break;
                     case CMD.L: {
-                        const x2 = data[i++];
-                        const y2 = data[i++];
-                        const dx = x2 - xi;
-                        const dy = y2 - yi;
+                        var x2 = data[i++];
+                        var y2 = data[i++];
+                        var dx = x2 - xi;
+                        var dy = y2 - yi;
                         if (mathAbs(dx) > ux || mathAbs(dy) > uy || i === len - 1) {
                             l = Math.sqrt(dx * dx + dy * dy);
                             xi = x2;
@@ -10220,35 +10365,35 @@
                         break;
                     }
                     case CMD.C: {
-                        const x1 = data[i++];
-                        const y1 = data[i++];
-                        const x2 = data[i++];
-                        const y2 = data[i++];
-                        const x3 = data[i++];
-                        const y3 = data[i++];
+                        var x1 = data[i++];
+                        var y1 = data[i++];
+                        var x2 = data[i++];
+                        var y2 = data[i++];
+                        var x3 = data[i++];
+                        var y3 = data[i++];
                         l = cubicLength(xi, yi, x1, y1, x2, y2, x3, y3, 10);
                         xi = x3;
                         yi = y3;
                         break;
                     }
                     case CMD.Q: {
-                        const x1 = data[i++];
-                        const y1 = data[i++];
-                        const x2 = data[i++];
-                        const y2 = data[i++];
+                        var x1 = data[i++];
+                        var y1 = data[i++];
+                        var x2 = data[i++];
+                        var y2 = data[i++];
                         l = quadraticLength(xi, yi, x1, y1, x2, y2, 10);
                         xi = x2;
                         yi = y2;
                         break;
                     }
                     case CMD.A:
-                        const cx = data[i++];
-                        const cy = data[i++];
-                        const rx = data[i++];
-                        const ry = data[i++];
-                        const startAngle = data[i++];
-                        let delta = data[i++];
-                        const endAngle = delta + startAngle;
+                        var cx = data[i++];
+                        var cy = data[i++];
+                        var rx = data[i++];
+                        var ry = data[i++];
+                        var startAngle = data[i++];
+                        var delta = data[i++];
+                        var endAngle = delta + startAngle;
                         i += 1;
                         if (isFirst) {
                             x0 = mathCos$1(startAngle) * rx + cx;
@@ -10261,14 +10406,14 @@
                     case CMD.R: {
                         x0 = xi = data[i++];
                         y0 = yi = data[i++];
-                        const width = data[i++];
-                        const height = data[i++];
+                        var width = data[i++];
+                        var height = data[i++];
                         l = width * 2 + height * 2;
                         break;
                     }
                     case CMD.Z: {
-                        const dx = x0 - xi;
-                        const dy = y0 - yi;
+                        var dx = x0 - xi;
+                        var dy = y0 - yi;
                         l = Math.sqrt(dx * dx + dy * dy);
                         xi = x0;
                         yi = y0;
@@ -10282,27 +10427,27 @@
             }
             this._pathLen = pathTotalLen;
             return pathTotalLen;
-        }
-        rebuildPath(ctx, percent) {
-            const d = this.data;
-            const ux = this._ux;
-            const uy = this._uy;
-            const len = this._len;
-            let x0;
-            let y0;
-            let xi;
-            let yi;
-            let x;
-            let y;
-            const drawPart = percent < 1;
-            let pathSegLen;
-            let pathTotalLen;
-            let accumLength = 0;
-            let segCount = 0;
-            let displayedLength;
-            let pendingPtDist = 0;
-            let pendingPtX;
-            let pendingPtY;
+        };
+        PathProxy.prototype.rebuildPath = function (ctx, percent) {
+            var d = this.data;
+            var ux = this._ux;
+            var uy = this._uy;
+            var len = this._len;
+            var x0;
+            var y0;
+            var xi;
+            var yi;
+            var x;
+            var y;
+            var drawPart = percent < 1;
+            var pathSegLen;
+            var pathTotalLen;
+            var accumLength = 0;
+            var segCount = 0;
+            var displayedLength;
+            var pendingPtDist = 0;
+            var pendingPtX;
+            var pendingPtY;
             if (drawPart) {
                 if (!this._pathSegLen) {
                     this._calculateLength();
@@ -10314,9 +10459,9 @@
                     return;
                 }
             }
-            lo: for (let i = 0; i < len;) {
-                const cmd = d[i++];
-                const isFirst = i === 1;
+            lo: for (var i = 0; i < len;) {
+                var cmd = d[i++];
+                var isFirst = i === 1;
                 if (isFirst) {
                     xi = d[i];
                     yi = d[i + 1];
@@ -10336,13 +10481,13 @@
                     case CMD.L: {
                         x = d[i++];
                         y = d[i++];
-                        const dx = mathAbs(x - xi);
-                        const dy = mathAbs(y - yi);
+                        var dx = mathAbs(x - xi);
+                        var dy = mathAbs(y - yi);
                         if (dx > ux || dy > uy) {
                             if (drawPart) {
-                                const l = pathSegLen[segCount++];
+                                var l = pathSegLen[segCount++];
                                 if (accumLength + l > displayedLength) {
-                                    const t = (displayedLength - accumLength) / l;
+                                    var t = (displayedLength - accumLength) / l;
                                     ctx.lineTo(xi * (1 - t) + x * t, yi * (1 - t) + y * t);
                                     break lo;
                                 }
@@ -10354,7 +10499,7 @@
                             pendingPtDist = 0;
                         }
                         else {
-                            const d2 = dx * dx + dy * dy;
+                            var d2 = dx * dx + dy * dy;
                             if (d2 > pendingPtDist) {
                                 pendingPtX = x;
                                 pendingPtY = y;
@@ -10364,16 +10509,16 @@
                         break;
                     }
                     case CMD.C: {
-                        const x1 = d[i++];
-                        const y1 = d[i++];
-                        const x2 = d[i++];
-                        const y2 = d[i++];
-                        const x3 = d[i++];
-                        const y3 = d[i++];
+                        var x1 = d[i++];
+                        var y1 = d[i++];
+                        var x2 = d[i++];
+                        var y2 = d[i++];
+                        var x3 = d[i++];
+                        var y3 = d[i++];
                         if (drawPart) {
-                            const l = pathSegLen[segCount++];
+                            var l = pathSegLen[segCount++];
                             if (accumLength + l > displayedLength) {
-                                const t = (displayedLength - accumLength) / l;
+                                var t = (displayedLength - accumLength) / l;
                                 cubicSubdivide(xi, x1, x2, x3, t, tmpOutX);
                                 cubicSubdivide(yi, y1, y2, y3, t, tmpOutY);
                                 ctx.bezierCurveTo(tmpOutX[1], tmpOutY[1], tmpOutX[2], tmpOutY[2], tmpOutX[3], tmpOutY[3]);
@@ -10387,14 +10532,14 @@
                         break;
                     }
                     case CMD.Q: {
-                        const x1 = d[i++];
-                        const y1 = d[i++];
-                        const x2 = d[i++];
-                        const y2 = d[i++];
+                        var x1 = d[i++];
+                        var y1 = d[i++];
+                        var x2 = d[i++];
+                        var y2 = d[i++];
                         if (drawPart) {
-                            const l = pathSegLen[segCount++];
+                            var l = pathSegLen[segCount++];
                             if (accumLength + l > displayedLength) {
-                                const t = (displayedLength - accumLength) / l;
+                                var t = (displayedLength - accumLength) / l;
                                 quadraticSubdivide(xi, x1, x2, t, tmpOutX);
                                 quadraticSubdivide(yi, y1, y2, t, tmpOutY);
                                 ctx.quadraticCurveTo(tmpOutX[1], tmpOutY[1], tmpOutX[2], tmpOutY[2]);
@@ -10408,20 +10553,20 @@
                         break;
                     }
                     case CMD.A:
-                        const cx = d[i++];
-                        const cy = d[i++];
-                        const rx = d[i++];
-                        const ry = d[i++];
-                        let startAngle = d[i++];
-                        let delta = d[i++];
-                        const psi = d[i++];
-                        const anticlockwise = !d[i++];
-                        const r = (rx > ry) ? rx : ry;
-                        const isEllipse = mathAbs(rx - ry) > 1e-3;
-                        let endAngle = startAngle + delta;
-                        let breakBuild = false;
+                        var cx = d[i++];
+                        var cy = d[i++];
+                        var rx = d[i++];
+                        var ry = d[i++];
+                        var startAngle = d[i++];
+                        var delta = d[i++];
+                        var psi = d[i++];
+                        var anticlockwise = !d[i++];
+                        var r = (rx > ry) ? rx : ry;
+                        var isEllipse = mathAbs(rx - ry) > 1e-3;
+                        var endAngle = startAngle + delta;
+                        var breakBuild = false;
                         if (drawPart) {
-                            const l = pathSegLen[segCount++];
+                            var l = pathSegLen[segCount++];
                             if (accumLength + l > displayedLength) {
                                 endAngle = startAngle + delta * (displayedLength - accumLength) / l;
                                 breakBuild = true;
@@ -10449,25 +10594,25 @@
                         y0 = yi = d[i + 1];
                         x = d[i++];
                         y = d[i++];
-                        const width = d[i++];
-                        const height = d[i++];
+                        var width = d[i++];
+                        var height = d[i++];
                         if (drawPart) {
-                            const l = pathSegLen[segCount++];
+                            var l = pathSegLen[segCount++];
                             if (accumLength + l > displayedLength) {
-                                let d = displayedLength - accumLength;
+                                var d_1 = displayedLength - accumLength;
                                 ctx.moveTo(x, y);
-                                ctx.lineTo(x + mathMin$2(d, width), y);
-                                d -= width;
-                                if (d > 0) {
-                                    ctx.lineTo(x + width, y + mathMin$2(d, height));
+                                ctx.lineTo(x + mathMin$2(d_1, width), y);
+                                d_1 -= width;
+                                if (d_1 > 0) {
+                                    ctx.lineTo(x + width, y + mathMin$2(d_1, height));
                                 }
-                                d -= height;
-                                if (d > 0) {
-                                    ctx.lineTo(x + mathMax$2(width - d, 0), y + height);
+                                d_1 -= height;
+                                if (d_1 > 0) {
+                                    ctx.lineTo(x + mathMax$2(width - d_1, 0), y + height);
                                 }
-                                d -= width;
-                                if (d > 0) {
-                                    ctx.lineTo(x, y + mathMax$2(height - d, 0));
+                                d_1 -= width;
+                                if (d_1 > 0) {
+                                    ctx.lineTo(x, y + mathMax$2(height - d_1, 0));
                                 }
                                 break lo;
                             }
@@ -10477,9 +10622,9 @@
                         break;
                     case CMD.Z:
                         if (drawPart) {
-                            const l = pathSegLen[segCount++];
+                            var l = pathSegLen[segCount++];
                             if (accumLength + l > displayedLength) {
-                                const t = (displayedLength - accumLength) / l;
+                                var t = (displayedLength - accumLength) / l;
                                 ctx.lineTo(xi * (1 - t) + x0 * t, yi * (1 - t) + y0 * t);
                                 break lo;
                             }
@@ -10490,33 +10635,34 @@
                         yi = y0;
                 }
             }
-        }
-        clone() {
-            const newProxy = new PathProxy();
-            const data = this.data;
+        };
+        PathProxy.prototype.clone = function () {
+            var newProxy = new PathProxy();
+            var data = this.data;
             newProxy.data = data.slice ? data.slice()
                 : Array.prototype.slice.call(data);
             newProxy._len = this._len;
             return newProxy;
-        }
-    }
-    PathProxy.CMD = CMD;
-    PathProxy.initDefaultProps = (function () {
-        const proto = PathProxy.prototype;
-        proto._saveData = true;
-        proto._ux = 0;
-        proto._uy = 0;
-        proto._pendingPtDist = 0;
-        proto._version = 0;
-    })();
+        };
+        PathProxy.CMD = CMD;
+        PathProxy.initDefaultProps = (function () {
+            var proto = PathProxy.prototype;
+            proto._saveData = true;
+            proto._ux = 0;
+            proto._uy = 0;
+            proto._pendingPtDist = 0;
+            proto._version = 0;
+        })();
+        return PathProxy;
+    }());
 
     function containStroke(x0, y0, x1, y1, lineWidth, x, y) {
         if (lineWidth === 0) {
             return false;
         }
-        const _l = lineWidth;
-        let _a = 0;
-        let _b = x0;
+        var _l = lineWidth;
+        var _a = 0;
+        var _b = x0;
         if ((y > y0 + _l && y > y1 + _l)
             || (y < y0 - _l && y < y1 - _l)
             || (x > x0 + _l && x > x1 + _l)
@@ -10530,8 +10676,8 @@
         else {
             return Math.abs(x - x0) <= _l / 2;
         }
-        const tmp = _a * x - y + _b;
-        const _s = tmp * tmp / (_a * _a + 1);
+        var tmp = _a * x - y + _b;
+        var _s = tmp * tmp / (_a * _a + 1);
         return _s <= _l / 2 * _l / 2;
     }
 
@@ -10539,14 +10685,14 @@
         if (lineWidth === 0) {
             return false;
         }
-        const _l = lineWidth;
+        var _l = lineWidth;
         if ((y > y0 + _l && y > y1 + _l && y > y2 + _l && y > y3 + _l)
             || (y < y0 - _l && y < y1 - _l && y < y2 - _l && y < y3 - _l)
             || (x > x0 + _l && x > x1 + _l && x > x2 + _l && x > x3 + _l)
             || (x < x0 - _l && x < x1 - _l && x < x2 - _l && x < x3 - _l)) {
             return false;
         }
-        const d = cubicProjectPoint(x0, y0, x1, y1, x2, y2, x3, y3, x, y, null);
+        var d = cubicProjectPoint(x0, y0, x1, y1, x2, y2, x3, y3, x, y, null);
         return d <= _l / 2;
     }
 
@@ -10554,18 +10700,18 @@
         if (lineWidth === 0) {
             return false;
         }
-        const _l = lineWidth;
+        var _l = lineWidth;
         if ((y > y0 + _l && y > y1 + _l && y > y2 + _l)
             || (y < y0 - _l && y < y1 - _l && y < y2 - _l)
             || (x > x0 + _l && x > x1 + _l && x > x2 + _l)
             || (x < x0 - _l && x < x1 - _l && x < x2 - _l)) {
             return false;
         }
-        const d = quadraticProjectPoint(x0, y0, x1, y1, x2, y2, x, y, null);
+        var d = quadraticProjectPoint(x0, y0, x1, y1, x2, y2, x, y, null);
         return d <= _l / 2;
     }
 
-    const PI2$2 = Math.PI * 2;
+    var PI2$2 = Math.PI * 2;
     function normalizeRadian(angle) {
         angle %= PI2$2;
         if (angle < 0) {
@@ -10574,15 +10720,15 @@
         return angle;
     }
 
-    const PI2$3 = Math.PI * 2;
+    var PI2$3 = Math.PI * 2;
     function containStroke$3(cx, cy, r, startAngle, endAngle, anticlockwise, lineWidth, x, y) {
         if (lineWidth === 0) {
             return false;
         }
-        const _l = lineWidth;
+        var _l = lineWidth;
         x -= cx;
         y -= cy;
-        const d = Math.sqrt(x * x + y * y);
+        var d = Math.sqrt(x * x + y * y);
         if ((d - _l > r) || (d + _l < r)) {
             return false;
         }
@@ -10590,7 +10736,7 @@
             return true;
         }
         if (anticlockwise) {
-            const tmp = startAngle;
+            var tmp = startAngle;
             startAngle = normalizeRadian(endAngle);
             endAngle = normalizeRadian(tmp);
         }
@@ -10601,7 +10747,7 @@
         if (startAngle > endAngle) {
             endAngle += PI2$3;
         }
-        let angle = Math.atan2(y, x);
+        var angle = Math.atan2(y, x);
         if (angle < 0) {
             angle += PI2$3;
         }
@@ -10616,25 +10762,25 @@
         if (y1 === y0) {
             return 0;
         }
-        const t = (y - y0) / (y1 - y0);
-        let dir = y1 < y0 ? 1 : -1;
+        var t = (y - y0) / (y1 - y0);
+        var dir = y1 < y0 ? 1 : -1;
         if (t === 1 || t === 0) {
             dir = y1 < y0 ? 0.5 : -0.5;
         }
-        const x_ = t * (x1 - x0) + x0;
+        var x_ = t * (x1 - x0) + x0;
         return x_ === x ? Infinity : x_ > x ? dir : 0;
     }
 
-    const CMD$1 = PathProxy.CMD;
-    const PI2$4 = Math.PI * 2;
-    const EPSILON$3 = 1e-4;
+    var CMD$1 = PathProxy.CMD;
+    var PI2$4 = Math.PI * 2;
+    var EPSILON$3 = 1e-4;
     function isAroundEqual(a, b) {
         return Math.abs(a - b) < EPSILON$3;
     }
-    const roots = [-1, -1, -1];
-    const extrema = [-1, -1];
+    var roots = [-1, -1, -1];
+    var extrema = [-1, -1];
     function swapExtrema() {
-        const tmp = extrema[0];
+        var tmp = extrema[0];
         extrema[0] = extrema[1];
         extrema[1] = tmp;
     }
@@ -10643,19 +10789,19 @@
             || (y < y0 && y < y1 && y < y2 && y < y3)) {
             return 0;
         }
-        const nRoots = cubicRootAt(y0, y1, y2, y3, y, roots);
+        var nRoots = cubicRootAt(y0, y1, y2, y3, y, roots);
         if (nRoots === 0) {
             return 0;
         }
         else {
-            let w = 0;
-            let nExtrema = -1;
-            let y0_;
-            let y1_;
-            for (let i = 0; i < nRoots; i++) {
-                let t = roots[i];
-                let unit = (t === 0 || t === 1) ? 0.5 : 1;
-                let x_ = cubicAt(x0, x1, x2, x3, t);
+            var w = 0;
+            var nExtrema = -1;
+            var y0_ = void 0;
+            var y1_ = void 0;
+            for (var i = 0; i < nRoots; i++) {
+                var t = roots[i];
+                var unit = (t === 0 || t === 1) ? 0.5 : 1;
+                var x_ = cubicAt(x0, x1, x2, x3, t);
                 if (x_ < x) {
                     continue;
                 }
@@ -10697,18 +10843,18 @@
             || (y < y0 && y < y1 && y < y2)) {
             return 0;
         }
-        const nRoots = quadraticRootAt(y0, y1, y2, y, roots);
+        var nRoots = quadraticRootAt(y0, y1, y2, y, roots);
         if (nRoots === 0) {
             return 0;
         }
         else {
-            const t = quadraticExtremum(y0, y1, y2);
+            var t = quadraticExtremum(y0, y1, y2);
             if (t >= 0 && t <= 1) {
-                let w = 0;
-                let y_ = quadraticAt(y0, y1, y2, t);
-                for (let i = 0; i < nRoots; i++) {
-                    let unit = (roots[i] === 0 || roots[i] === 1) ? 0.5 : 1;
-                    let x_ = quadraticAt(x0, x1, x2, roots[i]);
+                var w = 0;
+                var y_ = quadraticAt(y0, y1, y2, t);
+                for (var i = 0; i < nRoots; i++) {
+                    var unit = (roots[i] === 0 || roots[i] === 1) ? 0.5 : 1;
+                    var x_ = quadraticAt(x0, x1, x2, roots[i]);
                     if (x_ < x) {
                         continue;
                     }
@@ -10722,8 +10868,8 @@
                 return w;
             }
             else {
-                const unit = (roots[0] === 0 || roots[0] === 1) ? 0.5 : 1;
-                const x_ = quadraticAt(x0, x1, x2, roots[0]);
+                var unit = (roots[0] === 0 || roots[0] === 1) ? 0.5 : 1;
+                var x_ = quadraticAt(x0, x1, x2, roots[0]);
                 if (x_ < x) {
                     return 0;
                 }
@@ -10736,17 +10882,17 @@
         if (y > r || y < -r) {
             return 0;
         }
-        const tmp = Math.sqrt(r * r - y * y);
+        var tmp = Math.sqrt(r * r - y * y);
         roots[0] = -tmp;
         roots[1] = tmp;
-        const dTheta = Math.abs(startAngle - endAngle);
+        var dTheta = Math.abs(startAngle - endAngle);
         if (dTheta < 1e-4) {
             return 0;
         }
         if (dTheta >= PI2$4 - 1e-4) {
             startAngle = 0;
             endAngle = PI2$4;
-            const dir = anticlockwise ? 1 : -1;
+            var dir = anticlockwise ? 1 : -1;
             if (x >= roots[0] + cx && x <= roots[1] + cx) {
                 return dir;
             }
@@ -10755,20 +10901,20 @@
             }
         }
         if (startAngle > endAngle) {
-            const tmp = startAngle;
+            var tmp_1 = startAngle;
             startAngle = endAngle;
-            endAngle = tmp;
+            endAngle = tmp_1;
         }
         if (startAngle < 0) {
             startAngle += PI2$4;
             endAngle += PI2$4;
         }
-        let w = 0;
-        for (let i = 0; i < 2; i++) {
-            const x_ = roots[i];
+        var w = 0;
+        for (var i = 0; i < 2; i++) {
+            var x_ = roots[i];
             if (x_ + cx > x) {
-                let angle = Math.atan2(y, x_);
-                let dir = anticlockwise ? 1 : -1;
+                var angle = Math.atan2(y, x_);
+                var dir = anticlockwise ? 1 : -1;
                 if (angle < 0) {
                     angle = PI2$4 + angle;
                 }
@@ -10784,18 +10930,18 @@
         return w;
     }
     function containPath(path, lineWidth, isStroke, x, y) {
-        const data = path.data;
-        const len = path.len();
-        let w = 0;
-        let xi = 0;
-        let yi = 0;
-        let x0 = 0;
-        let y0 = 0;
-        let x1;
-        let y1;
-        for (let i = 0; i < len;) {
-            const cmd = data[i++];
-            const isFirst = i === 1;
+        var data = path.data;
+        var len = path.len();
+        var w = 0;
+        var xi = 0;
+        var yi = 0;
+        var x0 = 0;
+        var y0 = 0;
+        var x1;
+        var y1;
+        for (var i = 0; i < len;) {
+            var cmd = data[i++];
+            var isFirst = i === 1;
             if (cmd === CMD$1.M && i > 1) {
                 if (!isStroke) {
                     w += windingLine(xi, yi, x0, y0, x, y);
@@ -10851,14 +10997,14 @@
                     yi = data[i++];
                     break;
                 case CMD$1.A:
-                    const cx = data[i++];
-                    const cy = data[i++];
-                    const rx = data[i++];
-                    const ry = data[i++];
-                    const theta = data[i++];
-                    const dTheta = data[i++];
+                    var cx = data[i++];
+                    var cy = data[i++];
+                    var rx = data[i++];
+                    var ry = data[i++];
+                    var theta = data[i++];
+                    var dTheta = data[i++];
                     i += 1;
-                    const anticlockwise = !!(1 - data[i++]);
+                    var anticlockwise = !!(1 - data[i++]);
                     x1 = Math.cos(theta) * rx + cx;
                     y1 = Math.sin(theta) * ry + cy;
                     if (!isFirst) {
@@ -10868,7 +11014,7 @@
                         x0 = x1;
                         y0 = y1;
                     }
-                    const _x = (x - cx) * ry / rx + cx;
+                    var _x = (x - cx) * ry / rx + cx;
                     if (isStroke) {
                         if (containStroke$3(cx, cy, ry, theta, theta + dTheta, anticlockwise, lineWidth, _x, y)) {
                             return true;
@@ -10883,8 +11029,8 @@
                 case CMD$1.R:
                     x0 = xi = data[i++];
                     y0 = yi = data[i++];
-                    const width = data[i++];
-                    const height = data[i++];
+                    var width = data[i++];
+                    var height = data[i++];
                     x1 = x0 + width;
                     y1 = y0 + height;
                     if (isStroke) {
@@ -10926,7 +11072,7 @@
         return containPath(pathProxy, lineWidth, true, x, y);
     }
 
-    const DEFAULT_PATH_STYLE = defaults({
+    var DEFAULT_PATH_STYLE = defaults({
         fill: '#000',
         stroke: null,
         strokePercent: 1,
@@ -10939,7 +11085,7 @@
         strokeNoScale: false,
         strokeFirst: false
     }, DEFAULT_COMMON_STYLE);
-    const DEFAULT_PATH_ANIMATION_PROPS = {
+    var DEFAULT_PATH_ANIMATION_PROPS = {
         style: defaults({
             fill: true,
             stroke: true,
@@ -10951,26 +11097,28 @@
             miterLimit: true
         }, DEFAULT_COMMON_ANIMATION_PROPS.style)
     };
-    const pathCopyParams = TRANSFORMABLE_PROPS.concat(['invisible',
+    var pathCopyParams = TRANSFORMABLE_PROPS.concat(['invisible',
         'culling', 'z', 'z2', 'zlevel', 'parent'
     ]);
-    class Path extends Displayable {
-        constructor(opts) {
-            super(opts);
+    var Path = (function (_super) {
+        __extends$1(Path, _super);
+        function Path(opts) {
+            return _super.call(this, opts) || this;
         }
-        update() {
-            super.update();
-            const style = this.style;
+        Path.prototype.update = function () {
+            var _this = this;
+            _super.prototype.update.call(this);
+            var style = this.style;
             if (style.decal) {
-                const decalEl = this._decalEl = this._decalEl || new Path();
+                var decalEl = this._decalEl = this._decalEl || new Path();
                 if (decalEl.buildPath === Path.prototype.buildPath) {
-                    decalEl.buildPath = ctx => {
-                        this.buildPath(ctx, this.shape);
+                    decalEl.buildPath = function (ctx) {
+                        _this.buildPath(ctx, _this.shape);
                     };
                 }
                 decalEl.silent = true;
-                const decalElStyle = decalEl.style;
-                for (let key in style) {
+                var decalElStyle = decalEl.style;
+                for (var key in style) {
                     if (decalElStyle[key] !== style[key]) {
                         decalElStyle[key] = style[key];
                     }
@@ -10979,7 +11127,7 @@
                 decalElStyle.decal = null;
                 decalElStyle.shadowColor = null;
                 style.strokeFirst && (decalElStyle.stroke = null);
-                for (let i = 0; i < pathCopyParams.length; ++i) {
+                for (var i = 0; i < pathCopyParams.length; ++i) {
                     decalEl[pathCopyParams[i]] = this[pathCopyParams[i]];
                 }
                 decalEl.__dirty |= REDRAW_BIT;
@@ -10987,20 +11135,20 @@
             else if (this._decalEl) {
                 this._decalEl = null;
             }
-        }
-        getDecalElement() {
+        };
+        Path.prototype.getDecalElement = function () {
             return this._decalEl;
-        }
-        _init(props) {
-            const keysArr = keys(props);
+        };
+        Path.prototype._init = function (props) {
+            var keysArr = keys(props);
             this.shape = this.getDefaultShape();
-            const defaultStyle = this.getDefaultStyle();
+            var defaultStyle = this.getDefaultStyle();
             if (defaultStyle) {
                 this.useStyle(defaultStyle);
             }
-            for (let i = 0; i < keysArr.length; i++) {
-                const key = keysArr[i];
-                const value = props[key];
+            for (var i = 0; i < keysArr.length; i++) {
+                var key = keysArr[i];
+                var value = props[key];
                 if (key === 'style') {
                     if (!this.style) {
                         this.useStyle(value);
@@ -11013,27 +11161,27 @@
                     extend(this.shape, value);
                 }
                 else {
-                    super.attrKV(key, value);
+                    _super.prototype.attrKV.call(this, key, value);
                 }
             }
             if (!this.style) {
                 this.useStyle({});
             }
-        }
-        getDefaultStyle() {
+        };
+        Path.prototype.getDefaultStyle = function () {
             return null;
-        }
-        getDefaultShape() {
+        };
+        Path.prototype.getDefaultShape = function () {
             return {};
-        }
-        canBeInsideText() {
+        };
+        Path.prototype.canBeInsideText = function () {
             return this.hasFill();
-        }
-        getInsideTextFill() {
-            const pathFill = this.style.fill;
+        };
+        Path.prototype.getInsideTextFill = function () {
+            var pathFill = this.style.fill;
             if (pathFill !== 'none') {
                 if (isString(pathFill)) {
-                    const fillLum = lum(pathFill, 0);
+                    var fillLum = lum(pathFill, 0);
                     if (fillLum > 0.5) {
                         return DARK_LABEL_COLOR;
                     }
@@ -11047,52 +11195,52 @@
                 }
             }
             return DARK_LABEL_COLOR;
-        }
-        getInsideTextStroke(textFill) {
-            const pathFill = this.style.fill;
+        };
+        Path.prototype.getInsideTextStroke = function (textFill) {
+            var pathFill = this.style.fill;
             if (isString(pathFill)) {
-                const zr = this.__zr;
-                const isDarkMode = !!(zr && zr.isDarkMode());
-                const isDarkLabel = lum(textFill, 0) < DARK_MODE_THRESHOLD;
+                var zr = this.__zr;
+                var isDarkMode = !!(zr && zr.isDarkMode());
+                var isDarkLabel = lum(textFill, 0) < DARK_MODE_THRESHOLD;
                 if (isDarkMode === isDarkLabel) {
                     return pathFill;
                 }
             }
-        }
-        buildPath(ctx, shapeCfg, inBatch) { }
-        pathUpdated() {
+        };
+        Path.prototype.buildPath = function (ctx, shapeCfg, inBatch) { };
+        Path.prototype.pathUpdated = function () {
             this.__dirty &= ~SHAPE_CHANGED_BIT;
-        }
-        getUpdatedPathProxy(inBatch) {
+        };
+        Path.prototype.getUpdatedPathProxy = function (inBatch) {
             !this.path && this.createPathProxy();
             this.path.beginPath();
             this.buildPath(this.path, this.shape, inBatch);
             return this.path;
-        }
-        createPathProxy() {
+        };
+        Path.prototype.createPathProxy = function () {
             this.path = new PathProxy(false);
-        }
-        hasStroke() {
-            const style = this.style;
-            const stroke = style.stroke;
+        };
+        Path.prototype.hasStroke = function () {
+            var style = this.style;
+            var stroke = style.stroke;
             return !(stroke == null || stroke === 'none' || !(style.lineWidth > 0));
-        }
-        hasFill() {
-            const style = this.style;
-            const fill = style.fill;
+        };
+        Path.prototype.hasFill = function () {
+            var style = this.style;
+            var fill = style.fill;
             return fill != null && fill !== 'none';
-        }
-        getBoundingRect() {
-            let rect = this._rect;
-            const style = this.style;
-            const needsUpdateRect = !rect;
+        };
+        Path.prototype.getBoundingRect = function () {
+            var rect = this._rect;
+            var style = this.style;
+            var needsUpdateRect = !rect;
             if (needsUpdateRect) {
-                let firstInvoke = false;
+                var firstInvoke = false;
                 if (!this.path) {
                     firstInvoke = true;
                     this.createPathProxy();
                 }
-                let path = this.path;
+                var path = this.path;
                 if (firstInvoke || (this.__dirty & SHAPE_CHANGED_BIT)) {
                     path.beginPath();
                     this.buildPath(path, this.shape, false);
@@ -11102,13 +11250,13 @@
             }
             this._rect = rect;
             if (this.hasStroke() && this.path && this.path.len() > 0) {
-                const rectStroke = this._rectStroke || (this._rectStroke = rect.clone());
+                var rectStroke = this._rectStroke || (this._rectStroke = rect.clone());
                 if (this.__dirty || needsUpdateRect) {
                     rectStroke.copy(rect);
-                    const lineScale = style.strokeNoScale ? this.getLineScale() : 1;
-                    let w = style.lineWidth;
+                    var lineScale = style.strokeNoScale ? this.getLineScale() : 1;
+                    var w = style.lineWidth;
                     if (!this.hasFill()) {
-                        const strokeContainThreshold = this.strokeContainThreshold;
+                        var strokeContainThreshold = this.strokeContainThreshold;
                         w = Math.max(w, strokeContainThreshold == null ? 4 : strokeContainThreshold);
                     }
                     if (lineScale > 1e-10) {
@@ -11121,18 +11269,18 @@
                 return rectStroke;
             }
             return rect;
-        }
-        contain(x, y) {
-            const localPos = this.transformCoordToLocal(x, y);
-            const rect = this.getBoundingRect();
-            const style = this.style;
+        };
+        Path.prototype.contain = function (x, y) {
+            var localPos = this.transformCoordToLocal(x, y);
+            var rect = this.getBoundingRect();
+            var style = this.style;
             x = localPos[0];
             y = localPos[1];
             if (rect.contain(x, y)) {
-                const pathProxy = this.path;
+                var pathProxy = this.path;
                 if (this.hasStroke()) {
-                    let lineWidth = style.lineWidth;
-                    let lineScale = style.strokeNoScale ? this.getLineScale() : 1;
+                    var lineWidth = style.lineWidth;
+                    var lineScale = style.strokeNoScale ? this.getLineScale() : 1;
                     if (lineScale > 1e-10) {
                         if (!this.hasFill()) {
                             lineWidth = Math.max(lineWidth, this.strokeContainThreshold);
@@ -11147,8 +11295,8 @@
                 }
             }
             return false;
-        }
-        dirtyShape() {
+        };
+        Path.prototype.dirtyShape = function () {
             this.__dirty |= SHAPE_CHANGED_BIT;
             if (this._rect) {
                 this._rect = null;
@@ -11157,15 +11305,15 @@
                 this._decalEl.dirtyShape();
             }
             this.markRedraw();
-        }
-        dirty() {
+        };
+        Path.prototype.dirty = function () {
             this.dirtyStyle();
             this.dirtyShape();
-        }
-        animateShape(loop) {
+        };
+        Path.prototype.animateShape = function (loop) {
             return this.animate('shape', loop);
-        }
-        updateDuringAnimation(targetKey) {
+        };
+        Path.prototype.updateDuringAnimation = function (targetKey) {
             if (targetKey === 'style') {
                 this.dirtyStyle();
             }
@@ -11175,17 +11323,17 @@
             else {
                 this.markRedraw();
             }
-        }
-        attrKV(key, value) {
+        };
+        Path.prototype.attrKV = function (key, value) {
             if (key === 'shape') {
                 this.setShape(value);
             }
             else {
-                super.attrKV(key, value);
+                _super.prototype.attrKV.call(this, key, value);
             }
-        }
-        setShape(keyOrObj, value) {
-            let shape = this.shape;
+        };
+        Path.prototype.setShape = function (keyOrObj, value) {
+            var shape = this.shape;
             if (!shape) {
                 shape = this.shape = {};
             }
@@ -11197,24 +11345,24 @@
             }
             this.dirtyShape();
             return this;
-        }
-        shapeChanged() {
+        };
+        Path.prototype.shapeChanged = function () {
             return !!(this.__dirty & SHAPE_CHANGED_BIT);
-        }
-        createStyle(obj) {
+        };
+        Path.prototype.createStyle = function (obj) {
             return createObject(DEFAULT_PATH_STYLE, obj);
-        }
-        _innerSaveToNormal(toState) {
-            super._innerSaveToNormal(toState);
-            const normalState = this._normalState;
+        };
+        Path.prototype._innerSaveToNormal = function (toState) {
+            _super.prototype._innerSaveToNormal.call(this, toState);
+            var normalState = this._normalState;
             if (toState.shape && !normalState.shape) {
                 normalState.shape = extend({}, this.shape);
             }
-        }
-        _applyStateObj(stateName, state, normalState, keepCurrentStates, transition, animationCfg) {
-            super._applyStateObj(stateName, state, normalState, keepCurrentStates, transition, animationCfg);
-            const needsRestoreToNormal = !(state && keepCurrentStates);
-            let targetShape;
+        };
+        Path.prototype._applyStateObj = function (stateName, state, normalState, keepCurrentStates, transition, animationCfg) {
+            _super.prototype._applyStateObj.call(this, stateName, state, normalState, keepCurrentStates, transition, animationCfg);
+            var needsRestoreToNormal = !(state && keepCurrentStates);
+            var targetShape;
             if (state && state.shape) {
                 if (transition) {
                     if (keepCurrentStates) {
@@ -11236,10 +11384,10 @@
             if (targetShape) {
                 if (transition) {
                     this.shape = extend({}, this.shape);
-                    const targetShapePrimaryProps = {};
-                    const shapeKeys = keys(targetShape);
-                    for (let i = 0; i < shapeKeys.length; i++) {
-                        const key = shapeKeys[i];
+                    var targetShapePrimaryProps = {};
+                    var shapeKeys = keys(targetShape);
+                    for (var i = 0; i < shapeKeys.length; i++) {
+                        var key = shapeKeys[i];
                         if (typeof targetShape[key] === 'object') {
                             this.shape[key] = targetShape[key];
                         }
@@ -11256,12 +11404,12 @@
                     this.dirtyShape();
                 }
             }
-        }
-        _mergeStates(states) {
-            const mergedState = super._mergeStates(states);
-            let mergedShape;
-            for (let i = 0; i < states.length; i++) {
-                const state = states[i];
+        };
+        Path.prototype._mergeStates = function (states) {
+            var mergedState = _super.prototype._mergeStates.call(this, states);
+            var mergedShape;
+            for (var i = 0; i < states.length; i++) {
+                var state = states[i];
                 if (state.shape) {
                     mergedShape = mergedShape || {};
                     this._mergeStyle(mergedShape, state.shape);
@@ -11271,45 +11419,49 @@
                 mergedState.shape = mergedShape;
             }
             return mergedState;
-        }
-        getAnimationStyleProps() {
+        };
+        Path.prototype.getAnimationStyleProps = function () {
             return DEFAULT_PATH_ANIMATION_PROPS;
-        }
-        isZeroArea() {
+        };
+        Path.prototype.isZeroArea = function () {
             return false;
-        }
-        static extend(defaultProps) {
-            class Sub extends Path {
-                constructor(opts) {
-                    super(opts);
-                    defaultProps.init && defaultProps.init.call(this, opts);
+        };
+        Path.extend = function (defaultProps) {
+            var Sub = (function (_super) {
+                __extends$1(Sub, _super);
+                function Sub(opts) {
+                    var _this = _super.call(this, opts) || this;
+                    defaultProps.init && defaultProps.init.call(_this, opts);
+                    return _this;
                 }
-                getDefaultStyle() {
+                Sub.prototype.getDefaultStyle = function () {
                     return clone(defaultProps.style);
-                }
-                getDefaultShape() {
+                };
+                Sub.prototype.getDefaultShape = function () {
                     return clone(defaultProps.shape);
-                }
-            }
-            for (let key in defaultProps) {
+                };
+                return Sub;
+            }(Path));
+            for (var key in defaultProps) {
                 if (typeof defaultProps[key] === 'function') {
                     Sub.prototype[key] = defaultProps[key];
                 }
             }
             return Sub;
-        }
-    }
-    Path.initDefaultProps = (function () {
-        const pathProto = Path.prototype;
-        pathProto.type = 'path';
-        pathProto.strokeContainThreshold = 5;
-        pathProto.segmentIgnoreThreshold = 0;
-        pathProto.subPixelOptimize = false;
-        pathProto.autoBatch = false;
-        pathProto.__dirty = REDRAW_BIT | STYLE_CHANGED_BIT | SHAPE_CHANGED_BIT;
-    })();
+        };
+        Path.initDefaultProps = (function () {
+            var pathProto = Path.prototype;
+            pathProto.type = 'path';
+            pathProto.strokeContainThreshold = 5;
+            pathProto.segmentIgnoreThreshold = 0;
+            pathProto.subPixelOptimize = false;
+            pathProto.autoBatch = false;
+            pathProto.__dirty = REDRAW_BIT | STYLE_CHANGED_BIT | SHAPE_CHANGED_BIT;
+        })();
+        return Path;
+    }(Displayable));
 
-    const DEFAULT_TSPAN_STYLE = defaults({
+    var DEFAULT_TSPAN_STYLE = defaults({
         strokeFirst: true,
         font: DEFAULT_FONT,
         x: 0,
@@ -11318,33 +11470,37 @@
         textBaseline: 'top',
         miterLimit: 2
     }, DEFAULT_PATH_STYLE);
-    class TSpan extends Displayable {
-        hasStroke() {
-            const style = this.style;
-            const stroke = style.stroke;
+    var TSpan = (function (_super) {
+        __extends$1(TSpan, _super);
+        function TSpan() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        TSpan.prototype.hasStroke = function () {
+            var style = this.style;
+            var stroke = style.stroke;
             return stroke != null && stroke !== 'none' && style.lineWidth > 0;
-        }
-        hasFill() {
-            const style = this.style;
-            const fill = style.fill;
+        };
+        TSpan.prototype.hasFill = function () {
+            var style = this.style;
+            var fill = style.fill;
             return fill != null && fill !== 'none';
-        }
-        createStyle(obj) {
+        };
+        TSpan.prototype.createStyle = function (obj) {
             return createObject(DEFAULT_TSPAN_STYLE, obj);
-        }
-        setBoundingRect(rect) {
+        };
+        TSpan.prototype.setBoundingRect = function (rect) {
             this._rect = rect;
-        }
-        getBoundingRect() {
-            const style = this.style;
+        };
+        TSpan.prototype.getBoundingRect = function () {
+            var style = this.style;
             if (!this._rect) {
-                let text = style.text;
+                var text = style.text;
                 text != null ? (text += '') : (text = '');
-                const rect = getBoundingRect(text, style.font, style.textAlign, style.textBaseline);
+                var rect = getBoundingRect(text, style.font, style.textAlign, style.textBaseline);
                 rect.x += style.x || 0;
                 rect.y += style.y || 0;
                 if (this.hasStroke()) {
-                    const w = style.lineWidth;
+                    var w = style.lineWidth;
                     rect.x -= w / 2;
                     rect.y -= w / 2;
                     rect.width += w;
@@ -11353,19 +11509,20 @@
                 this._rect = rect;
             }
             return this._rect;
-        }
-    }
-    TSpan.initDefaultProps = (function () {
-        const tspanProto = TSpan.prototype;
-        tspanProto.dirtyRectTolerance = 10;
-    })();
+        };
+        TSpan.initDefaultProps = (function () {
+            var tspanProto = TSpan.prototype;
+            tspanProto.dirtyRectTolerance = 10;
+        })();
+        return TSpan;
+    }(Displayable));
     TSpan.prototype.type = 'tspan';
 
-    const DEFAULT_IMAGE_STYLE = defaults({
+    var DEFAULT_IMAGE_STYLE = defaults({
         x: 0,
         y: 0
     }, DEFAULT_COMMON_STYLE);
-    const DEFAULT_IMAGE_ANIMATION_PROPS = {
+    var DEFAULT_IMAGE_ANIMATION_PROPS = {
         style: defaults({
             x: true,
             y: true,
@@ -11382,63 +11539,144 @@
             && typeof source !== 'string'
             && source.width && source.height);
     }
-    class ZRImage extends Displayable {
-        createStyle(obj) {
-            return createObject(DEFAULT_IMAGE_STYLE, obj);
+    var ZRImage = (function (_super) {
+        __extends$1(ZRImage, _super);
+        function ZRImage() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
-        _getSize(dim) {
-            const style = this.style;
-            let size = style[dim];
+        ZRImage.prototype.createStyle = function (obj) {
+            return createObject(DEFAULT_IMAGE_STYLE, obj);
+        };
+        ZRImage.prototype._getSize = function (dim) {
+            var style = this.style;
+            var size = style[dim];
             if (size != null) {
                 return size;
             }
-            const imageSource = isImageLike(style.image)
+            var imageSource = isImageLike(style.image)
                 ? style.image : this.__image;
             if (!imageSource) {
                 return 0;
             }
-            const otherDim = dim === 'width' ? 'height' : 'width';
-            let otherDimSize = style[otherDim];
+            var otherDim = dim === 'width' ? 'height' : 'width';
+            var otherDimSize = style[otherDim];
             if (otherDimSize == null) {
                 return imageSource[dim];
             }
             else {
                 return imageSource[dim] / imageSource[otherDim] * otherDimSize;
             }
-        }
-        getWidth() {
+        };
+        ZRImage.prototype.getWidth = function () {
             return this._getSize('width');
-        }
-        getHeight() {
+        };
+        ZRImage.prototype.getHeight = function () {
             return this._getSize('height');
-        }
-        getAnimationStyleProps() {
+        };
+        ZRImage.prototype.getAnimationStyleProps = function () {
             return DEFAULT_IMAGE_ANIMATION_PROPS;
-        }
-        getBoundingRect() {
-            const style = this.style;
+        };
+        ZRImage.prototype.getBoundingRect = function () {
+            var style = this.style;
             if (!this._rect) {
                 this._rect = new BoundingRect(style.x || 0, style.y || 0, this.getWidth(), this.getHeight());
             }
             return this._rect;
-        }
-    }
+        };
+        return ZRImage;
+    }(Displayable));
     ZRImage.prototype.type = 'image';
 
-    const round$1 = Math.round;
+    function buildPath(ctx, shape) {
+        var x = shape.x;
+        var y = shape.y;
+        var width = shape.width;
+        var height = shape.height;
+        var r = shape.r;
+        var r1;
+        var r2;
+        var r3;
+        var r4;
+        if (width < 0) {
+            x = x + width;
+            width = -width;
+        }
+        if (height < 0) {
+            y = y + height;
+            height = -height;
+        }
+        if (typeof r === 'number') {
+            r1 = r2 = r3 = r4 = r;
+        }
+        else if (r instanceof Array) {
+            if (r.length === 1) {
+                r1 = r2 = r3 = r4 = r[0];
+            }
+            else if (r.length === 2) {
+                r1 = r3 = r[0];
+                r2 = r4 = r[1];
+            }
+            else if (r.length === 3) {
+                r1 = r[0];
+                r2 = r4 = r[1];
+                r3 = r[2];
+            }
+            else {
+                r1 = r[0];
+                r2 = r[1];
+                r3 = r[2];
+                r4 = r[3];
+            }
+        }
+        else {
+            r1 = r2 = r3 = r4 = 0;
+        }
+        var total;
+        if (r1 + r2 > width) {
+            total = r1 + r2;
+            r1 *= width / total;
+            r2 *= width / total;
+        }
+        if (r3 + r4 > width) {
+            total = r3 + r4;
+            r3 *= width / total;
+            r4 *= width / total;
+        }
+        if (r2 + r3 > height) {
+            total = r2 + r3;
+            r2 *= height / total;
+            r3 *= height / total;
+        }
+        if (r1 + r4 > height) {
+            total = r1 + r4;
+            r1 *= height / total;
+            r4 *= height / total;
+        }
+        ctx.moveTo(x + r1, y);
+        ctx.lineTo(x + width - r2, y);
+        r2 !== 0 && ctx.arc(x + width - r2, y + r2, r2, -Math.PI / 2, 0);
+        ctx.lineTo(x + width, y + height - r3);
+        r3 !== 0 && ctx.arc(x + width - r3, y + height - r3, r3, 0, Math.PI / 2);
+        ctx.lineTo(x + r4, y + height);
+        r4 !== 0 && ctx.arc(x + r4, y + height - r4, r4, Math.PI / 2, Math.PI);
+        ctx.lineTo(x, y + r1);
+        r1 !== 0 && ctx.arc(x + r1, y + r1, r1, Math.PI, Math.PI * 1.5);
+    }
+
+    var round$1 = Math.round;
     function subPixelOptimizeLine(outputShape, inputShape, style) {
         if (!inputShape) {
             return;
         }
-        const x1 = inputShape.x1;
-        const x2 = inputShape.x2;
-        const y1 = inputShape.y1;
-        const y2 = inputShape.y2;
+        var x1 = inputShape.x1;
+        var x2 = inputShape.x2;
+        var y1 = inputShape.y1;
+        var y2 = inputShape.y2;
         outputShape.x1 = x1;
         outputShape.x2 = x2;
         outputShape.y1 = y1;
         outputShape.y2 = y2;
-        const lineWidth = style && style.lineWidth;
+        var lineWidth = style && style.lineWidth;
         if (!lineWidth) {
             return outputShape;
         }
@@ -11454,15 +11692,15 @@
         if (!inputShape) {
             return;
         }
-        const originX = inputShape.x;
-        const originY = inputShape.y;
-        const originWidth = inputShape.width;
-        const originHeight = inputShape.height;
+        var originX = inputShape.x;
+        var originY = inputShape.y;
+        var originWidth = inputShape.width;
+        var originHeight = inputShape.height;
         outputShape.x = originX;
         outputShape.y = originY;
         outputShape.width = originWidth;
         outputShape.height = originHeight;
-        const lineWidth = style && style.lineWidth;
+        var lineWidth = style && style.lineWidth;
         if (!lineWidth) {
             return outputShape;
         }
@@ -11476,123 +11714,814 @@
         if (!lineWidth) {
             return position;
         }
-        const doubledPosition = round$1(position * 2);
+        var doubledPosition = round$1(position * 2);
         return (doubledPosition + round$1(lineWidth)) % 2 === 0
             ? doubledPosition / 2
             : (doubledPosition + (positiveOrNegative ? 1 : -1)) / 2;
     }
 
-    class Random {
-        constructor(seed) {
+    var CMD$2 = PathProxy.CMD;
+    var points = [[], [], []];
+    var mathSqrt$1 = Math.sqrt;
+    var mathAtan2 = Math.atan2;
+    function transformPath(path, m) {
+        if (!m) {
+            return;
+        }
+        var data = path.data;
+        var len = path.len();
+        var cmd;
+        var nPoint;
+        var i;
+        var j;
+        var k;
+        var p;
+        var M = CMD$2.M;
+        var C = CMD$2.C;
+        var L = CMD$2.L;
+        var R = CMD$2.R;
+        var A = CMD$2.A;
+        var Q = CMD$2.Q;
+        for (i = 0, j = 0; i < len;) {
+            cmd = data[i++];
+            j = i;
+            nPoint = 0;
+            switch (cmd) {
+                case M:
+                    nPoint = 1;
+                    break;
+                case L:
+                    nPoint = 1;
+                    break;
+                case C:
+                    nPoint = 3;
+                    break;
+                case Q:
+                    nPoint = 2;
+                    break;
+                case A:
+                    var x = m[4];
+                    var y = m[5];
+                    var sx = mathSqrt$1(m[0] * m[0] + m[1] * m[1]);
+                    var sy = mathSqrt$1(m[2] * m[2] + m[3] * m[3]);
+                    var angle = mathAtan2(-m[1] / sy, m[0] / sx);
+                    data[i] *= sx;
+                    data[i++] += x;
+                    data[i] *= sy;
+                    data[i++] += y;
+                    data[i++] *= sx;
+                    data[i++] *= sy;
+                    data[i++] += angle;
+                    data[i++] += angle;
+                    i += 2;
+                    j = i;
+                    break;
+                case R:
+                    p[0] = data[i++];
+                    p[1] = data[i++];
+                    applyTransform(p, p, m);
+                    data[j++] = p[0];
+                    data[j++] = p[1];
+                    p[0] += data[i++];
+                    p[1] += data[i++];
+                    applyTransform(p, p, m);
+                    data[j++] = p[0];
+                    data[j++] = p[1];
+            }
+            for (k = 0; k < nPoint; k++) {
+                var p_1 = points[k];
+                p_1[0] = data[i++];
+                p_1[1] = data[i++];
+                applyTransform(p_1, p_1, m);
+                data[j++] = p_1[0];
+                data[j++] = p_1[1];
+            }
+        }
+        path.increaseVersion();
+    }
+
+    var mathSqrt$2 = Math.sqrt;
+    var mathSin$2 = Math.sin;
+    var mathCos$2 = Math.cos;
+    var PI$1 = Math.PI;
+    function vMag(v) {
+        return Math.sqrt(v[0] * v[0] + v[1] * v[1]);
+    }
+    function vRatio(u, v) {
+        return (u[0] * v[0] + u[1] * v[1]) / (vMag(u) * vMag(v));
+    }
+    function vAngle(u, v) {
+        return (u[0] * v[1] < u[1] * v[0] ? -1 : 1)
+            * Math.acos(vRatio(u, v));
+    }
+    function processArc(x1, y1, x2, y2, fa, fs, rx, ry, psiDeg, cmd, path) {
+        var psi = psiDeg * (PI$1 / 180.0);
+        var xp = mathCos$2(psi) * (x1 - x2) / 2.0
+            + mathSin$2(psi) * (y1 - y2) / 2.0;
+        var yp = -1 * mathSin$2(psi) * (x1 - x2) / 2.0
+            + mathCos$2(psi) * (y1 - y2) / 2.0;
+        var lambda = (xp * xp) / (rx * rx) + (yp * yp) / (ry * ry);
+        if (lambda > 1) {
+            rx *= mathSqrt$2(lambda);
+            ry *= mathSqrt$2(lambda);
+        }
+        var f = (fa === fs ? -1 : 1)
+            * mathSqrt$2((((rx * rx) * (ry * ry))
+                - ((rx * rx) * (yp * yp))
+                - ((ry * ry) * (xp * xp))) / ((rx * rx) * (yp * yp)
+                + (ry * ry) * (xp * xp))) || 0;
+        var cxp = f * rx * yp / ry;
+        var cyp = f * -ry * xp / rx;
+        var cx = (x1 + x2) / 2.0
+            + mathCos$2(psi) * cxp
+            - mathSin$2(psi) * cyp;
+        var cy = (y1 + y2) / 2.0
+            + mathSin$2(psi) * cxp
+            + mathCos$2(psi) * cyp;
+        var theta = vAngle([1, 0], [(xp - cxp) / rx, (yp - cyp) / ry]);
+        var u = [(xp - cxp) / rx, (yp - cyp) / ry];
+        var v = [(-1 * xp - cxp) / rx, (-1 * yp - cyp) / ry];
+        var dTheta = vAngle(u, v);
+        if (vRatio(u, v) <= -1) {
+            dTheta = PI$1;
+        }
+        if (vRatio(u, v) >= 1) {
+            dTheta = 0;
+        }
+        if (dTheta < 0) {
+            var n = Math.round(dTheta / PI$1 * 1e6) / 1e6;
+            dTheta = PI$1 * 2 + (n % 2) * PI$1;
+        }
+        path.addData(cmd, cx, cy, rx, ry, theta, dTheta, psi, fs);
+    }
+    var commandReg = /([mlvhzcqtsa])([^mlvhzcqtsa]*)/ig;
+    var numberReg = /-?([0-9]*\.)?[0-9]+([eE]-?[0-9]+)?/g;
+    function createPathProxyFromString(data) {
+        var path = new PathProxy();
+        if (!data) {
+            return path;
+        }
+        var cpx = 0;
+        var cpy = 0;
+        var subpathX = cpx;
+        var subpathY = cpy;
+        var prevCmd;
+        var CMD = PathProxy.CMD;
+        var cmdList = data.match(commandReg);
+        if (!cmdList) {
+            return path;
+        }
+        for (var l = 0; l < cmdList.length; l++) {
+            var cmdText = cmdList[l];
+            var cmdStr = cmdText.charAt(0);
+            var cmd = void 0;
+            var p = cmdText.match(numberReg) || [];
+            var pLen = p.length;
+            for (var i = 0; i < pLen; i++) {
+                p[i] = parseFloat(p[i]);
+            }
+            var off = 0;
+            while (off < pLen) {
+                var ctlPtx = void 0;
+                var ctlPty = void 0;
+                var rx = void 0;
+                var ry = void 0;
+                var psi = void 0;
+                var fa = void 0;
+                var fs = void 0;
+                var x1 = cpx;
+                var y1 = cpy;
+                var len = void 0;
+                var pathData = void 0;
+                switch (cmdStr) {
+                    case 'l':
+                        cpx += p[off++];
+                        cpy += p[off++];
+                        cmd = CMD.L;
+                        path.addData(cmd, cpx, cpy);
+                        break;
+                    case 'L':
+                        cpx = p[off++];
+                        cpy = p[off++];
+                        cmd = CMD.L;
+                        path.addData(cmd, cpx, cpy);
+                        break;
+                    case 'm':
+                        cpx += p[off++];
+                        cpy += p[off++];
+                        cmd = CMD.M;
+                        path.addData(cmd, cpx, cpy);
+                        subpathX = cpx;
+                        subpathY = cpy;
+                        cmdStr = 'l';
+                        break;
+                    case 'M':
+                        cpx = p[off++];
+                        cpy = p[off++];
+                        cmd = CMD.M;
+                        path.addData(cmd, cpx, cpy);
+                        subpathX = cpx;
+                        subpathY = cpy;
+                        cmdStr = 'L';
+                        break;
+                    case 'h':
+                        cpx += p[off++];
+                        cmd = CMD.L;
+                        path.addData(cmd, cpx, cpy);
+                        break;
+                    case 'H':
+                        cpx = p[off++];
+                        cmd = CMD.L;
+                        path.addData(cmd, cpx, cpy);
+                        break;
+                    case 'v':
+                        cpy += p[off++];
+                        cmd = CMD.L;
+                        path.addData(cmd, cpx, cpy);
+                        break;
+                    case 'V':
+                        cpy = p[off++];
+                        cmd = CMD.L;
+                        path.addData(cmd, cpx, cpy);
+                        break;
+                    case 'C':
+                        cmd = CMD.C;
+                        path.addData(cmd, p[off++], p[off++], p[off++], p[off++], p[off++], p[off++]);
+                        cpx = p[off - 2];
+                        cpy = p[off - 1];
+                        break;
+                    case 'c':
+                        cmd = CMD.C;
+                        path.addData(cmd, p[off++] + cpx, p[off++] + cpy, p[off++] + cpx, p[off++] + cpy, p[off++] + cpx, p[off++] + cpy);
+                        cpx += p[off - 2];
+                        cpy += p[off - 1];
+                        break;
+                    case 'S':
+                        ctlPtx = cpx;
+                        ctlPty = cpy;
+                        len = path.len();
+                        pathData = path.data;
+                        if (prevCmd === CMD.C) {
+                            ctlPtx += cpx - pathData[len - 4];
+                            ctlPty += cpy - pathData[len - 3];
+                        }
+                        cmd = CMD.C;
+                        x1 = p[off++];
+                        y1 = p[off++];
+                        cpx = p[off++];
+                        cpy = p[off++];
+                        path.addData(cmd, ctlPtx, ctlPty, x1, y1, cpx, cpy);
+                        break;
+                    case 's':
+                        ctlPtx = cpx;
+                        ctlPty = cpy;
+                        len = path.len();
+                        pathData = path.data;
+                        if (prevCmd === CMD.C) {
+                            ctlPtx += cpx - pathData[len - 4];
+                            ctlPty += cpy - pathData[len - 3];
+                        }
+                        cmd = CMD.C;
+                        x1 = cpx + p[off++];
+                        y1 = cpy + p[off++];
+                        cpx += p[off++];
+                        cpy += p[off++];
+                        path.addData(cmd, ctlPtx, ctlPty, x1, y1, cpx, cpy);
+                        break;
+                    case 'Q':
+                        x1 = p[off++];
+                        y1 = p[off++];
+                        cpx = p[off++];
+                        cpy = p[off++];
+                        cmd = CMD.Q;
+                        path.addData(cmd, x1, y1, cpx, cpy);
+                        break;
+                    case 'q':
+                        x1 = p[off++] + cpx;
+                        y1 = p[off++] + cpy;
+                        cpx += p[off++];
+                        cpy += p[off++];
+                        cmd = CMD.Q;
+                        path.addData(cmd, x1, y1, cpx, cpy);
+                        break;
+                    case 'T':
+                        ctlPtx = cpx;
+                        ctlPty = cpy;
+                        len = path.len();
+                        pathData = path.data;
+                        if (prevCmd === CMD.Q) {
+                            ctlPtx += cpx - pathData[len - 4];
+                            ctlPty += cpy - pathData[len - 3];
+                        }
+                        cpx = p[off++];
+                        cpy = p[off++];
+                        cmd = CMD.Q;
+                        path.addData(cmd, ctlPtx, ctlPty, cpx, cpy);
+                        break;
+                    case 't':
+                        ctlPtx = cpx;
+                        ctlPty = cpy;
+                        len = path.len();
+                        pathData = path.data;
+                        if (prevCmd === CMD.Q) {
+                            ctlPtx += cpx - pathData[len - 4];
+                            ctlPty += cpy - pathData[len - 3];
+                        }
+                        cpx += p[off++];
+                        cpy += p[off++];
+                        cmd = CMD.Q;
+                        path.addData(cmd, ctlPtx, ctlPty, cpx, cpy);
+                        break;
+                    case 'A':
+                        rx = p[off++];
+                        ry = p[off++];
+                        psi = p[off++];
+                        fa = p[off++];
+                        fs = p[off++];
+                        x1 = cpx, y1 = cpy;
+                        cpx = p[off++];
+                        cpy = p[off++];
+                        cmd = CMD.A;
+                        processArc(x1, y1, cpx, cpy, fa, fs, rx, ry, psi, cmd, path);
+                        break;
+                    case 'a':
+                        rx = p[off++];
+                        ry = p[off++];
+                        psi = p[off++];
+                        fa = p[off++];
+                        fs = p[off++];
+                        x1 = cpx, y1 = cpy;
+                        cpx += p[off++];
+                        cpy += p[off++];
+                        cmd = CMD.A;
+                        processArc(x1, y1, cpx, cpy, fa, fs, rx, ry, psi, cmd, path);
+                        break;
+                }
+            }
+            if (cmdStr === 'z' || cmdStr === 'Z') {
+                cmd = CMD.Z;
+                path.addData(cmd);
+                cpx = subpathX;
+                cpy = subpathY;
+            }
+            prevCmd = cmd;
+        }
+        path.toStatic();
+        return path;
+    }
+    var SVGPath = (function (_super) {
+        __extends$1(SVGPath, _super);
+        function SVGPath() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        SVGPath.prototype.applyTransform = function (m) { };
+        return SVGPath;
+    }(Path));
+    function isPathProxy(path) {
+        return path.setData != null;
+    }
+    function createPathOptions(str, opts) {
+        var pathProxy = createPathProxyFromString(str);
+        var innerOpts = extend({}, opts);
+        innerOpts.buildPath = function (path) {
+            if (isPathProxy(path)) {
+                path.setData(pathProxy.data);
+                var ctx = path.getContext();
+                if (ctx) {
+                    path.rebuildPath(ctx, 1);
+                }
+            }
+            else {
+                var ctx = path;
+                pathProxy.rebuildPath(ctx, 1);
+            }
+        };
+        innerOpts.applyTransform = function (m) {
+            transformPath(pathProxy, m);
+            this.dirtyShape();
+        };
+        return innerOpts;
+    }
+    function createFromString(str, opts) {
+        return new SVGPath(createPathOptions(str, opts));
+    }
+    function extendFromString(str, defaultOpts) {
+        var innerOpts = createPathOptions(str, defaultOpts);
+        var Sub = (function (_super) {
+            __extends$1(Sub, _super);
+            function Sub(opts) {
+                var _this = _super.call(this, opts) || this;
+                _this.applyTransform = innerOpts.applyTransform;
+                _this.buildPath = innerOpts.buildPath;
+                return _this;
+            }
+            return Sub;
+        }(SVGPath));
+        return Sub;
+    }
+    function mergePath(pathEls, opts) {
+        var pathList = [];
+        var len = pathEls.length;
+        for (var i = 0; i < len; i++) {
+            var pathEl = pathEls[i];
+            pathList.push(pathEl.getUpdatedPathProxy(true));
+        }
+        var pathBundle = new Path(opts);
+        pathBundle.createPathProxy();
+        pathBundle.buildPath = function (path) {
+            if (isPathProxy(path)) {
+                path.appendPath(pathList);
+                var ctx = path.getContext();
+                if (ctx) {
+                    path.rebuildPath(ctx, 1);
+                }
+            }
+        };
+        return pathBundle;
+    }
+    function clonePath(sourcePath, opts) {
+        opts = opts || {};
+        var path = new Path();
+        if (sourcePath.shape) {
+            path.setShape(sourcePath.shape);
+        }
+        path.setStyle(sourcePath.style);
+        if (opts.bakeTransform) {
+            transformPath(path.path, sourcePath.getComputedTransform());
+        }
+        else {
+            if (opts.toLocal) {
+                path.setLocalTransform(sourcePath.getComputedTransform());
+            }
+            else {
+                path.copyTransform(sourcePath);
+            }
+        }
+        path.buildPath = sourcePath.buildPath;
+        path.applyTransform = path.applyTransform;
+        path.z = sourcePath.z;
+        path.z2 = sourcePath.z2;
+        path.zlevel = sourcePath.zlevel;
+        return path;
+    }
+
+    var Random = (function () {
+        function Random(seed) {
             this.seed = seed;
         }
-        next() {
+        Random.prototype.next = function () {
             if (this.seed) {
                 return ((Math.pow(2, 31) - 1) & (this.seed = Math.imul(48271, this.seed))) / Math.pow(2, 31);
             }
             else {
                 return Math.random();
             }
+        };
+        return Random;
+    }());
+
+    function rotatePoint(x, y, center, angle) {
+        var dx = x - center[0];
+        var dy = y - center[1];
+        var cos = Math.cos(angle);
+        var sin = Math.sin(angle);
+        return [
+            center[0] + dx * cos - dy * sin,
+            center[1] + dx * sin + dy * cos
+        ];
+    }
+    function rotatePoints(points, center, angle) {
+        return points.map(function (p) { return rotatePoint(p[0], p[1], center, angle); });
+    }
+    function rotateLines(lines, center, angle) {
+        return lines.map(function (l) { return [
+            rotatePoint(l[0][0], l[0][1], center, angle),
+            rotatePoint(l[1][0], l[1][1], center, angle)
+        ]; });
+    }
+    function hachureLines(polygons, gap, angle) {
+        var angleRad = (angle * Math.PI) / 180;
+        var center = [0, 0];
+        var allRotatedPoints = polygons.map(function (p) { return rotatePoints(p, center, -angleRad); });
+        var minY = Infinity;
+        var maxY = -Infinity;
+        for (var _i = 0, allRotatedPoints_1 = allRotatedPoints; _i < allRotatedPoints_1.length; _i++) {
+            var poly = allRotatedPoints_1[_i];
+            for (var _a = 0, poly_1 = poly; _a < poly_1.length; _a++) {
+                var p = poly_1[_a];
+                if (p[1] < minY) {
+                    minY = p[1];
+                }
+                if (p[1] > maxY) {
+                    maxY = p[1];
+                }
+            }
         }
+        if (!isFinite(minY) || !isFinite(maxY)) {
+            return [];
+        }
+        var startY = Math.ceil(minY / gap) * gap;
+        var lines = [];
+        for (var y = startY; y <= maxY; y += gap) {
+            var intersections = [];
+            for (var _b = 0, allRotatedPoints_2 = allRotatedPoints; _b < allRotatedPoints_2.length; _b++) {
+                var poly = allRotatedPoints_2[_b];
+                for (var i = 0; i < poly.length; i++) {
+                    var p1 = poly[i];
+                    var p2 = poly[(i + 1) % poly.length];
+                    if ((p1[1] <= y && p2[1] > y) || (p2[1] <= y && p1[1] > y)) {
+                        var x = p1[0] + (y - p1[1]) * (p2[0] - p1[0]) / (p2[1] - p1[1]);
+                        intersections.push(x);
+                    }
+                }
+            }
+            intersections.sort(function (a, b) { return a - b; });
+            for (var i = 0; i < intersections.length; i += 2) {
+                if (i + 1 < intersections.length) {
+                    lines.push([[intersections[i], y], [intersections[i + 1], y]]);
+                }
+            }
+        }
+        return rotateLines(lines, center, angleRad);
+    }
+    function polygonHachureLines(polygonList, o) {
+        var angle = o.hachureAngle + 90;
+        var gap = o.hachureGap;
+        if (gap < 0) {
+            gap = o.strokeWidth * 4;
+        }
+        gap = Math.round(Math.max(gap, 0.1));
+        return hachureLines(polygonList, gap, angle);
     }
 
-    function random$1(ops) {
-        if (!ops.randomizer) {
-            ops.randomizer = new Random(ops.seed || 0);
+    var HachureFiller = (function () {
+        function HachureFiller(helper) {
+            this.helper = helper;
         }
-        return ops.randomizer.next();
-    }
-    function _offset(min, max, ops, roughnessGain = 1) {
-        return ops.roughness * roughnessGain * (random$1(ops) * (max - min) + min);
-    }
-    function _offsetOpt(x, ops, roughnessGain = 1) {
-        return _offset(-x, x, ops, roughnessGain);
-    }
-    function _line(x1, y1, x2, y2, o, move, overlay) {
-        const lengthSq = Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2);
-        const length = Math.sqrt(lengthSq);
-        let roughnessGain = 1;
-        if (length < 200) {
-            roughnessGain = 1;
-        }
-        else if (length > 500) {
-            roughnessGain = 0.4;
-        }
-        else {
-            roughnessGain = -0.0016668 * length + 1.233334;
-        }
-        let offset = o.maxRandomnessOffset || 0;
-        if (offset * offset * 100 > lengthSq) {
-            offset = length / 10;
-        }
-        const halfOffset = offset / 2;
-        const divergePoint = 0.2 + random$1(o) * 0.2;
-        let midDispX = (o.bowing * o.maxRandomnessOffset * (y2 - y1)) / 200;
-        let midDispY = (o.bowing * o.maxRandomnessOffset * (x1 - x2)) / 200;
-        midDispX = _offsetOpt(midDispX, o, roughnessGain);
-        midDispY = _offsetOpt(midDispY, o, roughnessGain);
-        const ops = [];
-        const randomHalf = () => _offsetOpt(halfOffset, o, roughnessGain);
-        const randomFull = () => _offsetOpt(offset, o, roughnessGain);
-        const preserveVertices = o.preserveVertices;
-        if (move) {
-            if (overlay) {
-                ops.push({
-                    op: "move",
-                    data: [
-                        x1 + (preserveVertices ? 0 : randomHalf()),
-                        y1 + (preserveVertices ? 0 : randomHalf()),
-                    ],
-                });
+        HachureFiller.prototype.fillPolygons = function (polygonList, o) {
+            return this._fillPolygons(polygonList, o);
+        };
+        HachureFiller.prototype._fillPolygons = function (polygonList, o) {
+            var lines = polygonHachureLines(polygonList, o);
+            var ops = this.renderLines(lines, o);
+            return { type: 'fillSketch', ops: ops };
+        };
+        HachureFiller.prototype.renderLines = function (lines, o) {
+            var ops = [];
+            for (var _i = 0, lines_1 = lines; _i < lines_1.length; _i++) {
+                var line = lines_1[_i];
+                ops.push.apply(ops, this.helper.doubleLineOps(line[0][0], line[0][1], line[1][0], line[1][1], o));
             }
-            else {
-                ops.push({
-                    op: "move",
-                    data: [
-                        x1 + (preserveVertices ? 0 : _offsetOpt(offset, o, roughnessGain)),
-                        y1 + (preserveVertices ? 0 : _offsetOpt(offset, o, roughnessGain)),
-                    ],
-                });
+            return ops;
+        };
+        return HachureFiller;
+    }());
+
+    function lineLength(line) {
+        var p1 = line[0];
+        var p2 = line[1];
+        return Math.sqrt(Math.pow(p1[0] - p2[0], 2) + Math.pow(p1[1] - p2[1], 2));
+    }
+
+    var ZigZagFiller = (function (_super) {
+        __extends$1(ZigZagFiller, _super);
+        function ZigZagFiller() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        ZigZagFiller.prototype.fillPolygons = function (polygonList, o) {
+            var gap = o.hachureGap;
+            if (gap < 0) {
+                gap = o.strokeWidth * 4;
+            }
+            gap = Math.max(gap, 0.1);
+            var o2 = Object.assign({}, o, { hachureGap: gap });
+            var lines = polygonHachureLines(polygonList, o2);
+            var zigZagAngle = (Math.PI / 180) * o.hachureAngle;
+            var zigzagLines = [];
+            var dgx = gap * 0.5 * Math.cos(zigZagAngle);
+            var dgy = gap * 0.5 * Math.sin(zigZagAngle);
+            for (var _i = 0, lines_1 = lines; _i < lines_1.length; _i++) {
+                var _a = lines_1[_i], p1 = _a[0], p2 = _a[1];
+                if (lineLength([p1, p2])) {
+                    zigzagLines.push([
+                        [p1[0] - dgx, p1[1] + dgy],
+                        __spreadArray([], p2, true),
+                    ], [
+                        [p1[0] + dgx, p1[1] - dgy],
+                        __spreadArray([], p2, true),
+                    ]);
+                }
+            }
+            var ops = this.renderLines(zigzagLines, o);
+            return { type: 'fillSketch', ops: ops };
+        };
+        return ZigZagFiller;
+    }(HachureFiller));
+
+    var HatchFiller = (function (_super) {
+        __extends$1(HatchFiller, _super);
+        function HatchFiller() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        HatchFiller.prototype.fillPolygons = function (polygonList, o) {
+            var set = this._fillPolygons(polygonList, o);
+            var o2 = Object.assign({}, o, { hachureAngle: o.hachureAngle + 90 });
+            var set2 = this._fillPolygons(polygonList, o2);
+            set.ops = set.ops.concat(set2.ops);
+            return set;
+        };
+        return HatchFiller;
+    }(HachureFiller));
+
+    var DotFiller = (function () {
+        function DotFiller(helper) {
+            this.helper = helper;
+        }
+        DotFiller.prototype.fillPolygons = function (polygonList, o) {
+            o = Object.assign({}, o, { hachureAngle: 0 });
+            var lines = polygonHachureLines(polygonList, o);
+            return this.dotsOnLines(lines, o);
+        };
+        DotFiller.prototype.dotsOnLines = function (lines, o) {
+            var ops = [];
+            var gap = o.hachureGap;
+            if (gap < 0) {
+                gap = o.strokeWidth * 4;
+            }
+            gap = Math.max(gap, 0.1);
+            var fweight = o.fillWeight;
+            if (fweight < 0) {
+                fweight = o.strokeWidth / 2;
+            }
+            var ro = gap / 4;
+            for (var _i = 0, lines_1 = lines; _i < lines_1.length; _i++) {
+                var line = lines_1[_i];
+                var length_1 = lineLength(line);
+                var dl = length_1 / gap;
+                var count = Math.ceil(dl) - 1;
+                var offset = length_1 - (count * gap);
+                var x = ((line[0][0] + line[1][0]) / 2) - (gap / 4);
+                var minY = Math.min(line[0][1], line[1][1]);
+                for (var i = 0; i < count; i++) {
+                    var y = minY + offset + (i * gap);
+                    var cx = (x - ro) + Math.random() * 2 * ro;
+                    var cy = (y - ro) + Math.random() * 2 * ro;
+                    var el = this.helper.ellipse(cx, cy, fweight, fweight, o);
+                    ops.push.apply(ops, el.ops);
+                }
+            }
+            return { type: 'fillSketch', ops: ops };
+        };
+        return DotFiller;
+    }());
+
+    var DashedFiller = (function () {
+        function DashedFiller(helper) {
+            this.helper = helper;
+        }
+        DashedFiller.prototype.fillPolygons = function (polygonList, o) {
+            var lines = polygonHachureLines(polygonList, o);
+            return { type: 'fillSketch', ops: this.dashedLine(lines, o) };
+        };
+        DashedFiller.prototype.dashedLine = function (lines, o) {
+            var _this = this;
+            var offset = o.dashOffset < 0 ? (o.hachureGap < 0 ? (o.strokeWidth * 4) : o.hachureGap) : o.dashOffset;
+            var gap = o.dashGap < 0 ? (o.hachureGap < 0 ? (o.strokeWidth * 4) : o.hachureGap) : o.dashGap;
+            var ops = [];
+            lines.forEach(function (line) {
+                var length = lineLength(line);
+                var count = Math.floor(length / (offset + gap));
+                var startOffset = (length + gap - (count * (offset + gap))) / 2;
+                var p1 = line[0];
+                var p2 = line[1];
+                if (p1[0] > p2[0]) {
+                    p1 = line[1];
+                    p2 = line[0];
+                }
+                var alpha = Math.atan((p2[1] - p1[1]) / (p2[0] - p1[0]));
+                for (var i = 0; i < count; i++) {
+                    var lstart = i * (offset + gap);
+                    var lend = lstart + offset;
+                    var start = [p1[0] + (lstart * Math.cos(alpha)) + (startOffset * Math.cos(alpha)), p1[1] + lstart * Math.sin(alpha) + (startOffset * Math.sin(alpha))];
+                    var end = [p1[0] + (lend * Math.cos(alpha)) + (startOffset * Math.cos(alpha)), p1[1] + (lend * Math.sin(alpha)) + (startOffset * Math.sin(alpha))];
+                    ops.push.apply(ops, _this.helper.doubleLineOps(start[0], start[1], end[0], end[1], o));
+                }
+            });
+            return ops;
+        };
+        return DashedFiller;
+    }());
+
+    var ZigZagLineFiller = (function () {
+        function ZigZagLineFiller(helper) {
+            this.helper = helper;
+        }
+        ZigZagLineFiller.prototype.fillPolygons = function (polygonList, o) {
+            var gap = o.hachureGap < 0 ? (o.strokeWidth * 4) : o.hachureGap;
+            var zo = o.zigzagOffset < 0 ? gap : o.zigzagOffset;
+            o = Object.assign({}, o, { hachureGap: gap + zo });
+            var lines = polygonHachureLines(polygonList, o);
+            return { type: 'fillSketch', ops: this.zigzagLines(lines, zo, o) };
+        };
+        ZigZagLineFiller.prototype.zigzagLines = function (lines, zo, o) {
+            var _this = this;
+            var ops = [];
+            lines.forEach(function (line) {
+                var length = lineLength(line);
+                var count = Math.round(length / (2 * zo));
+                var p1 = line[0];
+                var p2 = line[1];
+                if (p1[0] > p2[0]) {
+                    p1 = line[1];
+                    p2 = line[0];
+                }
+                var alpha = Math.atan((p2[1] - p1[1]) / (p2[0] - p1[0]));
+                for (var i = 0; i < count; i++) {
+                    var lstart = i * 2 * zo;
+                    var lend = (i + 1) * 2 * zo;
+                    var dz = Math.sqrt(2 * Math.pow(zo, 2));
+                    var start = [p1[0] + (lstart * Math.cos(alpha)), p1[1] + lstart * Math.sin(alpha)];
+                    var end = [p1[0] + (lend * Math.cos(alpha)), p1[1] + (lend * Math.sin(alpha))];
+                    var middle = [start[0] + dz * Math.cos(alpha + Math.PI / 4), start[1] + dz * Math.sin(alpha + Math.PI / 4)];
+                    ops.push.apply(ops, __spreadArray(__spreadArray([], _this.helper.doubleLineOps(start[0], start[1], middle[0], middle[1], o), false), _this.helper.doubleLineOps(middle[0], middle[1], end[0], end[1], o), false));
+                }
+            });
+            return ops;
+        };
+        return ZigZagLineFiller;
+    }());
+
+    var fillers = {};
+    function getFiller(o, helper) {
+        var fillerName = o.fillStyle || 'hachure';
+        if (!fillers[fillerName]) {
+            switch (fillerName) {
+                case 'zigzag':
+                    if (!fillers[fillerName]) {
+                        fillers[fillerName] = new ZigZagFiller(helper);
+                    }
+                    break;
+                case 'cross-hatch':
+                    if (!fillers[fillerName]) {
+                        fillers[fillerName] = new HatchFiller(helper);
+                    }
+                    break;
+                case 'dots':
+                    if (!fillers[fillerName]) {
+                        fillers[fillerName] = new DotFiller(helper);
+                    }
+                    break;
+                case 'dashed':
+                    if (!fillers[fillerName]) {
+                        fillers[fillerName] = new DashedFiller(helper);
+                    }
+                    break;
+                case 'zigzag-line':
+                    if (!fillers[fillerName]) {
+                        fillers[fillerName] = new ZigZagLineFiller(helper);
+                    }
+                    break;
+                case 'hachure':
+                default:
+                    fillerName = 'hachure';
+                    if (!fillers[fillerName]) {
+                        fillers[fillerName] = new HachureFiller(helper);
+                    }
+                    break;
             }
         }
-        if (overlay) {
-            ops.push({
-                op: "bcurveTo",
-                data: [
-                    midDispX + x1 + (x2 - x1) * divergePoint + randomHalf(),
-                    midDispY + y1 + (y2 - y1) * divergePoint + randomHalf(),
-                    midDispX + x1 + 2 * (x2 - x1) * divergePoint + randomHalf(),
-                    midDispY + y1 + 2 * (y2 - y1) * divergePoint + randomHalf(),
-                    x2 + (preserveVertices ? 0 : randomHalf()),
-                    y2 + (preserveVertices ? 0 : randomHalf()),
-                ],
-            });
-        }
-        else {
-            ops.push({
-                op: "bcurveTo",
-                data: [
-                    midDispX + x1 + (x2 - x1) * divergePoint + randomFull(),
-                    midDispY + y1 + (y2 - y1) * divergePoint + randomFull(),
-                    midDispX + x1 + 2 * (x2 - x1) * divergePoint + randomFull(),
-                    midDispY + y1 + 2 * (y2 - y1) * divergePoint + randomFull(),
-                    x2 + (preserveVertices ? 0 : randomFull()),
-                    y2 + (preserveVertices ? 0 : randomFull()),
-                ],
-            });
-        }
-        return ops;
+        return fillers[fillerName];
     }
-    const defaultOptions = {
+
+    var RoughRenderHelper = (function () {
+        function RoughRenderHelper() {
+        }
+        RoughRenderHelper.prototype.randOffset = function (x, o) {
+            return _offsetOpt(x, o);
+        };
+        RoughRenderHelper.prototype.randOffsetWithRange = function (min, max, o) {
+            return _offset(min, max, o);
+        };
+        RoughRenderHelper.prototype.ellipse = function (x, y, width, height, o) {
+            var ellipseParams = generateEllipseParams(width, height, o);
+            var ellipseResponse = ellipseWithParams(x, y, o, ellipseParams);
+            return ellipseResponse.opset;
+        };
+        RoughRenderHelper.prototype.doubleLineOps = function (x1, y1, x2, y2, o) {
+            return _doubleLine(x1, y1, x2, y2, o);
+        };
+        return RoughRenderHelper;
+    }());
+    var defaultOptions = {
         maxRandomnessOffset: 2,
         roughness: 1,
         bowing: 1,
-        stroke: "#000",
+        stroke: '#000',
         strokeWidth: 1,
         curveTightness: 0,
         curveFitting: 0.95,
         curveStepCount: 9,
-        fillStyle: "hachure",
+        fillStyle: 'hachure',
         fillWeight: -1,
         hachureAngle: -41,
         hachureGap: -1,
@@ -11605,29 +12534,283 @@
         preserveVertices: false,
         fillShapeRoughnessGain: 0.8,
     };
-    function _doubleLine(x1, y1, x2, y2, o, filling = false) {
-        const singleStroke = filling ? o.disableMultiStrokeFill : o.disableMultiStroke;
-        const o1 = _line(x1, y1, x2, y2, o, true, false);
+    function random$1(ops) {
+        if (!ops.randomizer) {
+            ops.randomizer = new Random(ops.seed || 0);
+        }
+        return ops.randomizer.next();
+    }
+    function _offset(min, max, ops, roughnessGain) {
+        if (roughnessGain === void 0) { roughnessGain = 1; }
+        return ops.roughness * roughnessGain * (random$1(ops) * (max - min) + min);
+    }
+    function _offsetOpt(x, ops, roughnessGain) {
+        if (roughnessGain === void 0) { roughnessGain = 1; }
+        return _offset(-x, x, ops, roughnessGain);
+    }
+    function _line(x1, y1, x2, y2, o, move, overlay) {
+        var lengthSq = Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2);
+        var length = Math.sqrt(lengthSq);
+        var roughnessGain = 1;
+        if (length < 200) {
+            roughnessGain = 1;
+        }
+        else if (length > 500) {
+            roughnessGain = 0.4;
+        }
+        else {
+            roughnessGain = -0.0016668 * length + 1.233334;
+        }
+        var offset = o.maxRandomnessOffset || 0;
+        if (offset * offset * 100 > lengthSq) {
+            offset = length / 10;
+        }
+        var halfOffset = offset / 2;
+        var divergePoint = 0.2 + random$1(o) * 0.2;
+        var midDispX = (o.bowing * o.maxRandomnessOffset * (y2 - y1)) / 200;
+        var midDispY = (o.bowing * o.maxRandomnessOffset * (x1 - x2)) / 200;
+        midDispX = _offsetOpt(midDispX, o, roughnessGain);
+        midDispY = _offsetOpt(midDispY, o, roughnessGain);
+        var ops = [];
+        var randomHalf = function () { return _offsetOpt(halfOffset, o, roughnessGain); };
+        var randomFull = function () { return _offsetOpt(offset, o, roughnessGain); };
+        var preserveVertices = o.preserveVertices;
+        if (move) {
+            if (overlay) {
+                ops.push({
+                    op: 'move',
+                    data: [
+                        x1 + (preserveVertices ? 0 : randomHalf()),
+                        y1 + (preserveVertices ? 0 : randomHalf()),
+                    ],
+                });
+            }
+            else {
+                ops.push({
+                    op: 'move',
+                    data: [
+                        x1 + (preserveVertices ? 0 : _offsetOpt(offset, o, roughnessGain)),
+                        y1 + (preserveVertices ? 0 : _offsetOpt(offset, o, roughnessGain)),
+                    ],
+                });
+            }
+        }
+        if (overlay) {
+            ops.push({
+                op: 'bcurveTo',
+                data: [
+                    midDispX + x1 + (x2 - x1) * divergePoint + randomHalf(),
+                    midDispY + y1 + (y2 - y1) * divergePoint + randomHalf(),
+                    midDispX + x1 + 2 * (x2 - x1) * divergePoint + randomHalf(),
+                    midDispY + y1 + 2 * (y2 - y1) * divergePoint + randomHalf(),
+                    x2 + (preserveVertices ? 0 : randomHalf()),
+                    y2 + (preserveVertices ? 0 : randomHalf()),
+                ],
+            });
+        }
+        else {
+            ops.push({
+                op: 'bcurveTo',
+                data: [
+                    midDispX + x1 + (x2 - x1) * divergePoint + randomFull(),
+                    midDispY + y1 + (y2 - y1) * divergePoint + randomFull(),
+                    midDispX + x1 + 2 * (x2 - x1) * divergePoint + randomFull(),
+                    midDispY + y1 + 2 * (y2 - y1) * divergePoint + randomFull(),
+                    x2 + (preserveVertices ? 0 : randomFull()),
+                    y2 + (preserveVertices ? 0 : randomFull()),
+                ],
+            });
+        }
+        return ops;
+    }
+    function generateEllipseParams(width, height, o) {
+        var psq = Math.sqrt(Math.PI
+            * 2
+            * Math.sqrt((Math.pow(width / 2, 2) + Math.pow(height / 2, 2)) / 2));
+        var stepCount = Math.ceil(Math.max(o.curveStepCount, (o.curveStepCount / Math.sqrt(200)) * psq));
+        var increment = (Math.PI * 2) / stepCount;
+        var rx = Math.abs(width / 2);
+        var ry = Math.abs(height / 2);
+        var curveFitRandomness = 1 - o.curveFitting;
+        rx += _offsetOpt(rx * curveFitRandomness, o);
+        ry += _offsetOpt(ry * curveFitRandomness, o);
+        return { increment: increment, rx: rx, ry: ry };
+    }
+    function _computeEllipsePoints(increment, cx, cy, rx, ry, offset, overlap, o) {
+        var coreOnly = o.roughness === 0;
+        var corePoints = [];
+        var allPoints = [];
+        if (coreOnly) {
+            increment = increment / 4;
+            allPoints.push([
+                cx + rx * Math.cos(-increment),
+                cy + ry * Math.sin(-increment),
+            ]);
+            for (var angle = 0; angle <= Math.PI * 2; angle = angle + increment) {
+                var p = [cx + rx * Math.cos(angle), cy + ry * Math.sin(angle)];
+                corePoints.push(p);
+                allPoints.push(p);
+            }
+            allPoints.push([cx + rx * Math.cos(0), cy + ry * Math.sin(0)]);
+            allPoints.push([
+                cx + rx * Math.cos(increment),
+                cy + ry * Math.sin(increment),
+            ]);
+        }
+        else {
+            var radOffset = _offsetOpt(0.5, o) - Math.PI / 2;
+            allPoints.push([
+                _offsetOpt(offset, o) + cx + 0.9 * rx * Math.cos(radOffset - increment),
+                _offsetOpt(offset, o) + cy + 0.9 * ry * Math.sin(radOffset - increment),
+            ]);
+            var endAngle = Math.PI * 2 + radOffset - 0.01;
+            for (var angle = radOffset; angle < endAngle; angle = angle + increment) {
+                var p = [
+                    _offsetOpt(offset, o) + cx + rx * Math.cos(angle),
+                    _offsetOpt(offset, o) + cy + ry * Math.sin(angle),
+                ];
+                corePoints.push(p);
+                allPoints.push(p);
+            }
+            allPoints.push([
+                _offsetOpt(offset, o)
+                    + cx
+                    + rx * Math.cos(radOffset + Math.PI * 2 + overlap * 0.5),
+                _offsetOpt(offset, o)
+                    + cy
+                    + ry * Math.sin(radOffset + Math.PI * 2 + overlap * 0.5),
+            ]);
+            allPoints.push([
+                _offsetOpt(offset, o) + cx + 0.98 * rx * Math.cos(radOffset + overlap),
+                _offsetOpt(offset, o) + cy + 0.98 * ry * Math.sin(radOffset + overlap),
+            ]);
+            allPoints.push([
+                _offsetOpt(offset, o)
+                    + cx
+                    + 0.9 * rx * Math.cos(radOffset + overlap * 0.5),
+                _offsetOpt(offset, o)
+                    + cy
+                    + 0.9 * ry * Math.sin(radOffset + overlap * 0.5),
+            ]);
+        }
+        return [allPoints, corePoints];
+    }
+    function _curve(points, closePoint, o) {
+        var len = points.length;
+        var ops = [];
+        if (len > 3) {
+            var b = [];
+            var s = 1 - o.curveTightness;
+            ops.push({ op: 'move', data: [points[1][0], points[1][1]] });
+            for (var i = 1; i + 2 < len; i++) {
+                var cachedVertArray = points[i];
+                b[0] = [cachedVertArray[0], cachedVertArray[1]];
+                b[1] = [
+                    cachedVertArray[0] + (s * points[i + 1][0] - s * points[i - 1][0]) / 6,
+                    cachedVertArray[1] + (s * points[i + 1][1] - s * points[i - 1][1]) / 6,
+                ];
+                b[2] = [
+                    points[i + 1][0] + (s * points[i][0] - s * points[i + 2][0]) / 6,
+                    points[i + 1][1] + (s * points[i][1] - s * points[i + 2][1]) / 6,
+                ];
+                b[3] = [points[i + 1][0], points[i + 1][1]];
+                ops.push({
+                    op: 'bcurveTo',
+                    data: [b[1][0], b[1][1], b[2][0], b[2][1], b[3][0], b[3][1]],
+                });
+            }
+            if (closePoint && closePoint.length === 2) {
+                var ro = o.maxRandomnessOffset;
+                ops.push({
+                    op: 'lineTo',
+                    data: [
+                        closePoint[0] + _offsetOpt(ro, o),
+                        closePoint[1] + _offsetOpt(ro, o),
+                    ],
+                });
+            }
+        }
+        else if (len === 3) {
+            ops.push({ op: 'move', data: [points[1][0], points[1][1]] });
+            ops.push({
+                op: 'bcurveTo',
+                data: [
+                    points[1][0],
+                    points[1][1],
+                    points[2][0],
+                    points[2][1],
+                    points[2][0],
+                    points[2][1],
+                ],
+            });
+        }
+        else if (len === 2) {
+            ops.push.apply(ops, _line(points[0][0], points[0][1], points[1][0], points[1][1], o, true, true));
+        }
+        return ops;
+    }
+    function ellipseWithParams(x, y, o, ellipseParams) {
+        var _a = _computeEllipsePoints(ellipseParams.increment, x, y, ellipseParams.rx, ellipseParams.ry, 1, ellipseParams.increment * _offset(0.1, _offset(0.4, 1, o), o), o), ap1 = _a[0], cp1 = _a[1];
+        var o1 = _curve(ap1, null, o);
+        if (!o.disableMultiStroke && o.roughness !== 0) {
+            var ap2 = _computeEllipsePoints(ellipseParams.increment, x, y, ellipseParams.rx, ellipseParams.ry, 1.5, 0, o)[0];
+            var o2 = _curve(ap2, null, o);
+            o1 = o1.concat(o2);
+        }
+        return {
+            estimatedPoints: cp1,
+            opset: { type: 'path', ops: o1 },
+        };
+    }
+    function patternFillPolygons(polygonList, o) {
+        var helper = new RoughRenderHelper();
+        return getFiller(o, helper).fillPolygons(polygonList, o);
+    }
+    function _o(options) {
+        return options ? Object.assign({}, defaultOptions, options) : defaultOptions;
+    }
+    function ellipse(x, y, width, height, options) {
+        var o = _o(options);
+        var ellipseParams = generateEllipseParams(width, height, o);
+        var ellipseResponse = ellipseWithParams(x, y, o, ellipseParams);
+        if (o.fill) {
+            var fillOps = patternFillPolygons([ellipseResponse.estimatedPoints], o);
+            return {
+                type: 'path',
+                ops: ellipseResponse.opset.ops,
+                fillOps: fillOps.ops
+            };
+        }
+        return ellipseResponse.opset;
+    }
+    function circle(x, y, diameter, options) {
+        var ret = ellipse(x, y, diameter, diameter, options);
+        return ret;
+    }
+    function _doubleLine(x1, y1, x2, y2, o, filling) {
+        if (filling === void 0) { filling = false; }
+        var singleStroke = filling ? o.disableMultiStrokeFill : o.disableMultiStroke;
+        var o1 = _line(x1, y1, x2, y2, o, true, false);
         if (singleStroke) {
             return o1;
         }
-        const o2 = _line(x1, y1, x2, y2, o, true, true);
+        var o2 = _line(x1, y1, x2, y2, o, true, true);
         return o1.concat(o2);
     }
     function line(x1, y1, x2, y2, o) {
         return { type: 'path', ops: _doubleLine(x1, y1, x2, y2, o) };
     }
     function linearPath(points, close, o) {
-        const len = (points || []).length;
+        var len = (points || []).length;
         if (len > 2) {
-            const ops = [];
-            for (let i = 0; i < (len - 1); i++) {
-                ops.push(..._doubleLine(points[i][0], points[i][1], points[i + 1][0], points[i + 1][1], o));
+            var ops = [];
+            for (var i = 0; i < (len - 1); i++) {
+                ops.push.apply(ops, _doubleLine(points[i][0], points[i][1], points[i + 1][0], points[i + 1][1], o));
             }
             if (close) {
-                ops.push(..._doubleLine(points[len - 1][0], points[len - 1][1], points[0][0], points[0][1], o));
+                ops.push.apply(ops, _doubleLine(points[len - 1][0], points[len - 1][1], points[0][0], points[0][1], o));
             }
-            return { type: 'path', ops };
+            return { type: 'path', ops: ops };
         }
         else if (len === 2) {
             return line(points[0][0], points[0][1], points[1][0], points[1][1], o);
@@ -11635,10 +12818,19 @@
         return { type: 'path', ops: [] };
     }
     function polygon(points, o) {
-        return linearPath(points, true, o);
+        var outline = linearPath(points, true, o);
+        if (o.fill) {
+            var fillOps = patternFillPolygons([points], o);
+            return {
+                type: 'path',
+                ops: outline.ops,
+                fillOps: fillOps.ops
+            };
+        }
+        return outline;
     }
     function rectangle(x, y, width, height, o) {
-        const points = [
+        var points = [
             [x, y],
             [x + width, y],
             [x + width, y + height],
@@ -11646,10 +12838,11 @@
         ];
         return polygon(points, o);
     }
-    function _drawToContext(ctx, drawing, fixedDecimals) {
-        ctx.beginPath();
-        for (const item of drawing.ops) {
-            const data = ((typeof fixedDecimals === 'number') && fixedDecimals >= 0) ? (item.data.map((d) => +d.toFixed(fixedDecimals))) : item.data;
+
+    function drawOpsToContext(ctx, opSet) {
+        for (var _i = 0, _a = opSet.ops; _i < _a.length; _i++) {
+            var item = _a[_i];
+            var data = item.data;
             switch (item.op) {
                 case 'move':
                     ctx.moveTo(data[0], data[1]);
@@ -11662,32 +12855,302 @@
                     break;
             }
         }
-        ctx.stroke();
     }
+    var RoughPathWalker = (function () {
+        function RoughPathWalker(rc, options) {
+            this.currentX = 0;
+            this.currentY = 0;
+            this.startX = 0;
+            this.startY = 0;
+            this.rc = rc;
+            this.options = options;
+        }
+        RoughPathWalker.prototype.moveTo = function (x, y) {
+            this.currentX = x;
+            this.currentY = y;
+            this.startX = x;
+            this.startY = y;
+        };
+        RoughPathWalker.prototype.lineTo = function (x, y) {
+            this.rc.line(this.currentX, this.currentY, x, y, this.options);
+            this.currentX = x;
+            this.currentY = y;
+        };
+        RoughPathWalker.prototype.bezierCurveTo = function (x1, y1, x2, y2, x3, y3) {
+            var steps = 10;
+            var lastX = this.currentX;
+            var lastY = this.currentY;
+            var p0 = [this.currentX, this.currentY];
+            var p1 = [x1, y1];
+            var p2 = [x2, y2];
+            var p3 = [x3, y3];
+            for (var i = 1; i <= steps; i++) {
+                var t = i / steps;
+                var t1 = 1 - t;
+                var a = t1 * t1 * t1;
+                var b = 3 * t1 * t1 * t;
+                var c = 3 * t1 * t * t;
+                var d = t * t * t;
+                var x = a * p0[0] + b * p1[0] + c * p2[0] + d * p3[0];
+                var y = a * p0[1] + b * p1[1] + c * p2[1] + d * p3[1];
+                this.rc.line(lastX, lastY, x, y, this.options);
+                lastX = x;
+                lastY = y;
+            }
+            this.currentX = x3;
+            this.currentY = y3;
+        };
+        RoughPathWalker.prototype.quadraticCurveTo = function (x1, y1, x2, y2) {
+            var steps = 10;
+            var lastX = this.currentX;
+            var lastY = this.currentY;
+            var p0 = [this.currentX, this.currentY];
+            for (var i = 1; i <= steps; i++) {
+                var t = i / steps;
+                var t1 = 1 - t;
+                var a = t1 * t1;
+                var b = 2 * t1 * t;
+                var c = t * t;
+                var x = a * p0[0] + b * x1 + c * x2;
+                var y = a * p0[1] + b * y1 + c * y2;
+                this.rc.line(lastX, lastY, x, y, this.options);
+                lastX = x;
+                lastY = y;
+            }
+            this.currentX = x2;
+            this.currentY = y2;
+        };
+        RoughPathWalker.prototype.arc = function (x, y, radius, startAngle, endAngle, anticlockwise) {
+            var start = startAngle;
+            var end = endAngle;
+            if (anticlockwise) {
+                if (end > start) {
+                    end -= Math.PI * 2;
+                }
+            }
+            else {
+                if (end < start) {
+                    end += Math.PI * 2;
+                }
+            }
+            var step = 0.1;
+            var count = Math.ceil(Math.abs(end - start) / step);
+            var delta = (end - start) / count;
+            var lastX = x + Math.cos(start) * radius;
+            var lastY = y + Math.sin(start) * radius;
+            this.rc.line(this.currentX, this.currentY, lastX, lastY, this.options);
+            for (var i = 1; i <= count; i++) {
+                var angle = start + delta * i;
+                var px = x + Math.cos(angle) * radius;
+                var py = y + Math.sin(angle) * radius;
+                this.rc.line(lastX, lastY, px, py, this.options);
+                lastX = px;
+                lastY = py;
+            }
+            this.currentX = lastX;
+            this.currentY = lastY;
+        };
+        RoughPathWalker.prototype.ellipse = function (x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlockwise) {
+            var start = startAngle;
+            var end = endAngle;
+            if (anticlockwise) {
+                if (end > start) {
+                    end -= Math.PI * 2;
+                }
+            }
+            else {
+                if (end < start) {
+                    end += Math.PI * 2;
+                }
+            }
+            var step = 0.1;
+            var count = Math.ceil(Math.abs(end - start) / step);
+            var delta = (end - start) / count;
+            var getPoint = function (angle) {
+                var px = radiusX * Math.cos(angle);
+                var py = radiusY * Math.sin(angle);
+                var tx = px * Math.cos(rotation) - py * Math.sin(rotation);
+                var ty = px * Math.sin(rotation) + py * Math.cos(rotation);
+                return [x + tx, y + ty];
+            };
+            var _a = getPoint(start), startX = _a[0], startY = _a[1];
+            this.rc.line(this.currentX, this.currentY, startX, startY, this.options);
+            var _b = [startX, startY], lastX = _b[0], lastY = _b[1];
+            for (var i = 1; i <= count; i++) {
+                var angle = start + delta * i;
+                var _c = getPoint(angle), px = _c[0], py = _c[1];
+                this.rc.line(lastX, lastY, px, py, this.options);
+                lastX = px;
+                lastY = py;
+            }
+            this.currentX = lastX;
+            this.currentY = lastY;
+        };
+        RoughPathWalker.prototype.closePath = function () {
+            if (Math.abs(this.currentX - this.startX) > 1e-4 || Math.abs(this.currentY - this.startY) > 1e-4) {
+                this.rc.line(this.currentX, this.currentY, this.startX, this.startY, this.options);
+                this.currentX = this.startX;
+                this.currentY = this.startY;
+            }
+        };
+        return RoughPathWalker;
+    }());
+    var RoughCanvas = (function () {
+        function RoughCanvas(canvas, config) {
+            if (canvas.moveTo && canvas.lineTo) {
+                this.ctx = canvas;
+            }
+            else if (canvas.getContext) {
+                this.ctx = canvas.getContext('2d');
+            }
+            else {
+                this.ctx = canvas;
+            }
+            this.config = config || {};
+        }
+        RoughCanvas.prototype._getOptions = function (options) {
+            var defaults = this.config && this.config.options ? this.config.options : {};
+            var merged = __assign(__assign({}, defaults), options);
+            return _o(merged);
+        };
+        RoughCanvas.prototype._drawFillOps = function (ops, o) {
+            if (!ops || !ops.length) {
+                return;
+            }
+            var ctx = this.ctx;
+            var isPathProxy = typeof ctx.save !== 'function';
+            if (!isPathProxy) {
+                ctx.save();
+                ctx.beginPath();
+            }
+            drawOpsToContext(ctx, { type: 'fillSketch', ops: ops });
+            if (o.fill && !isPathProxy) {
+                ctx.strokeStyle = o.fill;
+            }
+            if (!isPathProxy) {
+                ctx.stroke();
+                ctx.restore();
+                ctx.beginPath();
+            }
+        };
+        RoughCanvas.prototype.line = function (x1, y1, x2, y2, options) {
+            var o = this._getOptions(options);
+            var ops = line(x1, y1, x2, y2, o);
+            drawOpsToContext(this.ctx, ops);
+            var isPathProxy = typeof this.ctx.save !== 'function';
+            if (!isPathProxy) {
+                this.ctx.stroke();
+                this.ctx.beginPath();
+            }
+        };
+        RoughCanvas.prototype.rectangle = function (x, y, width, height, options) {
+            var o = this._getOptions(options);
+            var ops = rectangle(x, y, width, height, o);
+            if (ops.fillOps) {
+                this._drawFillOps(ops.fillOps, o);
+            }
+            drawOpsToContext(this.ctx, ops);
+            var isPathProxy = typeof this.ctx.save !== 'function';
+            if (!isPathProxy) {
+                this.ctx.stroke();
+                this.ctx.beginPath();
+            }
+        };
+        RoughCanvas.prototype.circle = function (x, y, diameter, options) {
+            var o = this._getOptions(options);
+            var ops = circle(x, y, diameter, o);
+            if (ops.fillOps) {
+                this._drawFillOps(ops.fillOps, o);
+            }
+            drawOpsToContext(this.ctx, ops);
+            var isPathProxy = typeof this.ctx.save !== 'function';
+            if (!isPathProxy) {
+                this.ctx.stroke();
+                this.ctx.beginPath();
+            }
+        };
+        RoughCanvas.prototype.ellipse = function (x, y, width, height, options) {
+            var o = this._getOptions(options);
+            var ops = ellipse(x, y, width, height, o);
+            if (ops.fillOps) {
+                this._drawFillOps(ops.fillOps, o);
+            }
+            drawOpsToContext(this.ctx, ops);
+            var isPathProxy = typeof this.ctx.save !== 'function';
+            if (!isPathProxy) {
+                this.ctx.stroke();
+                this.ctx.beginPath();
+            }
+        };
+        RoughCanvas.prototype.linearPath = function (points, options) {
+            var o = this._getOptions(options);
+            var ops = linearPath(points, false, o);
+            drawOpsToContext(this.ctx, ops);
+            var isPathProxy = typeof this.ctx.save !== 'function';
+            if (!isPathProxy) {
+                this.ctx.stroke();
+                this.ctx.beginPath();
+            }
+        };
+        RoughCanvas.prototype.polygon = function (points, options) {
+            var o = this._getOptions(options);
+            var ops = polygon(points, o);
+            if (ops.fillOps) {
+                this._drawFillOps(ops.fillOps, o);
+            }
+            drawOpsToContext(this.ctx, ops);
+            var isPathProxy = typeof this.ctx.save !== 'function';
+            if (!isPathProxy) {
+                this.ctx.stroke();
+                this.ctx.beginPath();
+            }
+        };
+        RoughCanvas.prototype.arc = function (x, y, radius, start, end, anticlockwise, options) {
+            if (anticlockwise === void 0) { anticlockwise = false; }
+            var o = this._getOptions(options);
+            var walker = new RoughPathWalker(this, o);
+            var startX = x + Math.cos(start) * radius;
+            var startY = y + Math.sin(start) * radius;
+            walker.moveTo(startX, startY);
+            walker.arc(x, y, radius, start, end, anticlockwise);
+        };
+        RoughCanvas.prototype.path = function (d, options) {
+            var o = this._getOptions(options);
+            var proxy = createPathProxyFromString(d);
+            var walker = new RoughPathWalker(this, o);
+            proxy.rebuildPath(walker, 1);
+        };
+        return RoughCanvas;
+    }());
+    var rough = {
+        canvas: function (canvas, config) { return new RoughCanvas(canvas, config); }
+    };
 
-    class RectShape {
-        constructor() {
+    var RectShape = (function () {
+        function RectShape() {
             this.x = 0;
             this.y = 0;
             this.width = 0;
             this.height = 0;
         }
-    }
-    const subPixelOptimizeOutputShape = {};
-    class Rect extends Path {
-        constructor(opts) {
-            super(opts);
+        return RectShape;
+    }());
+    var subPixelOptimizeOutputShape = {};
+    var Rect = (function (_super) {
+        __extends$1(Rect, _super);
+        function Rect(opts) {
+            return _super.call(this, opts) || this;
         }
-        getDefaultShape() {
+        Rect.prototype.getDefaultShape = function () {
             return new RectShape();
-        }
-        buildPath(ctx, shape) {
-            let x;
-            let y;
-            let width;
-            let height;
+        };
+        Rect.prototype.buildPath = function (ctx, shape) {
+            var x;
+            var y;
+            var width;
+            var height;
             if (this.subPixelOptimize) {
-                const optimizedShape = subPixelOptimizeRect(subPixelOptimizeOutputShape, shape, this.style);
+                var optimizedShape = subPixelOptimizeRect(subPixelOptimizeOutputShape, shape, this.style);
                 x = optimizedShape.x;
                 y = optimizedShape.y;
                 width = optimizedShape.width;
@@ -11701,24 +13164,37 @@
                 width = shape.width;
                 height = shape.height;
             }
-            const roughnessOption = Object.assign(Object.assign({}, defaultOptions), { roughness: this.roughness });
-            const res = rectangle(x, y, width, height, roughnessOption);
-            console.log("rect build path", res);
-            if (!shape.r) {
-                _drawToContext(ctx, res, 1);
+            if (this.roughness && !shape.r) {
+                var fill = typeof this.style.fill === 'string' ? this.style.fill : undefined;
+                var rc = rough.canvas(ctx, {
+                    options: {
+                        roughness: this.roughness,
+                        fillStyle: this.filler,
+                        fill: fill,
+                    },
+                });
+                rc.rectangle(x, y, width, height);
+                return;
             }
-        }
-        isZeroArea() {
+            if (!shape.r) {
+                ctx.rect(x, y, width, height);
+            }
+            else {
+                buildPath(ctx, shape);
+            }
+        };
+        Rect.prototype.isZeroArea = function () {
             return !this.shape.width || !this.shape.height;
-        }
-    }
-    Rect.prototype.type = "rect";
+        };
+        return Rect;
+    }(Path));
+    Rect.prototype.type = 'rect';
 
-    const DEFAULT_RICH_TEXT_COLOR = {
+    var DEFAULT_RICH_TEXT_COLOR = {
         fill: '#000'
     };
-    const DEFAULT_STROKE_LINE_WIDTH = 2;
-    const DEFAULT_TEXT_ANIMATION_PROPS = {
+    var DEFAULT_STROKE_LINE_WIDTH = 2;
+    var DEFAULT_TEXT_ANIMATION_PROPS = {
         style: defaults({
             fill: true,
             stroke: true,
@@ -11740,24 +13216,26 @@
             borderRadius: true
         }, DEFAULT_COMMON_ANIMATION_PROPS.style)
     };
-    class ZRText extends Displayable {
-        constructor(opts) {
-            super();
-            this.type = 'text';
-            this._children = [];
-            this._defaultStyle = DEFAULT_RICH_TEXT_COLOR;
-            this.attr(opts);
+    var ZRText = (function (_super) {
+        __extends$1(ZRText, _super);
+        function ZRText(opts) {
+            var _this = _super.call(this) || this;
+            _this.type = 'text';
+            _this._children = [];
+            _this._defaultStyle = DEFAULT_RICH_TEXT_COLOR;
+            _this.attr(opts);
+            return _this;
         }
-        childrenRef() {
+        ZRText.prototype.childrenRef = function () {
             return this._children;
-        }
-        update() {
-            super.update();
+        };
+        ZRText.prototype.update = function () {
+            _super.prototype.update.call(this);
             if (this.styleChanged()) {
                 this._updateSubTexts();
             }
-            for (let i = 0; i < this._children.length; i++) {
-                const child = this._children[i];
+            for (var i = 0; i < this._children.length; i++) {
+                var child = this._children[i];
                 child.zlevel = this.zlevel;
                 child.z = this.z;
                 child.z2 = this.z2;
@@ -11765,9 +13243,9 @@
                 child.cursor = this.cursor;
                 child.invisible = this.invisible;
             }
-        }
-        updateTransform() {
-            const innerTransformable = this.innerTransformable;
+        };
+        ZRText.prototype.updateTransform = function () {
+            var innerTransformable = this.innerTransformable;
             if (innerTransformable) {
                 innerTransformable.updateTransform();
                 if (innerTransformable.transform) {
@@ -11775,23 +13253,23 @@
                 }
             }
             else {
-                super.updateTransform();
+                _super.prototype.updateTransform.call(this);
             }
-        }
-        getLocalTransform(m) {
-            const innerTransformable = this.innerTransformable;
+        };
+        ZRText.prototype.getLocalTransform = function (m) {
+            var innerTransformable = this.innerTransformable;
             return innerTransformable
                 ? innerTransformable.getLocalTransform(m)
-                : super.getLocalTransform(m);
-        }
-        getComputedTransform() {
+                : _super.prototype.getLocalTransform.call(this, m);
+        };
+        ZRText.prototype.getComputedTransform = function () {
             if (this.__hostTarget) {
                 this.__hostTarget.getComputedTransform();
                 this.__hostTarget.updateInnerText(true);
             }
-            return super.getComputedTransform();
-        }
-        _updateSubTexts() {
+            return _super.prototype.getComputedTransform.call(this);
+        };
+        ZRText.prototype._updateSubTexts = function () {
             this._childCursor = 0;
             normalizeTextStyle(this.style);
             this.style.rich
@@ -11799,32 +13277,32 @@
                 : this._updatePlainTexts();
             this._children.length = this._childCursor;
             this.styleUpdated();
-        }
-        addSelfToZr(zr) {
-            super.addSelfToZr(zr);
-            for (let i = 0; i < this._children.length; i++) {
+        };
+        ZRText.prototype.addSelfToZr = function (zr) {
+            _super.prototype.addSelfToZr.call(this, zr);
+            for (var i = 0; i < this._children.length; i++) {
                 this._children[i].__zr = zr;
             }
-        }
-        removeSelfFromZr(zr) {
-            super.removeSelfFromZr(zr);
-            for (let i = 0; i < this._children.length; i++) {
+        };
+        ZRText.prototype.removeSelfFromZr = function (zr) {
+            _super.prototype.removeSelfFromZr.call(this, zr);
+            for (var i = 0; i < this._children.length; i++) {
                 this._children[i].__zr = null;
             }
-        }
-        getBoundingRect() {
+        };
+        ZRText.prototype.getBoundingRect = function () {
             if (this.styleChanged()) {
                 this._updateSubTexts();
             }
             if (!this._rect) {
-                const tmpRect = new BoundingRect(0, 0, 0, 0);
-                const children = this._children;
-                const tmpMat = [];
-                let rect = null;
-                for (let i = 0; i < children.length; i++) {
-                    const child = children[i];
-                    const childRect = child.getBoundingRect();
-                    const transform = child.getLocalTransform(tmpMat);
+                var tmpRect = new BoundingRect(0, 0, 0, 0);
+                var children = this._children;
+                var tmpMat = [];
+                var rect = null;
+                for (var i = 0; i < children.length; i++) {
+                    var child = children[i];
+                    var childRect = child.getBoundingRect();
+                    var transform = child.getLocalTransform(tmpMat);
                     if (transform) {
                         tmpRect.copy(childRect);
                         tmpRect.applyTransform(transform);
@@ -11839,21 +13317,21 @@
                 this._rect = rect || tmpRect;
             }
             return this._rect;
-        }
-        setDefaultTextStyle(defaultTextStyle) {
+        };
+        ZRText.prototype.setDefaultTextStyle = function (defaultTextStyle) {
             this._defaultStyle = defaultTextStyle || DEFAULT_RICH_TEXT_COLOR;
-        }
-        setTextContent(textContent) {
+        };
+        ZRText.prototype.setTextContent = function (textContent) {
             if ("development" !== 'production') {
                 throw new Error('Can\'t attach text on another text');
             }
-        }
-        _mergeStyle(targetStyle, sourceStyle) {
+        };
+        ZRText.prototype._mergeStyle = function (targetStyle, sourceStyle) {
             if (!sourceStyle) {
                 return targetStyle;
             }
-            const sourceRich = sourceStyle.rich;
-            const targetRich = targetStyle.rich || (sourceRich && {});
+            var sourceRich = sourceStyle.rich;
+            var targetRich = targetStyle.rich || (sourceRich && {});
             extend(targetStyle, sourceStyle);
             if (sourceRich && targetRich) {
                 this._mergeRich(targetRich, sourceRich);
@@ -11863,20 +13341,20 @@
                 targetStyle.rich = targetRich;
             }
             return targetStyle;
-        }
-        _mergeRich(targetRich, sourceRich) {
-            const richNames = keys(sourceRich);
-            for (let i = 0; i < richNames.length; i++) {
-                const richName = richNames[i];
+        };
+        ZRText.prototype._mergeRich = function (targetRich, sourceRich) {
+            var richNames = keys(sourceRich);
+            for (var i = 0; i < richNames.length; i++) {
+                var richName = richNames[i];
                 targetRich[richName] = targetRich[richName] || {};
                 extend(targetRich[richName], sourceRich[richName]);
             }
-        }
-        getAnimationStyleProps() {
+        };
+        ZRText.prototype.getAnimationStyleProps = function () {
             return DEFAULT_TEXT_ANIMATION_PROPS;
-        }
-        _getOrCreateChild(Ctor) {
-            let child = this._children[this._childCursor];
+        };
+        ZRText.prototype._getOrCreateChild = function (Ctor) {
+            var child = this._children[this._childCursor];
             if (!child || !(child instanceof Ctor)) {
                 child = new Ctor();
             }
@@ -11884,30 +13362,30 @@
             child.__zr = this.__zr;
             child.parent = this;
             return child;
-        }
-        _updatePlainTexts() {
-            const style = this.style;
-            const textFont = style.font || DEFAULT_FONT;
-            const textPadding = style.padding;
-            const text = getStyleText(style);
-            const contentBlock = parsePlainText(text, style);
-            const needDrawBg = needDrawBackground(style);
-            const bgColorDrawn = !!(style.backgroundColor);
-            const outerHeight = contentBlock.outerHeight;
-            const outerWidth = contentBlock.outerWidth;
-            const contentWidth = contentBlock.contentWidth;
-            const textLines = contentBlock.lines;
-            const lineHeight = contentBlock.lineHeight;
-            const defaultStyle = this._defaultStyle;
-            const baseX = style.x || 0;
-            const baseY = style.y || 0;
-            const textAlign = style.align || defaultStyle.align || 'left';
-            const verticalAlign = style.verticalAlign || defaultStyle.verticalAlign || 'top';
-            let textX = baseX;
-            let textY = adjustTextY$1(baseY, contentBlock.contentHeight, verticalAlign);
+        };
+        ZRText.prototype._updatePlainTexts = function () {
+            var style = this.style;
+            var textFont = style.font || DEFAULT_FONT;
+            var textPadding = style.padding;
+            var text = getStyleText(style);
+            var contentBlock = parsePlainText(text, style);
+            var needDrawBg = needDrawBackground(style);
+            var bgColorDrawn = !!(style.backgroundColor);
+            var outerHeight = contentBlock.outerHeight;
+            var outerWidth = contentBlock.outerWidth;
+            var contentWidth = contentBlock.contentWidth;
+            var textLines = contentBlock.lines;
+            var lineHeight = contentBlock.lineHeight;
+            var defaultStyle = this._defaultStyle;
+            var baseX = style.x || 0;
+            var baseY = style.y || 0;
+            var textAlign = style.align || defaultStyle.align || 'left';
+            var verticalAlign = style.verticalAlign || defaultStyle.verticalAlign || 'top';
+            var textX = baseX;
+            var textY = adjustTextY$1(baseY, contentBlock.contentHeight, verticalAlign);
             if (needDrawBg || textPadding) {
-                const boxX = adjustTextX(baseX, outerWidth, textAlign);
-                const boxY = adjustTextY$1(baseY, outerHeight, verticalAlign);
+                var boxX = adjustTextX(baseX, outerWidth, textAlign);
+                var boxY = adjustTextY$1(baseY, outerHeight, verticalAlign);
                 needDrawBg && this._renderBackground(style, style, boxX, boxY, outerWidth, outerHeight);
             }
             textY += lineHeight / 2;
@@ -11920,24 +13398,24 @@
                     textY -= textPadding[2];
                 }
             }
-            let defaultLineWidth = 0;
-            let useDefaultFill = false;
-            const textFill = getFill('fill' in style
+            var defaultLineWidth = 0;
+            var useDefaultFill = false;
+            var textFill = getFill('fill' in style
                 ? style.fill
                 : (useDefaultFill = true, defaultStyle.fill));
-            const textStroke = getStroke('stroke' in style
+            var textStroke = getStroke('stroke' in style
                 ? style.stroke
                 : (!bgColorDrawn
                     && (!defaultStyle.autoStroke || useDefaultFill))
                     ? (defaultLineWidth = DEFAULT_STROKE_LINE_WIDTH, defaultStyle.stroke)
                     : null);
-            const hasShadow = style.textShadowBlur > 0;
-            const fixedBoundingRect = style.width != null
+            var hasShadow = style.textShadowBlur > 0;
+            var fixedBoundingRect = style.width != null
                 && (style.overflow === 'truncate' || style.overflow === 'break' || style.overflow === 'breakAll');
-            const calculatedLineHeight = contentBlock.calculatedLineHeight;
-            for (let i = 0; i < textLines.length; i++) {
-                const el = this._getOrCreateChild(TSpan);
-                const subElStyle = el.createStyle();
+            var calculatedLineHeight = contentBlock.calculatedLineHeight;
+            for (var i = 0; i < textLines.length; i++) {
+                var el = this._getOrCreateChild(TSpan);
+                var subElStyle = el.createStyle();
                 el.useStyle(subElStyle);
                 subElStyle.text = textLines[i];
                 subElStyle.x = textX;
@@ -11968,44 +13446,44 @@
                     el.setBoundingRect(new BoundingRect(adjustTextX(subElStyle.x, style.width, subElStyle.textAlign), adjustTextY$1(subElStyle.y, calculatedLineHeight, subElStyle.textBaseline), contentWidth, calculatedLineHeight));
                 }
             }
-        }
-        _updateRichTexts() {
-            const style = this.style;
-            const text = getStyleText(style);
-            const contentBlock = parseRichText(text, style);
-            const contentWidth = contentBlock.width;
-            const outerWidth = contentBlock.outerWidth;
-            const outerHeight = contentBlock.outerHeight;
-            const textPadding = style.padding;
-            const baseX = style.x || 0;
-            const baseY = style.y || 0;
-            const defaultStyle = this._defaultStyle;
-            const textAlign = style.align || defaultStyle.align;
-            const verticalAlign = style.verticalAlign || defaultStyle.verticalAlign;
-            const boxX = adjustTextX(baseX, outerWidth, textAlign);
-            const boxY = adjustTextY$1(baseY, outerHeight, verticalAlign);
-            let xLeft = boxX;
-            let lineTop = boxY;
+        };
+        ZRText.prototype._updateRichTexts = function () {
+            var style = this.style;
+            var text = getStyleText(style);
+            var contentBlock = parseRichText(text, style);
+            var contentWidth = contentBlock.width;
+            var outerWidth = contentBlock.outerWidth;
+            var outerHeight = contentBlock.outerHeight;
+            var textPadding = style.padding;
+            var baseX = style.x || 0;
+            var baseY = style.y || 0;
+            var defaultStyle = this._defaultStyle;
+            var textAlign = style.align || defaultStyle.align;
+            var verticalAlign = style.verticalAlign || defaultStyle.verticalAlign;
+            var boxX = adjustTextX(baseX, outerWidth, textAlign);
+            var boxY = adjustTextY$1(baseY, outerHeight, verticalAlign);
+            var xLeft = boxX;
+            var lineTop = boxY;
             if (textPadding) {
                 xLeft += textPadding[3];
                 lineTop += textPadding[0];
             }
-            let xRight = xLeft + contentWidth;
+            var xRight = xLeft + contentWidth;
             if (needDrawBackground(style)) {
                 this._renderBackground(style, style, boxX, boxY, outerWidth, outerHeight);
             }
-            const bgColorDrawn = !!(style.backgroundColor);
-            for (let i = 0; i < contentBlock.lines.length; i++) {
-                const line = contentBlock.lines[i];
-                const tokens = line.tokens;
-                const tokenCount = tokens.length;
-                const lineHeight = line.lineHeight;
-                let remainedWidth = line.width;
-                let leftIndex = 0;
-                let lineXLeft = xLeft;
-                let lineXRight = xRight;
-                let rightIndex = tokenCount - 1;
-                let token;
+            var bgColorDrawn = !!(style.backgroundColor);
+            for (var i = 0; i < contentBlock.lines.length; i++) {
+                var line = contentBlock.lines[i];
+                var tokens = line.tokens;
+                var tokenCount = tokens.length;
+                var lineHeight = line.lineHeight;
+                var remainedWidth = line.width;
+                var leftIndex = 0;
+                var lineXLeft = xLeft;
+                var lineXRight = xRight;
+                var rightIndex = tokenCount - 1;
+                var token = void 0;
                 while (leftIndex < tokenCount
                     && (token = tokens[leftIndex], !token.align || token.align === 'left')) {
                     this._placeToken(token, style, lineHeight, lineTop, lineXLeft, 'left', bgColorDrawn);
@@ -12029,46 +13507,46 @@
                 }
                 lineTop += lineHeight;
             }
-        }
-        _placeToken(token, style, lineHeight, lineTop, x, textAlign, parentBgColorDrawn) {
-            const tokenStyle = style.rich[token.styleName] || {};
+        };
+        ZRText.prototype._placeToken = function (token, style, lineHeight, lineTop, x, textAlign, parentBgColorDrawn) {
+            var tokenStyle = style.rich[token.styleName] || {};
             tokenStyle.text = token.text;
-            const verticalAlign = token.verticalAlign;
-            let y = lineTop + lineHeight / 2;
+            var verticalAlign = token.verticalAlign;
+            var y = lineTop + lineHeight / 2;
             if (verticalAlign === 'top') {
                 y = lineTop + token.height / 2;
             }
             else if (verticalAlign === 'bottom') {
                 y = lineTop + lineHeight - token.height / 2;
             }
-            const needDrawBg = !token.isLineHolder && needDrawBackground(tokenStyle);
+            var needDrawBg = !token.isLineHolder && needDrawBackground(tokenStyle);
             needDrawBg && this._renderBackground(tokenStyle, style, textAlign === 'right'
                 ? x - token.width
                 : textAlign === 'center'
                     ? x - token.width / 2
                     : x, y - token.height / 2, token.width, token.height);
-            const bgColorDrawn = !!tokenStyle.backgroundColor;
-            const textPadding = token.textPadding;
+            var bgColorDrawn = !!tokenStyle.backgroundColor;
+            var textPadding = token.textPadding;
             if (textPadding) {
                 x = getTextXForPadding(x, textAlign, textPadding);
                 y -= token.height / 2 - textPadding[0] - token.innerHeight / 2;
             }
-            const el = this._getOrCreateChild(TSpan);
-            const subElStyle = el.createStyle();
+            var el = this._getOrCreateChild(TSpan);
+            var subElStyle = el.createStyle();
             el.useStyle(subElStyle);
-            const defaultStyle = this._defaultStyle;
-            let useDefaultFill = false;
-            let defaultLineWidth = 0;
-            const textFill = getFill('fill' in tokenStyle ? tokenStyle.fill
+            var defaultStyle = this._defaultStyle;
+            var useDefaultFill = false;
+            var defaultLineWidth = 0;
+            var textFill = getFill('fill' in tokenStyle ? tokenStyle.fill
                 : 'fill' in style ? style.fill
                     : (useDefaultFill = true, defaultStyle.fill));
-            const textStroke = getStroke('stroke' in tokenStyle ? tokenStyle.stroke
+            var textStroke = getStroke('stroke' in tokenStyle ? tokenStyle.stroke
                 : 'stroke' in style ? style.stroke
                     : (!bgColorDrawn
                         && !parentBgColorDrawn
                         && (!defaultStyle.autoStroke || useDefaultFill)) ? (defaultLineWidth = DEFAULT_STROKE_LINE_WIDTH, defaultStyle.stroke)
                         : null);
-            const hasShadow = tokenStyle.textShadowBlur > 0
+            var hasShadow = tokenStyle.textShadowBlur > 0
                 || style.textShadowBlur > 0;
             subElStyle.text = token.text;
             subElStyle.x = x;
@@ -12093,25 +13571,25 @@
             if (textFill) {
                 subElStyle.fill = textFill;
             }
-            const textWidth = token.contentWidth;
-            const textHeight = token.contentHeight;
+            var textWidth = token.contentWidth;
+            var textHeight = token.contentHeight;
             el.setBoundingRect(new BoundingRect(adjustTextX(subElStyle.x, textWidth, subElStyle.textAlign), adjustTextY$1(subElStyle.y, textHeight, subElStyle.textBaseline), textWidth, textHeight));
-        }
-        _renderBackground(style, topStyle, x, y, width, height) {
-            const textBackgroundColor = style.backgroundColor;
-            const textBorderWidth = style.borderWidth;
-            const textBorderColor = style.borderColor;
-            const isImageBg = textBackgroundColor && textBackgroundColor.image;
-            const isPlainOrGradientBg = textBackgroundColor && !isImageBg;
-            const textBorderRadius = style.borderRadius;
-            const self = this;
-            let rectEl;
-            let imgEl;
+        };
+        ZRText.prototype._renderBackground = function (style, topStyle, x, y, width, height) {
+            var textBackgroundColor = style.backgroundColor;
+            var textBorderWidth = style.borderWidth;
+            var textBorderColor = style.borderColor;
+            var isImageBg = textBackgroundColor && textBackgroundColor.image;
+            var isPlainOrGradientBg = textBackgroundColor && !isImageBg;
+            var textBorderRadius = style.borderRadius;
+            var self = this;
+            var rectEl;
+            var imgEl;
             if (isPlainOrGradientBg || style.lineHeight || (textBorderWidth && textBorderColor)) {
                 rectEl = this._getOrCreateChild(Rect);
                 rectEl.useStyle(rectEl.createStyle());
                 rectEl.style.fill = null;
-                const rectShape = rectEl.shape;
+                var rectShape = rectEl.shape;
                 rectShape.x = x;
                 rectShape.y = y;
                 rectShape.width = width;
@@ -12120,7 +13598,7 @@
                 rectEl.dirtyShape();
             }
             if (isPlainOrGradientBg) {
-                const rectStyle = rectEl.style;
+                var rectStyle = rectEl.style;
                 rectStyle.fill = textBackgroundColor || null;
                 rectStyle.fillOpacity = retrieve2(style.fillOpacity, 1);
             }
@@ -12129,7 +13607,7 @@
                 imgEl.onload = function () {
                     self.dirtyStyle();
                 };
-                const imgStyle = imgEl.style;
+                var imgStyle = imgEl.style;
                 imgStyle.image = textBackgroundColor.image;
                 imgStyle.x = x;
                 imgStyle.y = y;
@@ -12137,7 +13615,7 @@
                 imgStyle.height = height;
             }
             if (textBorderWidth && textBorderColor) {
-                const rectStyle = rectEl.style;
+                var rectStyle = rectEl.style;
                 rectStyle.lineWidth = textBorderWidth;
                 rectStyle.stroke = textBorderColor;
                 rectStyle.strokeOpacity = retrieve2(style.strokeOpacity, 1);
@@ -12149,15 +13627,15 @@
                     rectStyle.lineWidth *= 2;
                 }
             }
-            const commonStyle = (rectEl || imgEl).style;
+            var commonStyle = (rectEl || imgEl).style;
             commonStyle.shadowBlur = style.shadowBlur || 0;
             commonStyle.shadowColor = style.shadowColor || 'transparent';
             commonStyle.shadowOffsetX = style.shadowOffsetX || 0;
             commonStyle.shadowOffsetY = style.shadowOffsetY || 0;
             commonStyle.opacity = retrieve3(style.opacity, topStyle.opacity, 1);
-        }
-        static makeFont(style) {
-            let font = '';
+        };
+        ZRText.makeFont = function (style) {
+            var font = '';
             if (hasSeparateFont(style)) {
                 font = [
                     style.fontStyle,
@@ -12167,11 +13645,12 @@
                 ].join(' ');
             }
             return font && trim(font) || style.textFont || style.font;
-        }
-    }
-    const VALID_TEXT_ALIGN = { left: true, right: 1, center: 1 };
-    const VALID_TEXT_VERTICAL_ALIGN = { top: 1, bottom: 1, middle: 1 };
-    const FONT_PARTS = ['fontStyle', 'fontWeight', 'fontSize', 'fontFamily'];
+        };
+        return ZRText;
+    }(Displayable));
+    var VALID_TEXT_ALIGN = { left: true, right: 1, center: 1 };
+    var VALID_TEXT_VERTICAL_ALIGN = { top: 1, bottom: 1, middle: 1 };
+    var FONT_PARTS = ['fontStyle', 'fontWeight', 'fontSize', 'fontFamily'];
     function parseFontSize(fontSize) {
         if (typeof fontSize === 'string'
             && (fontSize.indexOf('px') !== -1
@@ -12187,9 +13666,9 @@
         }
     }
     function setSeparateFont(targetStyle, sourceStyle) {
-        for (let i = 0; i < FONT_PARTS.length; i++) {
-            const fontProp = FONT_PARTS[i];
-            const val = sourceStyle[fontProp];
+        for (var i = 0; i < FONT_PARTS.length; i++) {
+            var fontProp = FONT_PARTS[i];
+            var val = sourceStyle[fontProp];
             if (val != null) {
                 targetStyle[fontProp] = val;
             }
@@ -12206,13 +13685,13 @@
     function normalizeStyle(style) {
         if (style) {
             style.font = ZRText.makeFont(style);
-            let textAlign = style.align;
+            var textAlign = style.align;
             textAlign === 'middle' && (textAlign = 'center');
             style.align = (textAlign == null || VALID_TEXT_ALIGN[textAlign]) ? textAlign : 'left';
-            let verticalAlign = style.verticalAlign;
+            var verticalAlign = style.verticalAlign;
             verticalAlign === 'center' && (verticalAlign = 'middle');
             style.verticalAlign = (verticalAlign == null || VALID_TEXT_VERTICAL_ALIGN[verticalAlign]) ? verticalAlign : 'top';
-            const textPadding = style.padding;
+            var textPadding = style.padding;
             if (textPadding) {
                 style.padding = normalizeCssArray(style.padding);
             }
@@ -12240,7 +13719,7 @@
                 : (x + textPadding[3]);
     }
     function getStyleText(style) {
-        let text = style.text;
+        var text = style.text;
         text != null && (text += '');
         return text;
     }
@@ -12915,464 +14394,30 @@
       store.selectStroke = selectState.style && selectState.style.stroke || null;
     }
 
-    const CMD$2 = PathProxy.CMD;
-    const points = [[], [], []];
-    const mathSqrt$1 = Math.sqrt;
-    const mathAtan2 = Math.atan2;
-    function transformPath(path, m) {
-        if (!m) {
-            return;
-        }
-        let data = path.data;
-        const len = path.len();
-        let cmd;
-        let nPoint;
-        let i;
-        let j;
-        let k;
-        let p;
-        const M = CMD$2.M;
-        const C = CMD$2.C;
-        const L = CMD$2.L;
-        const R = CMD$2.R;
-        const A = CMD$2.A;
-        const Q = CMD$2.Q;
-        for (i = 0, j = 0; i < len;) {
-            cmd = data[i++];
-            j = i;
-            nPoint = 0;
-            switch (cmd) {
-                case M:
-                    nPoint = 1;
-                    break;
-                case L:
-                    nPoint = 1;
-                    break;
-                case C:
-                    nPoint = 3;
-                    break;
-                case Q:
-                    nPoint = 2;
-                    break;
-                case A:
-                    const x = m[4];
-                    const y = m[5];
-                    const sx = mathSqrt$1(m[0] * m[0] + m[1] * m[1]);
-                    const sy = mathSqrt$1(m[2] * m[2] + m[3] * m[3]);
-                    const angle = mathAtan2(-m[1] / sy, m[0] / sx);
-                    data[i] *= sx;
-                    data[i++] += x;
-                    data[i] *= sy;
-                    data[i++] += y;
-                    data[i++] *= sx;
-                    data[i++] *= sy;
-                    data[i++] += angle;
-                    data[i++] += angle;
-                    i += 2;
-                    j = i;
-                    break;
-                case R:
-                    p[0] = data[i++];
-                    p[1] = data[i++];
-                    applyTransform(p, p, m);
-                    data[j++] = p[0];
-                    data[j++] = p[1];
-                    p[0] += data[i++];
-                    p[1] += data[i++];
-                    applyTransform(p, p, m);
-                    data[j++] = p[0];
-                    data[j++] = p[1];
-            }
-            for (k = 0; k < nPoint; k++) {
-                let p = points[k];
-                p[0] = data[i++];
-                p[1] = data[i++];
-                applyTransform(p, p, m);
-                data[j++] = p[0];
-                data[j++] = p[1];
-            }
-        }
-        path.increaseVersion();
-    }
-
-    const mathSqrt$2 = Math.sqrt;
-    const mathSin$2 = Math.sin;
-    const mathCos$2 = Math.cos;
-    const PI$1 = Math.PI;
-    function vMag(v) {
-        return Math.sqrt(v[0] * v[0] + v[1] * v[1]);
-    }
-    function vRatio(u, v) {
-        return (u[0] * v[0] + u[1] * v[1]) / (vMag(u) * vMag(v));
-    }
-    function vAngle(u, v) {
-        return (u[0] * v[1] < u[1] * v[0] ? -1 : 1)
-            * Math.acos(vRatio(u, v));
-    }
-    function processArc(x1, y1, x2, y2, fa, fs, rx, ry, psiDeg, cmd, path) {
-        const psi = psiDeg * (PI$1 / 180.0);
-        const xp = mathCos$2(psi) * (x1 - x2) / 2.0
-            + mathSin$2(psi) * (y1 - y2) / 2.0;
-        const yp = -1 * mathSin$2(psi) * (x1 - x2) / 2.0
-            + mathCos$2(psi) * (y1 - y2) / 2.0;
-        const lambda = (xp * xp) / (rx * rx) + (yp * yp) / (ry * ry);
-        if (lambda > 1) {
-            rx *= mathSqrt$2(lambda);
-            ry *= mathSqrt$2(lambda);
-        }
-        const f = (fa === fs ? -1 : 1)
-            * mathSqrt$2((((rx * rx) * (ry * ry))
-                - ((rx * rx) * (yp * yp))
-                - ((ry * ry) * (xp * xp))) / ((rx * rx) * (yp * yp)
-                + (ry * ry) * (xp * xp))) || 0;
-        const cxp = f * rx * yp / ry;
-        const cyp = f * -ry * xp / rx;
-        const cx = (x1 + x2) / 2.0
-            + mathCos$2(psi) * cxp
-            - mathSin$2(psi) * cyp;
-        const cy = (y1 + y2) / 2.0
-            + mathSin$2(psi) * cxp
-            + mathCos$2(psi) * cyp;
-        const theta = vAngle([1, 0], [(xp - cxp) / rx, (yp - cyp) / ry]);
-        const u = [(xp - cxp) / rx, (yp - cyp) / ry];
-        const v = [(-1 * xp - cxp) / rx, (-1 * yp - cyp) / ry];
-        let dTheta = vAngle(u, v);
-        if (vRatio(u, v) <= -1) {
-            dTheta = PI$1;
-        }
-        if (vRatio(u, v) >= 1) {
-            dTheta = 0;
-        }
-        if (dTheta < 0) {
-            const n = Math.round(dTheta / PI$1 * 1e6) / 1e6;
-            dTheta = PI$1 * 2 + (n % 2) * PI$1;
-        }
-        path.addData(cmd, cx, cy, rx, ry, theta, dTheta, psi, fs);
-    }
-    const commandReg = /([mlvhzcqtsa])([^mlvhzcqtsa]*)/ig;
-    const numberReg = /-?([0-9]*\.)?[0-9]+([eE]-?[0-9]+)?/g;
-    function createPathProxyFromString(data) {
-        const path = new PathProxy();
-        if (!data) {
-            return path;
-        }
-        let cpx = 0;
-        let cpy = 0;
-        let subpathX = cpx;
-        let subpathY = cpy;
-        let prevCmd;
-        const CMD = PathProxy.CMD;
-        const cmdList = data.match(commandReg);
-        if (!cmdList) {
-            return path;
-        }
-        for (let l = 0; l < cmdList.length; l++) {
-            const cmdText = cmdList[l];
-            let cmdStr = cmdText.charAt(0);
-            let cmd;
-            const p = cmdText.match(numberReg) || [];
-            const pLen = p.length;
-            for (let i = 0; i < pLen; i++) {
-                p[i] = parseFloat(p[i]);
-            }
-            let off = 0;
-            while (off < pLen) {
-                let ctlPtx;
-                let ctlPty;
-                let rx;
-                let ry;
-                let psi;
-                let fa;
-                let fs;
-                let x1 = cpx;
-                let y1 = cpy;
-                let len;
-                let pathData;
-                switch (cmdStr) {
-                    case 'l':
-                        cpx += p[off++];
-                        cpy += p[off++];
-                        cmd = CMD.L;
-                        path.addData(cmd, cpx, cpy);
-                        break;
-                    case 'L':
-                        cpx = p[off++];
-                        cpy = p[off++];
-                        cmd = CMD.L;
-                        path.addData(cmd, cpx, cpy);
-                        break;
-                    case 'm':
-                        cpx += p[off++];
-                        cpy += p[off++];
-                        cmd = CMD.M;
-                        path.addData(cmd, cpx, cpy);
-                        subpathX = cpx;
-                        subpathY = cpy;
-                        cmdStr = 'l';
-                        break;
-                    case 'M':
-                        cpx = p[off++];
-                        cpy = p[off++];
-                        cmd = CMD.M;
-                        path.addData(cmd, cpx, cpy);
-                        subpathX = cpx;
-                        subpathY = cpy;
-                        cmdStr = 'L';
-                        break;
-                    case 'h':
-                        cpx += p[off++];
-                        cmd = CMD.L;
-                        path.addData(cmd, cpx, cpy);
-                        break;
-                    case 'H':
-                        cpx = p[off++];
-                        cmd = CMD.L;
-                        path.addData(cmd, cpx, cpy);
-                        break;
-                    case 'v':
-                        cpy += p[off++];
-                        cmd = CMD.L;
-                        path.addData(cmd, cpx, cpy);
-                        break;
-                    case 'V':
-                        cpy = p[off++];
-                        cmd = CMD.L;
-                        path.addData(cmd, cpx, cpy);
-                        break;
-                    case 'C':
-                        cmd = CMD.C;
-                        path.addData(cmd, p[off++], p[off++], p[off++], p[off++], p[off++], p[off++]);
-                        cpx = p[off - 2];
-                        cpy = p[off - 1];
-                        break;
-                    case 'c':
-                        cmd = CMD.C;
-                        path.addData(cmd, p[off++] + cpx, p[off++] + cpy, p[off++] + cpx, p[off++] + cpy, p[off++] + cpx, p[off++] + cpy);
-                        cpx += p[off - 2];
-                        cpy += p[off - 1];
-                        break;
-                    case 'S':
-                        ctlPtx = cpx;
-                        ctlPty = cpy;
-                        len = path.len();
-                        pathData = path.data;
-                        if (prevCmd === CMD.C) {
-                            ctlPtx += cpx - pathData[len - 4];
-                            ctlPty += cpy - pathData[len - 3];
-                        }
-                        cmd = CMD.C;
-                        x1 = p[off++];
-                        y1 = p[off++];
-                        cpx = p[off++];
-                        cpy = p[off++];
-                        path.addData(cmd, ctlPtx, ctlPty, x1, y1, cpx, cpy);
-                        break;
-                    case 's':
-                        ctlPtx = cpx;
-                        ctlPty = cpy;
-                        len = path.len();
-                        pathData = path.data;
-                        if (prevCmd === CMD.C) {
-                            ctlPtx += cpx - pathData[len - 4];
-                            ctlPty += cpy - pathData[len - 3];
-                        }
-                        cmd = CMD.C;
-                        x1 = cpx + p[off++];
-                        y1 = cpy + p[off++];
-                        cpx += p[off++];
-                        cpy += p[off++];
-                        path.addData(cmd, ctlPtx, ctlPty, x1, y1, cpx, cpy);
-                        break;
-                    case 'Q':
-                        x1 = p[off++];
-                        y1 = p[off++];
-                        cpx = p[off++];
-                        cpy = p[off++];
-                        cmd = CMD.Q;
-                        path.addData(cmd, x1, y1, cpx, cpy);
-                        break;
-                    case 'q':
-                        x1 = p[off++] + cpx;
-                        y1 = p[off++] + cpy;
-                        cpx += p[off++];
-                        cpy += p[off++];
-                        cmd = CMD.Q;
-                        path.addData(cmd, x1, y1, cpx, cpy);
-                        break;
-                    case 'T':
-                        ctlPtx = cpx;
-                        ctlPty = cpy;
-                        len = path.len();
-                        pathData = path.data;
-                        if (prevCmd === CMD.Q) {
-                            ctlPtx += cpx - pathData[len - 4];
-                            ctlPty += cpy - pathData[len - 3];
-                        }
-                        cpx = p[off++];
-                        cpy = p[off++];
-                        cmd = CMD.Q;
-                        path.addData(cmd, ctlPtx, ctlPty, cpx, cpy);
-                        break;
-                    case 't':
-                        ctlPtx = cpx;
-                        ctlPty = cpy;
-                        len = path.len();
-                        pathData = path.data;
-                        if (prevCmd === CMD.Q) {
-                            ctlPtx += cpx - pathData[len - 4];
-                            ctlPty += cpy - pathData[len - 3];
-                        }
-                        cpx += p[off++];
-                        cpy += p[off++];
-                        cmd = CMD.Q;
-                        path.addData(cmd, ctlPtx, ctlPty, cpx, cpy);
-                        break;
-                    case 'A':
-                        rx = p[off++];
-                        ry = p[off++];
-                        psi = p[off++];
-                        fa = p[off++];
-                        fs = p[off++];
-                        x1 = cpx, y1 = cpy;
-                        cpx = p[off++];
-                        cpy = p[off++];
-                        cmd = CMD.A;
-                        processArc(x1, y1, cpx, cpy, fa, fs, rx, ry, psi, cmd, path);
-                        break;
-                    case 'a':
-                        rx = p[off++];
-                        ry = p[off++];
-                        psi = p[off++];
-                        fa = p[off++];
-                        fs = p[off++];
-                        x1 = cpx, y1 = cpy;
-                        cpx += p[off++];
-                        cpy += p[off++];
-                        cmd = CMD.A;
-                        processArc(x1, y1, cpx, cpy, fa, fs, rx, ry, psi, cmd, path);
-                        break;
-                }
-            }
-            if (cmdStr === 'z' || cmdStr === 'Z') {
-                cmd = CMD.Z;
-                path.addData(cmd);
-                cpx = subpathX;
-                cpy = subpathY;
-            }
-            prevCmd = cmd;
-        }
-        path.toStatic();
-        return path;
-    }
-    class SVGPath extends Path {
-        applyTransform(m) { }
-    }
-    function isPathProxy(path) {
-        return path.setData != null;
-    }
-    function createPathOptions(str, opts) {
-        const pathProxy = createPathProxyFromString(str);
-        const innerOpts = extend({}, opts);
-        innerOpts.buildPath = function (path) {
-            if (isPathProxy(path)) {
-                path.setData(pathProxy.data);
-                const ctx = path.getContext();
-                if (ctx) {
-                    path.rebuildPath(ctx, 1);
-                }
-            }
-            else {
-                const ctx = path;
-                pathProxy.rebuildPath(ctx, 1);
-            }
-        };
-        innerOpts.applyTransform = function (m) {
-            transformPath(pathProxy, m);
-            this.dirtyShape();
-        };
-        return innerOpts;
-    }
-    function createFromString(str, opts) {
-        return new SVGPath(createPathOptions(str, opts));
-    }
-    function extendFromString(str, defaultOpts) {
-        const innerOpts = createPathOptions(str, defaultOpts);
-        class Sub extends SVGPath {
-            constructor(opts) {
-                super(opts);
-                this.applyTransform = innerOpts.applyTransform;
-                this.buildPath = innerOpts.buildPath;
-            }
-        }
-        return Sub;
-    }
-    function mergePath(pathEls, opts) {
-        const pathList = [];
-        const len = pathEls.length;
-        for (let i = 0; i < len; i++) {
-            const pathEl = pathEls[i];
-            pathList.push(pathEl.getUpdatedPathProxy(true));
-        }
-        const pathBundle = new Path(opts);
-        pathBundle.createPathProxy();
-        pathBundle.buildPath = function (path) {
-            if (isPathProxy(path)) {
-                path.appendPath(pathList);
-                const ctx = path.getContext();
-                if (ctx) {
-                    path.rebuildPath(ctx, 1);
-                }
-            }
-        };
-        return pathBundle;
-    }
-    function clonePath(sourcePath, opts) {
-        opts = opts || {};
-        const path = new Path();
-        if (sourcePath.shape) {
-            path.setShape(sourcePath.shape);
-        }
-        path.setStyle(sourcePath.style);
-        if (opts.bakeTransform) {
-            transformPath(path.path, sourcePath.getComputedTransform());
-        }
-        else {
-            if (opts.toLocal) {
-                path.setLocalTransform(sourcePath.getComputedTransform());
-            }
-            else {
-                path.copyTransform(sourcePath);
-            }
-        }
-        path.buildPath = sourcePath.buildPath;
-        path.applyTransform = path.applyTransform;
-        path.z = sourcePath.z;
-        path.z2 = sourcePath.z2;
-        path.zlevel = sourcePath.zlevel;
-        return path;
-    }
-
-    function t(t,e,s){if(t&&t.length){const[n,o]=e,a=Math.PI/180*s,h=Math.cos(a),r=Math.sin(a);for(const e of t){const[t,s]=e;e[0]=(t-n)*h-(s-o)*r+n,e[1]=(t-n)*r+(s-o)*h+o;}}}function e(t,e){return t[0]===e[0]&&t[1]===e[1]}function s(s,n,o,a=1){const h=o,r=Math.max(n,.1),i=s[0]&&s[0][0]&&"number"==typeof s[0][0]?[s]:s,c=[0,0];if(h)for(const e of i)t(e,c,h);const l=function(t,s,n){const o=[];for(const s of t){const t=[...s];e(t[0],t[t.length-1])||t.push([t[0][0],t[0][1]]),t.length>2&&o.push(t);}const a=[];s=Math.max(s,.1);const h=[];for(const t of o)for(let e=0;e<t.length-1;e++){const s=t[e],n=t[e+1];if(s[1]!==n[1]){const t=Math.min(s[1],n[1]);h.push({ymin:t,ymax:Math.max(s[1],n[1]),x:t===s[1]?s[0]:n[0],islope:(n[0]-s[0])/(n[1]-s[1])});}}if(h.sort(((t,e)=>t.ymin<e.ymin?-1:t.ymin>e.ymin?1:t.x<e.x?-1:t.x>e.x?1:t.ymax===e.ymax?0:(t.ymax-e.ymax)/Math.abs(t.ymax-e.ymax))),!h.length)return a;let r=[],i=h[0].ymin,c=0;for(;r.length||h.length;){if(h.length){let t=-1;for(let e=0;e<h.length&&!(h[e].ymin>i);e++)t=e;h.splice(0,t+1).forEach((t=>{r.push({s:i,edge:t});}));}if(r=r.filter((t=>!(t.edge.ymax<=i))),r.sort(((t,e)=>t.edge.x===e.edge.x?0:(t.edge.x-e.edge.x)/Math.abs(t.edge.x-e.edge.x))),(1!==n||c%s==0)&&r.length>1)for(let t=0;t<r.length;t+=2){const e=t+1;if(e>=r.length)break;const s=r[t].edge,n=r[e].edge;a.push([[Math.round(s.x),i],[Math.round(n.x),i]]);}i+=n,r.forEach((t=>{t.edge.x=t.edge.x+n*t.edge.islope;})),c++;}return a}(i,r,a);if(h){for(const e of i)t(e,c,-h);!function(e,s,n){const o=[];e.forEach((t=>o.push(...t))),t(o,s,n);}(l,c,-h);}return l}function n(t,e){var n;const o=e.hachureAngle+90;let a=e.hachureGap;a<0&&(a=4*e.strokeWidth),a=Math.round(Math.max(a,.1));let h=1;return e.roughness>=1&&((null===(n=e.randomizer)||void 0===n?void 0:n.next())||Math.random())>.7&&(h=a),s(t,a,o,h||1)}class o{constructor(t){this.helper=t;}fillPolygons(t,e){return this._fillPolygons(t,e)}_fillPolygons(t,e){const s=n(t,e);return {type:"fillSketch",ops:this.renderLines(s,e)}}renderLines(t,e){const s=[];for(const n of t)s.push(...this.helper.doubleLineOps(n[0][0],n[0][1],n[1][0],n[1][1],e));return s}}function a(t){const e=t[0],s=t[1];return Math.sqrt(Math.pow(e[0]-s[0],2)+Math.pow(e[1]-s[1],2))}class h extends o{fillPolygons(t,e){let s=e.hachureGap;s<0&&(s=4*e.strokeWidth),s=Math.max(s,.1);const o=n(t,Object.assign({},e,{hachureGap:s})),h=Math.PI/180*e.hachureAngle,r=[],i=.5*s*Math.cos(h),c=.5*s*Math.sin(h);for(const[t,e]of o)a([t,e])&&r.push([[t[0]-i,t[1]+c],[...e]],[[t[0]+i,t[1]-c],[...e]]);return {type:"fillSketch",ops:this.renderLines(r,e)}}}class r extends o{fillPolygons(t,e){const s=this._fillPolygons(t,e),n=Object.assign({},e,{hachureAngle:e.hachureAngle+90}),o=this._fillPolygons(t,n);return s.ops=s.ops.concat(o.ops),s}}class i{constructor(t){this.helper=t;}fillPolygons(t,e){const s=n(t,e=Object.assign({},e,{hachureAngle:0}));return this.dotsOnLines(s,e)}dotsOnLines(t,e){const s=[];let n=e.hachureGap;n<0&&(n=4*e.strokeWidth),n=Math.max(n,.1);let o=e.fillWeight;o<0&&(o=e.strokeWidth/2);const h=n/4;for(const r of t){const t=a(r),i=t/n,c=Math.ceil(i)-1,l=t-c*n,u=(r[0][0]+r[1][0])/2-n/4,p=Math.min(r[0][1],r[1][1]);for(let t=0;t<c;t++){const a=p+l+t*n,r=u-h+2*Math.random()*h,i=a-h+2*Math.random()*h,c=this.helper.ellipse(r,i,o,o,e);s.push(...c.ops);}}return {type:"fillSketch",ops:s}}}class c{constructor(t){this.helper=t;}fillPolygons(t,e){const s=n(t,e);return {type:"fillSketch",ops:this.dashedLine(s,e)}}dashedLine(t,e){const s=e.dashOffset<0?e.hachureGap<0?4*e.strokeWidth:e.hachureGap:e.dashOffset,n=e.dashGap<0?e.hachureGap<0?4*e.strokeWidth:e.hachureGap:e.dashGap,o=[];return t.forEach((t=>{const h=a(t),r=Math.floor(h/(s+n)),i=(h+n-r*(s+n))/2;let c=t[0],l=t[1];c[0]>l[0]&&(c=t[1],l=t[0]);const u=Math.atan((l[1]-c[1])/(l[0]-c[0]));for(let t=0;t<r;t++){const a=t*(s+n),h=a+s,r=[c[0]+a*Math.cos(u)+i*Math.cos(u),c[1]+a*Math.sin(u)+i*Math.sin(u)],l=[c[0]+h*Math.cos(u)+i*Math.cos(u),c[1]+h*Math.sin(u)+i*Math.sin(u)];o.push(...this.helper.doubleLineOps(r[0],r[1],l[0],l[1],e));}})),o}}class l{constructor(t){this.helper=t;}fillPolygons(t,e){const s=e.hachureGap<0?4*e.strokeWidth:e.hachureGap,o=e.zigzagOffset<0?s:e.zigzagOffset,a=n(t,e=Object.assign({},e,{hachureGap:s+o}));return {type:"fillSketch",ops:this.zigzagLines(a,o,e)}}zigzagLines(t,e,s){const n=[];return t.forEach((t=>{const o=a(t),h=Math.round(o/(2*e));let r=t[0],i=t[1];r[0]>i[0]&&(r=t[1],i=t[0]);const c=Math.atan((i[1]-r[1])/(i[0]-r[0]));for(let t=0;t<h;t++){const o=2*t*e,a=2*(t+1)*e,h=Math.sqrt(2*Math.pow(e,2)),i=[r[0]+o*Math.cos(c),r[1]+o*Math.sin(c)],l=[r[0]+a*Math.cos(c),r[1]+a*Math.sin(c)],u=[i[0]+h*Math.cos(c+Math.PI/4),i[1]+h*Math.sin(c+Math.PI/4)];n.push(...this.helper.doubleLineOps(i[0],i[1],u[0],u[1],s),...this.helper.doubleLineOps(u[0],u[1],l[0],l[1],s));}})),n}}const u={};class p{constructor(t){this.seed=t;}next(){return this.seed?(2**31-1&(this.seed=Math.imul(48271,this.seed)))/2**31:Math.random()}}const f=0,d=1,g=2,M={A:7,a:7,C:6,c:6,H:1,h:1,L:2,l:2,M:2,m:2,Q:4,q:4,S:4,s:4,T:2,t:2,V:1,v:1,Z:0,z:0};function k(t,e){return t.type===e}function b(t){const e=[],s=function(t){const e=new Array;for(;""!==t;)if(t.match(/^([ \t\r\n,]+)/))t=t.substr(RegExp.$1.length);else if(t.match(/^([aAcChHlLmMqQsStTvVzZ])/))e[e.length]={type:f,text:RegExp.$1},t=t.substr(RegExp.$1.length);else {if(!t.match(/^(([-+]?[0-9]+(\.[0-9]*)?|[-+]?\.[0-9]+)([eE][-+]?[0-9]+)?)/))return [];e[e.length]={type:d,text:`${parseFloat(RegExp.$1)}`},t=t.substr(RegExp.$1.length);}return e[e.length]={type:g,text:""},e}(t);let n="BOD",o=0,a=s[o];for(;!k(a,g);){let h=0;const r=[];if("BOD"===n){if("M"!==a.text&&"m"!==a.text)return b("M0,0"+t);o++,h=M[a.text],n=a.text;}else k(a,d)?h=M[n]:(o++,h=M[a.text],n=a.text);if(!(o+h<s.length))throw new Error("Path data ended short");for(let t=o;t<o+h;t++){const e=s[t];if(!k(e,d))throw new Error("Param not a number: "+n+","+e.text);r[r.length]=+e.text;}if("number"!=typeof M[n])throw new Error("Bad segment: "+n);{const t={key:n,data:r};e.push(t),o+=h,a=s[o],"M"===n&&(n="L"),"m"===n&&(n="l");}}return e}function y(t){let e=0,s=0,n=0,o=0;const a=[];for(const{key:h,data:r}of t)switch(h){case"M":a.push({key:"M",data:[...r]}),[e,s]=r,[n,o]=r;break;case"m":e+=r[0],s+=r[1],a.push({key:"M",data:[e,s]}),n=e,o=s;break;case"L":a.push({key:"L",data:[...r]}),[e,s]=r;break;case"l":e+=r[0],s+=r[1],a.push({key:"L",data:[e,s]});break;case"C":a.push({key:"C",data:[...r]}),e=r[4],s=r[5];break;case"c":{const t=r.map(((t,n)=>n%2?t+s:t+e));a.push({key:"C",data:t}),e=t[4],s=t[5];break}case"Q":a.push({key:"Q",data:[...r]}),e=r[2],s=r[3];break;case"q":{const t=r.map(((t,n)=>n%2?t+s:t+e));a.push({key:"Q",data:t}),e=t[2],s=t[3];break}case"A":a.push({key:"A",data:[...r]}),e=r[5],s=r[6];break;case"a":e+=r[5],s+=r[6],a.push({key:"A",data:[r[0],r[1],r[2],r[3],r[4],e,s]});break;case"H":a.push({key:"H",data:[...r]}),e=r[0];break;case"h":e+=r[0],a.push({key:"H",data:[e]});break;case"V":a.push({key:"V",data:[...r]}),s=r[0];break;case"v":s+=r[0],a.push({key:"V",data:[s]});break;case"S":a.push({key:"S",data:[...r]}),e=r[2],s=r[3];break;case"s":{const t=r.map(((t,n)=>n%2?t+s:t+e));a.push({key:"S",data:t}),e=t[2],s=t[3];break}case"T":a.push({key:"T",data:[...r]}),e=r[0],s=r[1];break;case"t":e+=r[0],s+=r[1],a.push({key:"T",data:[e,s]});break;case"Z":case"z":a.push({key:"Z",data:[]}),e=n,s=o;}return a}function m(t){const e=[];let s="",n=0,o=0,a=0,h=0,r=0,i=0;for(const{key:c,data:l}of t){switch(c){case"M":e.push({key:"M",data:[...l]}),[n,o]=l,[a,h]=l;break;case"C":e.push({key:"C",data:[...l]}),n=l[4],o=l[5],r=l[2],i=l[3];break;case"L":e.push({key:"L",data:[...l]}),[n,o]=l;break;case"H":n=l[0],e.push({key:"L",data:[n,o]});break;case"V":o=l[0],e.push({key:"L",data:[n,o]});break;case"S":{let t=0,a=0;"C"===s||"S"===s?(t=n+(n-r),a=o+(o-i)):(t=n,a=o),e.push({key:"C",data:[t,a,...l]}),r=l[0],i=l[1],n=l[2],o=l[3];break}case"T":{const[t,a]=l;let h=0,c=0;"Q"===s||"T"===s?(h=n+(n-r),c=o+(o-i)):(h=n,c=o);const u=n+2*(h-n)/3,p=o+2*(c-o)/3,f=t+2*(h-t)/3,d=a+2*(c-a)/3;e.push({key:"C",data:[u,p,f,d,t,a]}),r=h,i=c,n=t,o=a;break}case"Q":{const[t,s,a,h]=l,c=n+2*(t-n)/3,u=o+2*(s-o)/3,p=a+2*(t-a)/3,f=h+2*(s-h)/3;e.push({key:"C",data:[c,u,p,f,a,h]}),r=t,i=s,n=a,o=h;break}case"A":{const t=Math.abs(l[0]),s=Math.abs(l[1]),a=l[2],h=l[3],r=l[4],i=l[5],c=l[6];if(0===t||0===s)e.push({key:"C",data:[n,o,i,c,i,c]}),n=i,o=c;else if(n!==i||o!==c){w(n,o,i,c,t,s,a,h,r).forEach((function(t){e.push({key:"C",data:t});})),n=i,o=c;}break}case"Z":e.push({key:"Z",data:[]}),n=a,o=h;}s=c;}return e}function x(t,e,s){return [t*Math.cos(s)-e*Math.sin(s),t*Math.sin(s)+e*Math.cos(s)]}function w(t,e,s,n,o,a,h,r,i,c){const l=(u=h,Math.PI*u/180);var u;let p=[],f=0,d=0,g=0,M=0;if(c)[f,d,g,M]=c;else {[t,e]=x(t,e,-l),[s,n]=x(s,n,-l);const h=(t-s)/2,c=(e-n)/2;let u=h*h/(o*o)+c*c/(a*a);u>1&&(u=Math.sqrt(u),o*=u,a*=u);const p=o*o,k=a*a,b=p*k-p*c*c-k*h*h,y=p*c*c+k*h*h,m=(r===i?-1:1)*Math.sqrt(Math.abs(b/y));g=m*o*c/a+(t+s)/2,M=m*-a*h/o+(e+n)/2,f=Math.asin(parseFloat(((e-M)/a).toFixed(9))),d=Math.asin(parseFloat(((n-M)/a).toFixed(9))),t<g&&(f=Math.PI-f),s<g&&(d=Math.PI-d),f<0&&(f=2*Math.PI+f),d<0&&(d=2*Math.PI+d),i&&f>d&&(f-=2*Math.PI),!i&&d>f&&(d-=2*Math.PI);}let k=d-f;if(Math.abs(k)>120*Math.PI/180){const t=d,e=s,r=n;d=i&&d>f?f+120*Math.PI/180*1:f+120*Math.PI/180*-1,p=w(s=g+o*Math.cos(d),n=M+a*Math.sin(d),e,r,o,a,h,0,i,[d,t,g,M]);}k=d-f;const b=Math.cos(f),y=Math.sin(f),m=Math.cos(d),P=Math.sin(d),v=Math.tan(k/4),S=4/3*o*v,O=4/3*a*v,L=[t,e],T=[t+S*y,e-O*b],D=[s+S*P,n-O*m],A=[s,n];if(T[0]=2*L[0]-T[0],T[1]=2*L[1]-T[1],c)return [T,D,A].concat(p);{p=[T,D,A].concat(p);const t=[];for(let e=0;e<p.length;e+=3){const s=x(p[e][0],p[e][1],l),n=x(p[e+1][0],p[e+1][1],l),o=x(p[e+2][0],p[e+2][1],l);t.push([s[0],s[1],n[0],n[1],o[0],o[1]]);}return t}}const P={randOffset:function(t,e){return G(t,e)},randOffsetWithRange:function(t,e,s){return E(t,e,s)},ellipse:function(t,e,s,n,o){const a=T(s,n,o);return D(t,e,o,a).opset},doubleLineOps:function(t,e,s,n,o){return $(t,e,s,n,o,!0)}};function v(t,e,s,n,o){return {type:"path",ops:$(t,e,s,n,o)}}function S(t,e,s){const n=(t||[]).length;if(n>2){const o=[];for(let e=0;e<n-1;e++)o.push(...$(t[e][0],t[e][1],t[e+1][0],t[e+1][1],s));return e&&o.push(...$(t[n-1][0],t[n-1][1],t[0][0],t[0][1],s)),{type:"path",ops:o}}return 2===n?v(t[0][0],t[0][1],t[1][0],t[1][1],s):{type:"path",ops:[]}}function O(t,e,s,n,o){return function(t,e){return S(t,!0,e)}([[t,e],[t+s,e],[t+s,e+n],[t,e+n]],o)}function L(t,e){if(t.length){const s="number"==typeof t[0][0]?[t]:t,n=j(s[0],1*(1+.2*e.roughness),e),o=e.disableMultiStroke?[]:j(s[0],1.5*(1+.22*e.roughness),z(e));for(let t=1;t<s.length;t++){const a=s[t];if(a.length){const t=j(a,1*(1+.2*e.roughness),e),s=e.disableMultiStroke?[]:j(a,1.5*(1+.22*e.roughness),z(e));for(const e of t)"move"!==e.op&&n.push(e);for(const t of s)"move"!==t.op&&o.push(t);}}return {type:"path",ops:n.concat(o)}}return {type:"path",ops:[]}}function T(t,e,s){const n=Math.sqrt(2*Math.PI*Math.sqrt((Math.pow(t/2,2)+Math.pow(e/2,2))/2)),o=Math.ceil(Math.max(s.curveStepCount,s.curveStepCount/Math.sqrt(200)*n)),a=2*Math.PI/o;let h=Math.abs(t/2),r=Math.abs(e/2);const i=1-s.curveFitting;return h+=G(h*i,s),r+=G(r*i,s),{increment:a,rx:h,ry:r}}function D(t,e,s,n){const[o,a]=F(n.increment,t,e,n.rx,n.ry,1,n.increment*E(.1,E(.4,1,s),s),s);let h=q(o,null,s);if(!s.disableMultiStroke&&0!==s.roughness){const[o]=F(n.increment,t,e,n.rx,n.ry,1.5,0,s),a=q(o,null,s);h=h.concat(a);}return {estimatedPoints:a,opset:{type:"path",ops:h}}}function A(t,e,s,n,o,a,h,r,i){const c=t,l=e;let u=Math.abs(s/2),p=Math.abs(n/2);u+=G(.01*u,i),p+=G(.01*p,i);let f=o,d=a;for(;f<0;)f+=2*Math.PI,d+=2*Math.PI;d-f>2*Math.PI&&(f=0,d=2*Math.PI);const g=2*Math.PI/i.curveStepCount,M=Math.min(g/2,(d-f)/2),k=V(M,c,l,u,p,f,d,1,i);if(!i.disableMultiStroke){const t=V(M,c,l,u,p,f,d,1.5,i);k.push(...t);}return h&&(r?k.push(...$(c,l,c+u*Math.cos(f),l+p*Math.sin(f),i),...$(c,l,c+u*Math.cos(d),l+p*Math.sin(d),i)):k.push({op:"lineTo",data:[c,l]},{op:"lineTo",data:[c+u*Math.cos(f),l+p*Math.sin(f)]})),{type:"path",ops:k}}function _(t,e){const s=m(y(b(t))),n=[];let o=[0,0],a=[0,0];for(const{key:t,data:h}of s)switch(t){case"M":a=[h[0],h[1]],o=[h[0],h[1]];break;case"L":n.push(...$(a[0],a[1],h[0],h[1],e)),a=[h[0],h[1]];break;case"C":{const[t,s,o,r,i,c]=h;n.push(...Z(t,s,o,r,i,c,a,e)),a=[i,c];break}case"Z":n.push(...$(a[0],a[1],o[0],o[1],e)),a=[o[0],o[1]];}return {type:"path",ops:n}}function I(t,e){const s=[];for(const n of t)if(n.length){const t=e.maxRandomnessOffset||0,o=n.length;if(o>2){s.push({op:"move",data:[n[0][0]+G(t,e),n[0][1]+G(t,e)]});for(let a=1;a<o;a++)s.push({op:"lineTo",data:[n[a][0]+G(t,e),n[a][1]+G(t,e)]});}}return {type:"fillPath",ops:s}}function C(t,e){return function(t,e){let s=t.fillStyle||"hachure";if(!u[s])switch(s){case"zigzag":u[s]||(u[s]=new h(e));break;case"cross-hatch":u[s]||(u[s]=new r(e));break;case"dots":u[s]||(u[s]=new i(e));break;case"dashed":u[s]||(u[s]=new c(e));break;case"zigzag-line":u[s]||(u[s]=new l(e));break;default:s="hachure",u[s]||(u[s]=new o(e));}return u[s]}(e,P).fillPolygons(t,e)}function z(t){const e=Object.assign({},t);return e.randomizer=void 0,t.seed&&(e.seed=t.seed+1),e}function W(t){return t.randomizer||(t.randomizer=new p(t.seed||0)),t.randomizer.next()}function E(t,e,s,n=1){return s.roughness*n*(W(s)*(e-t)+t)}function G(t,e,s=1){return E(-t,t,e,s)}function $(t,e,s,n,o,a=!1){const h=a?o.disableMultiStrokeFill:o.disableMultiStroke,r=R(t,e,s,n,o,!0,!1);if(h)return r;const i=R(t,e,s,n,o,!0,!0);return r.concat(i)}function R(t,e,s,n,o,a,h){const r=Math.pow(t-s,2)+Math.pow(e-n,2),i=Math.sqrt(r);let c=1;c=i<200?1:i>500?.4:-.0016668*i+1.233334;let l=o.maxRandomnessOffset||0;l*l*100>r&&(l=i/10);const u=l/2,p=.2+.2*W(o);let f=o.bowing*o.maxRandomnessOffset*(n-e)/200,d=o.bowing*o.maxRandomnessOffset*(t-s)/200;f=G(f,o,c),d=G(d,o,c);const g=[],M=()=>G(u,o,c),k=()=>G(l,o,c),b=o.preserveVertices;return a&&(h?g.push({op:"move",data:[t+(b?0:M()),e+(b?0:M())]}):g.push({op:"move",data:[t+(b?0:G(l,o,c)),e+(b?0:G(l,o,c))]})),h?g.push({op:"bcurveTo",data:[f+t+(s-t)*p+M(),d+e+(n-e)*p+M(),f+t+2*(s-t)*p+M(),d+e+2*(n-e)*p+M(),s+(b?0:M()),n+(b?0:M())]}):g.push({op:"bcurveTo",data:[f+t+(s-t)*p+k(),d+e+(n-e)*p+k(),f+t+2*(s-t)*p+k(),d+e+2*(n-e)*p+k(),s+(b?0:k()),n+(b?0:k())]}),g}function j(t,e,s){if(!t.length)return [];const n=[];n.push([t[0][0]+G(e,s),t[0][1]+G(e,s)]),n.push([t[0][0]+G(e,s),t[0][1]+G(e,s)]);for(let o=1;o<t.length;o++)n.push([t[o][0]+G(e,s),t[o][1]+G(e,s)]),o===t.length-1&&n.push([t[o][0]+G(e,s),t[o][1]+G(e,s)]);return q(n,null,s)}function q(t,e,s){const n=t.length,o=[];if(n>3){const a=[],h=1-s.curveTightness;o.push({op:"move",data:[t[1][0],t[1][1]]});for(let e=1;e+2<n;e++){const s=t[e];a[0]=[s[0],s[1]],a[1]=[s[0]+(h*t[e+1][0]-h*t[e-1][0])/6,s[1]+(h*t[e+1][1]-h*t[e-1][1])/6],a[2]=[t[e+1][0]+(h*t[e][0]-h*t[e+2][0])/6,t[e+1][1]+(h*t[e][1]-h*t[e+2][1])/6],a[3]=[t[e+1][0],t[e+1][1]],o.push({op:"bcurveTo",data:[a[1][0],a[1][1],a[2][0],a[2][1],a[3][0],a[3][1]]});}if(e&&2===e.length){const t=s.maxRandomnessOffset;o.push({op:"lineTo",data:[e[0]+G(t,s),e[1]+G(t,s)]});}}else 3===n?(o.push({op:"move",data:[t[1][0],t[1][1]]}),o.push({op:"bcurveTo",data:[t[1][0],t[1][1],t[2][0],t[2][1],t[2][0],t[2][1]]})):2===n&&o.push(...R(t[0][0],t[0][1],t[1][0],t[1][1],s,!0,!0));return o}function F(t,e,s,n,o,a,h,r){const i=[],c=[];if(0===r.roughness){t/=4,c.push([e+n*Math.cos(-t),s+o*Math.sin(-t)]);for(let a=0;a<=2*Math.PI;a+=t){const t=[e+n*Math.cos(a),s+o*Math.sin(a)];i.push(t),c.push(t);}c.push([e+n*Math.cos(0),s+o*Math.sin(0)]),c.push([e+n*Math.cos(t),s+o*Math.sin(t)]);}else {const l=G(.5,r)-Math.PI/2;c.push([G(a,r)+e+.9*n*Math.cos(l-t),G(a,r)+s+.9*o*Math.sin(l-t)]);const u=2*Math.PI+l-.01;for(let h=l;h<u;h+=t){const t=[G(a,r)+e+n*Math.cos(h),G(a,r)+s+o*Math.sin(h)];i.push(t),c.push(t);}c.push([G(a,r)+e+n*Math.cos(l+2*Math.PI+.5*h),G(a,r)+s+o*Math.sin(l+2*Math.PI+.5*h)]),c.push([G(a,r)+e+.98*n*Math.cos(l+h),G(a,r)+s+.98*o*Math.sin(l+h)]),c.push([G(a,r)+e+.9*n*Math.cos(l+.5*h),G(a,r)+s+.9*o*Math.sin(l+.5*h)]);}return [c,i]}function V(t,e,s,n,o,a,h,r,i){const c=a+G(.1,i),l=[];l.push([G(r,i)+e+.9*n*Math.cos(c-t),G(r,i)+s+.9*o*Math.sin(c-t)]);for(let a=c;a<=h;a+=t)l.push([G(r,i)+e+n*Math.cos(a),G(r,i)+s+o*Math.sin(a)]);return l.push([e+n*Math.cos(h),s+o*Math.sin(h)]),l.push([e+n*Math.cos(h),s+o*Math.sin(h)]),q(l,null,i)}function Z(t,e,s,n,o,a,h,r){const i=[],c=[r.maxRandomnessOffset||1,(r.maxRandomnessOffset||1)+.3];let l=[0,0];const u=r.disableMultiStroke?1:2,p=r.preserveVertices;for(let f=0;f<u;f++)0===f?i.push({op:"move",data:[h[0],h[1]]}):i.push({op:"move",data:[h[0]+(p?0:G(c[0],r)),h[1]+(p?0:G(c[0],r))]}),l=p?[o,a]:[o+G(c[f],r),a+G(c[f],r)],i.push({op:"bcurveTo",data:[t+G(c[f],r),e+G(c[f],r),s+G(c[f],r),n+G(c[f],r),l[0],l[1]]});return i}function Q(t){return [...t]}function H(t,e=0){const s=t.length;if(s<3)throw new Error("A curve must have at least three points.");const n=[];if(3===s)n.push(Q(t[0]),Q(t[1]),Q(t[2]),Q(t[2]));else {const s=[];s.push(t[0],t[0]);for(let e=1;e<t.length;e++)s.push(t[e]),e===t.length-1&&s.push(t[e]);const o=[],a=1-e;n.push(Q(s[0]));for(let t=1;t+2<s.length;t++){const e=s[t];o[0]=[e[0],e[1]],o[1]=[e[0]+(a*s[t+1][0]-a*s[t-1][0])/6,e[1]+(a*s[t+1][1]-a*s[t-1][1])/6],o[2]=[s[t+1][0]+(a*s[t][0]-a*s[t+2][0])/6,s[t+1][1]+(a*s[t][1]-a*s[t+2][1])/6],o[3]=[s[t+1][0],s[t+1][1]],n.push(o[1],o[2],o[3]);}}return n}function N(t,e){return Math.pow(t[0]-e[0],2)+Math.pow(t[1]-e[1],2)}function B(t,e,s){const n=N(e,s);if(0===n)return N(t,e);let o=((t[0]-e[0])*(s[0]-e[0])+(t[1]-e[1])*(s[1]-e[1]))/n;return o=Math.max(0,Math.min(1,o)),N(t,J(e,s,o))}function J(t,e,s){return [t[0]+(e[0]-t[0])*s,t[1]+(e[1]-t[1])*s]}function K(t,e,s,n){const o=n||[];if(function(t,e){const s=t[e+0],n=t[e+1],o=t[e+2],a=t[e+3];let h=3*n[0]-2*s[0]-a[0];h*=h;let r=3*n[1]-2*s[1]-a[1];r*=r;let i=3*o[0]-2*a[0]-s[0];i*=i;let c=3*o[1]-2*a[1]-s[1];return c*=c,h<i&&(h=i),r<c&&(r=c),h+r}(t,e)<s){const s=t[e+0];if(o.length){(a=o[o.length-1],h=s,Math.sqrt(N(a,h)))>1&&o.push(s);}else o.push(s);o.push(t[e+3]);}else {const n=.5,a=t[e+0],h=t[e+1],r=t[e+2],i=t[e+3],c=J(a,h,n),l=J(h,r,n),u=J(r,i,n),p=J(c,l,n),f=J(l,u,n),d=J(p,f,n);K([a,c,p,d],0,s,o),K([d,f,u,i],0,s,o);}var a,h;return o}function U(t,e){return X(t,0,t.length,e)}function X(t,e,s,n,o){const a=o||[],h=t[e],r=t[s-1];let i=0,c=1;for(let n=e+1;n<s-1;++n){const e=B(t[n],h,r);e>i&&(i=e,c=n);}return Math.sqrt(i)>n?(X(t,e,c+1,n,a),X(t,c,s,n,a)):(a.length||a.push(h),a.push(r)),a}function Y(t,e=.15,s){const n=[],o=(t.length-1)/3;for(let s=0;s<o;s++){K(t,3*s,e,n);}return s&&s>0?X(n,0,n.length,s):n}const tt="none";class et{constructor(t){this.defaultOptions={maxRandomnessOffset:2,roughness:1,bowing:1,stroke:"#000",strokeWidth:1,curveTightness:0,curveFitting:.95,curveStepCount:9,fillStyle:"hachure",fillWeight:-1,hachureAngle:-41,hachureGap:-1,dashOffset:-1,dashGap:-1,zigzagOffset:-1,seed:0,disableMultiStroke:!1,disableMultiStrokeFill:!1,preserveVertices:!1,fillShapeRoughnessGain:.8},this.config=t||{},this.config.options&&(this.defaultOptions=this._o(this.config.options));}static newSeed(){return Math.floor(Math.random()*2**31)}_o(t){return t?Object.assign({},this.defaultOptions,t):this.defaultOptions}_d(t,e,s){return {shape:t,sets:e||[],options:s||this.defaultOptions}}line(t,e,s,n,o){const a=this._o(o);return this._d("line",[v(t,e,s,n,a)],a)}rectangle(t,e,s,n,o){const a=this._o(o),h=[],r=O(t,e,s,n,a);if(a.fill){const o=[[t,e],[t+s,e],[t+s,e+n],[t,e+n]];"solid"===a.fillStyle?h.push(I([o],a)):h.push(C([o],a));}return a.stroke!==tt&&h.push(r),this._d("rectangle",h,a)}ellipse(t,e,s,n,o){const a=this._o(o),h=[],r=T(s,n,a),i=D(t,e,a,r);if(a.fill)if("solid"===a.fillStyle){const s=D(t,e,a,r).opset;s.type="fillPath",h.push(s);}else h.push(C([i.estimatedPoints],a));return a.stroke!==tt&&h.push(i.opset),this._d("ellipse",h,a)}circle(t,e,s,n){const o=this.ellipse(t,e,s,s,n);return o.shape="circle",o}linearPath(t,e){const s=this._o(e);return this._d("linearPath",[S(t,!1,s)],s)}arc(t,e,s,n,o,a,h=!1,r){const i=this._o(r),c=[],l=A(t,e,s,n,o,a,h,!0,i);if(h&&i.fill)if("solid"===i.fillStyle){const h=Object.assign({},i);h.disableMultiStroke=!0;const r=A(t,e,s,n,o,a,!0,!1,h);r.type="fillPath",c.push(r);}else c.push(function(t,e,s,n,o,a,h){const r=t,i=e;let c=Math.abs(s/2),l=Math.abs(n/2);c+=G(.01*c,h),l+=G(.01*l,h);let u=o,p=a;for(;u<0;)u+=2*Math.PI,p+=2*Math.PI;p-u>2*Math.PI&&(u=0,p=2*Math.PI);const f=(p-u)/h.curveStepCount,d=[];for(let t=u;t<=p;t+=f)d.push([r+c*Math.cos(t),i+l*Math.sin(t)]);return d.push([r+c*Math.cos(p),i+l*Math.sin(p)]),d.push([r,i]),C([d],h)}(t,e,s,n,o,a,i));return i.stroke!==tt&&c.push(l),this._d("arc",c,i)}curve(t,e){const s=this._o(e),n=[],o=L(t,s);if(s.fill&&s.fill!==tt)if("solid"===s.fillStyle){const e=L(t,Object.assign(Object.assign({},s),{disableMultiStroke:!0,roughness:s.roughness?s.roughness+s.fillShapeRoughnessGain:0}));n.push({type:"fillPath",ops:this._mergedShape(e.ops)});}else {const e=[],o=t;if(o.length){const t="number"==typeof o[0][0]?[o]:o;for(const n of t)n.length<3?e.push(...n):3===n.length?e.push(...Y(H([n[0],n[0],n[1],n[2]]),10,(1+s.roughness)/2)):e.push(...Y(H(n),10,(1+s.roughness)/2));}e.length&&n.push(C([e],s));}return s.stroke!==tt&&n.push(o),this._d("curve",n,s)}polygon(t,e){const s=this._o(e),n=[],o=S(t,!0,s);return s.fill&&("solid"===s.fillStyle?n.push(I([t],s)):n.push(C([t],s))),s.stroke!==tt&&n.push(o),this._d("polygon",n,s)}path(t,e){const s=this._o(e),n=[];if(!t)return this._d("path",n,s);t=(t||"").replace(/\n/g," ").replace(/(-\s)/g,"-").replace("/(ss)/g"," ");const o=s.fill&&"transparent"!==s.fill&&s.fill!==tt,a=s.stroke!==tt,h=!!(s.simplification&&s.simplification<1),r=function(t,e,s){const n=m(y(b(t))),o=[];let a=[],h=[0,0],r=[];const i=()=>{r.length>=4&&a.push(...Y(r,e)),r=[];},c=()=>{i(),a.length&&(o.push(a),a=[]);};for(const{key:t,data:e}of n)switch(t){case"M":c(),h=[e[0],e[1]],a.push(h);break;case"L":i(),a.push([e[0],e[1]]);break;case"C":if(!r.length){const t=a.length?a[a.length-1]:h;r.push([t[0],t[1]]);}r.push([e[0],e[1]]),r.push([e[2],e[3]]),r.push([e[4],e[5]]);break;case"Z":i(),a.push([h[0],h[1]]);}if(c(),!s)return o;const l=[];for(const t of o){const e=U(t,s);e.length&&l.push(e);}return l}(t,1,h?4-4*(s.simplification||1):(1+s.roughness)/2),i=_(t,s);if(o)if("solid"===s.fillStyle)if(1===r.length){const e=_(t,Object.assign(Object.assign({},s),{disableMultiStroke:!0,roughness:s.roughness?s.roughness+s.fillShapeRoughnessGain:0}));n.push({type:"fillPath",ops:this._mergedShape(e.ops)});}else n.push(I(r,s));else n.push(C(r,s));return a&&(h?r.forEach((t=>{n.push(S(t,!1,s));})):n.push(i)),this._d("path",n,s)}opsToPath(t,e){let s="";for(const n of t.ops){const t="number"==typeof e&&e>=0?n.data.map((t=>+t.toFixed(e))):n.data;switch(n.op){case"move":s+=`M${t[0]} ${t[1]} `;break;case"bcurveTo":s+=`C${t[0]} ${t[1]}, ${t[2]} ${t[3]}, ${t[4]} ${t[5]} `;break;case"lineTo":s+=`L${t[0]} ${t[1]} `;}}return s.trim()}toPaths(t){const e=t.sets||[],s=t.options||this.defaultOptions,n=[];for(const t of e){let e=null;switch(t.type){case"path":e={d:this.opsToPath(t),stroke:s.stroke,strokeWidth:s.strokeWidth,fill:tt};break;case"fillPath":e={d:this.opsToPath(t),stroke:tt,strokeWidth:0,fill:s.fill||tt};break;case"fillSketch":e=this.fillSketch(t,s);}e&&n.push(e);}return n}fillSketch(t,e){let s=e.fillWeight;return s<0&&(s=e.strokeWidth/2),{d:this.opsToPath(t),stroke:e.fill||tt,strokeWidth:s,fill:tt}}_mergedShape(t){return t.filter(((t,e)=>0===e||"move"!==t.op))}}class st{constructor(t,e,s){this.canvas=t,this.canvas?this.ctx=this.canvas.getContext("2d"):this.ctx=e,this.gen=new et(s);}draw(t){const e=t.sets||[],s=t.options||this.getDefaultOptions(),n=this.ctx,o=t.options.fixedDecimalPlaceDigits;console.log("ctx",n,typeof n);for(const a of e)switch(a.type){case"path":n.strokeStyle="none"===s.stroke?"transparent":s.stroke,n.lineWidth=s.strokeWidth,s.strokeLineDash&&n.setLineDash(s.strokeLineDash),s.strokeLineDashOffset&&(n.lineDashOffset=s.strokeLineDashOffset),this._drawToContext(n,a,o);break;case"fillPath":{n.fillStyle=s.fill||"";const e="curve"===t.shape||"polygon"===t.shape||"path"===t.shape?"evenodd":"nonzero";this._drawToContext(n,a,o,e);break}case"fillSketch":this.fillSketch(n,a,s);}}fillSketch(t,e,s){let n=s.fillWeight;n<0&&(n=s.strokeWidth/2),s.fillLineDash&&t.setLineDash(s.fillLineDash),s.fillLineDashOffset&&(t.lineDashOffset=s.fillLineDashOffset),t.strokeStyle=s.fill||"",t.lineWidth=n,this._drawToContext(t,e,s.fixedDecimalPlaceDigits);}_drawToContext(t,e,s,n="nonzero"){t.beginPath();for(const n of e.ops){const e="number"==typeof s&&s>=0?n.data.map((t=>+t.toFixed(s))):n.data;switch(n.op){case"move":t.moveTo(e[0],e[1]);break;case"bcurveTo":t.bezierCurveTo(e[0],e[1],e[2],e[3],e[4],e[5]);break;case"lineTo":t.lineTo(e[0],e[1]);}}"fillPath"===e.type?t.fill(n):t.stroke();}get generator(){return this.gen}getDefaultOptions(){return this.gen.defaultOptions}line(t,e,s,n,o){const a=this.gen.line(t,e,s,n,o);return this.draw(a),a}rectangle(t,e,s,n,o){const a=this.gen.rectangle(t,e,s,n,o);return this.draw(a),a}ellipse(t,e,s,n,o){const a=this.gen.ellipse(t,e,s,n,o);return this.draw(a),a}circle(t,e,s,n){const o=this.gen.circle(t,e,s,n);return this.draw(o),o}linearPath(t,e){const s=this.gen.linearPath(t,e);return this.draw(s),s}polygon(t,e){const s=this.gen.polygon(t,e);return this.draw(s),s}arc(t,e,s,n,o,a,h=!1,r){const i=this.gen.arc(t,e,s,n,o,a,h,r);return this.draw(i),i}curve(t,e){const s=this.gen.curve(t,e);return this.draw(s),s}path(t,e){const s=this.gen.path(t,e);return this.draw(s),s}}const nt="http://www.w3.org/2000/svg";class ot{constructor(t,e){this.svg=t,this.gen=new et(e);}draw(t){const e=t.sets||[],s=t.options||this.getDefaultOptions(),n=this.svg.ownerDocument||window.document,o=n.createElementNS(nt,"g"),a=t.options.fixedDecimalPlaceDigits;for(const h of e){let e=null;switch(h.type){case"path":e=n.createElementNS(nt,"path"),e.setAttribute("d",this.opsToPath(h,a)),e.setAttribute("stroke",s.stroke),e.setAttribute("stroke-width",s.strokeWidth+""),e.setAttribute("fill","none"),s.strokeLineDash&&e.setAttribute("stroke-dasharray",s.strokeLineDash.join(" ").trim()),s.strokeLineDashOffset&&e.setAttribute("stroke-dashoffset",`${s.strokeLineDashOffset}`);break;case"fillPath":e=n.createElementNS(nt,"path"),e.setAttribute("d",this.opsToPath(h,a)),e.setAttribute("stroke","none"),e.setAttribute("stroke-width","0"),e.setAttribute("fill",s.fill||""),"curve"!==t.shape&&"polygon"!==t.shape||e.setAttribute("fill-rule","evenodd");break;case"fillSketch":e=this.fillSketch(n,h,s);}e&&o.appendChild(e);}return o}fillSketch(t,e,s){let n=s.fillWeight;n<0&&(n=s.strokeWidth/2);const o=t.createElementNS(nt,"path");return o.setAttribute("d",this.opsToPath(e,s.fixedDecimalPlaceDigits)),o.setAttribute("stroke",s.fill||""),o.setAttribute("stroke-width",n+""),o.setAttribute("fill","none"),s.fillLineDash&&o.setAttribute("stroke-dasharray",s.fillLineDash.join(" ").trim()),s.fillLineDashOffset&&o.setAttribute("stroke-dashoffset",`${s.fillLineDashOffset}`),o}get generator(){return this.gen}getDefaultOptions(){return this.gen.defaultOptions}opsToPath(t,e){return this.gen.opsToPath(t,e)}line(t,e,s,n,o){const a=this.gen.line(t,e,s,n,o);return this.draw(a)}rectangle(t,e,s,n,o){const a=this.gen.rectangle(t,e,s,n,o);return this.draw(a)}ellipse(t,e,s,n,o){const a=this.gen.ellipse(t,e,s,n,o);return this.draw(a)}circle(t,e,s,n){const o=this.gen.circle(t,e,s,n);return this.draw(o)}linearPath(t,e){const s=this.gen.linearPath(t,e);return this.draw(s)}polygon(t,e){const s=this.gen.polygon(t,e);return this.draw(s)}arc(t,e,s,n,o,a,h=!1,r){const i=this.gen.arc(t,e,s,n,o,a,h,r);return this.draw(i)}curve(t,e){const s=this.gen.curve(t,e);return this.draw(s)}path(t,e){const s=this.gen.path(t,e);return this.draw(s)}}var at={canvas:(t,e,s)=>new st(t,e,s),svg:(t,e)=>new ot(t,e),generator:t=>new et(t),newSeed:()=>et.newSeed()};
-
-    class CircleShape {
-        constructor() {
+    var CircleShape = (function () {
+        function CircleShape() {
             this.cx = 0;
             this.cy = 0;
             this.r = 0;
         }
-    }
-    class Circle extends Path {
-        constructor(opts) {
-            super(opts);
+        return CircleShape;
+    }());
+    var Circle = (function (_super) {
+        __extends$1(Circle, _super);
+        function Circle(opts) {
+            return _super.call(this, opts) || this;
         }
-        getDefaultShape() {
+        Circle.prototype.getDefaultShape = function () {
             return new CircleShape();
-        }
-        buildPath(ctx, shape) {
+        };
+        Circle.prototype.buildPath = function (ctx, shape) {
             if (this.roughness) {
-                const rc = at.canvas(null, ctx, {
+                var fill = typeof this.style.fill === 'string' ? this.style.fill : undefined;
+                var rc = rough.canvas(ctx, {
                     options: {
                         roughness: this.roughness,
+                        fillStyle: this.filler,
+                        fill: fill,
                     },
                 });
                 rc.circle(shape.cx, shape.cy, shape.r * 2);
@@ -13380,92 +14425,108 @@
             }
             ctx.moveTo(shape.cx + shape.r, shape.cy);
             ctx.arc(shape.cx, shape.cy, shape.r, 0, Math.PI * 2);
-        }
-    }
-    Circle.prototype.type = "circle";
+        };
+        return Circle;
+    }(Path));
+    Circle.prototype.type = 'circle';
 
-    class EllipseShape {
-        constructor() {
+    var EllipseShape = (function () {
+        function EllipseShape() {
             this.cx = 0;
             this.cy = 0;
             this.rx = 0;
             this.ry = 0;
         }
-    }
-    class Ellipse extends Path {
-        constructor(opts) {
-            super(opts);
+        return EllipseShape;
+    }());
+    var Ellipse = (function (_super) {
+        __extends$1(Ellipse, _super);
+        function Ellipse(opts) {
+            return _super.call(this, opts) || this;
         }
-        getDefaultShape() {
+        Ellipse.prototype.getDefaultShape = function () {
             return new EllipseShape();
-        }
-        buildPath(ctx, shape) {
-            const k = 0.5522848;
-            const x = shape.cx;
-            const y = shape.cy;
-            const a = shape.rx;
-            const b = shape.ry;
-            const ox = a * k;
-            const oy = b * k;
+        };
+        Ellipse.prototype.buildPath = function (ctx, shape) {
+            if (this.roughness) {
+                var fill = typeof this.style.fill === 'string' ? this.style.fill : undefined;
+                var rc = rough.canvas(ctx, {
+                    options: {
+                        roughness: this.roughness,
+                        fillStyle: this.filler,
+                        fill: fill,
+                    },
+                });
+                rc.ellipse(shape.cx, shape.cy, shape.rx * 2, shape.ry * 2);
+                return;
+            }
+            var k = 0.5522848;
+            var x = shape.cx;
+            var y = shape.cy;
+            var a = shape.rx;
+            var b = shape.ry;
+            var ox = a * k;
+            var oy = b * k;
             ctx.moveTo(x - a, y);
             ctx.bezierCurveTo(x - a, y - oy, x - ox, y - b, x, y - b);
             ctx.bezierCurveTo(x + ox, y - b, x + a, y - oy, x + a, y);
             ctx.bezierCurveTo(x + a, y + oy, x + ox, y + b, x, y + b);
             ctx.bezierCurveTo(x - ox, y + b, x - a, y + oy, x - a, y);
             ctx.closePath();
-        }
-    }
+        };
+        return Ellipse;
+    }(Path));
     Ellipse.prototype.type = 'ellipse';
 
-    const PI$2 = Math.PI;
-    const PI2$5 = PI$2 * 2;
-    const mathSin$3 = Math.sin;
-    const mathCos$3 = Math.cos;
-    const mathACos = Math.acos;
-    const mathATan2 = Math.atan2;
-    const mathAbs$1 = Math.abs;
-    const mathSqrt$3 = Math.sqrt;
-    const mathMax$3 = Math.max;
-    const mathMin$3 = Math.min;
-    const e$1 = 1e-4;
+    var PI$2 = Math.PI;
+    var PI2$5 = PI$2 * 2;
+    var mathSin$3 = Math.sin;
+    var mathCos$3 = Math.cos;
+    var mathACos = Math.acos;
+    var mathATan2 = Math.atan2;
+    var mathAbs$1 = Math.abs;
+    var mathSqrt$3 = Math.sqrt;
+    var mathMax$3 = Math.max;
+    var mathMin$3 = Math.min;
+    var e = 1e-4;
     function intersect(x0, y0, x1, y1, x2, y2, x3, y3) {
-        const dx10 = x1 - x0;
-        const dy10 = y1 - y0;
-        const dx32 = x3 - x2;
-        const dy32 = y3 - y2;
-        let t = dy32 * dx10 - dx32 * dy10;
-        if (t * t < e$1) {
+        var dx10 = x1 - x0;
+        var dy10 = y1 - y0;
+        var dx32 = x3 - x2;
+        var dy32 = y3 - y2;
+        var t = dy32 * dx10 - dx32 * dy10;
+        if (t * t < e) {
             return;
         }
         t = (dx32 * (y0 - y2) - dy32 * (x0 - x2)) / t;
         return [x0 + t * dx10, y0 + t * dy10];
     }
     function computeCornerTangents(x0, y0, x1, y1, radius, cr, clockwise) {
-        const x01 = x0 - x1;
-        const y01 = y0 - y1;
-        const lo = (clockwise ? cr : -cr) / mathSqrt$3(x01 * x01 + y01 * y01);
-        const ox = lo * y01;
-        const oy = -lo * x01;
-        const x11 = x0 + ox;
-        const y11 = y0 + oy;
-        const x10 = x1 + ox;
-        const y10 = y1 + oy;
-        const x00 = (x11 + x10) / 2;
-        const y00 = (y11 + y10) / 2;
-        const dx = x10 - x11;
-        const dy = y10 - y11;
-        const d2 = dx * dx + dy * dy;
-        const r = radius - cr;
-        const s = x11 * y10 - x10 * y11;
-        const d = (dy < 0 ? -1 : 1) * mathSqrt$3(mathMax$3(0, r * r * d2 - s * s));
-        let cx0 = (s * dy - dx * d) / d2;
-        let cy0 = (-s * dx - dy * d) / d2;
-        const cx1 = (s * dy + dx * d) / d2;
-        const cy1 = (-s * dx + dy * d) / d2;
-        const dx0 = cx0 - x00;
-        const dy0 = cy0 - y00;
-        const dx1 = cx1 - x00;
-        const dy1 = cy1 - y00;
+        var x01 = x0 - x1;
+        var y01 = y0 - y1;
+        var lo = (clockwise ? cr : -cr) / mathSqrt$3(x01 * x01 + y01 * y01);
+        var ox = lo * y01;
+        var oy = -lo * x01;
+        var x11 = x0 + ox;
+        var y11 = y0 + oy;
+        var x10 = x1 + ox;
+        var y10 = y1 + oy;
+        var x00 = (x11 + x10) / 2;
+        var y00 = (y11 + y10) / 2;
+        var dx = x10 - x11;
+        var dy = y10 - y11;
+        var d2 = dx * dx + dy * dy;
+        var r = radius - cr;
+        var s = x11 * y10 - x10 * y11;
+        var d = (dy < 0 ? -1 : 1) * mathSqrt$3(mathMax$3(0, r * r * d2 - s * s));
+        var cx0 = (s * dy - dx * d) / d2;
+        var cy0 = (-s * dx - dy * d) / d2;
+        var cx1 = (s * dy + dx * d) / d2;
+        var cy1 = (-s * dx + dy * d) / d2;
+        var dx0 = cx0 - x00;
+        var dy0 = cy0 - y00;
+        var dx1 = cx1 - x00;
+        var dy1 = cy1 - y00;
         if (dx0 * dx0 + dy0 * dy0 > dx1 * dx1 + dy1 * dy1) {
             cx0 = cx1;
             cy0 = cy1;
@@ -13480,9 +14541,9 @@
         };
     }
     function normalizeCornerRadius(cr) {
-        let arr;
+        var arr;
         if (isArray(cr)) {
-            const len = cr.length;
+            var len = cr.length;
             if (!len) {
                 return cr;
             }
@@ -13504,11 +14565,12 @@
         }
         return arr;
     }
-    function buildPath(ctx, shape) {
-        let radius = mathMax$3(shape.r, 0);
-        let innerRadius = mathMax$3(shape.r0 || 0, 0);
-        const hasRadius = radius > 0;
-        const hasInnerRadius = innerRadius > 0;
+    function buildPath$1(ctx, shape) {
+        var _a;
+        var radius = mathMax$3(shape.r, 0);
+        var innerRadius = mathMax$3(shape.r0 || 0, 0);
+        var hasRadius = radius > 0;
+        var hasInnerRadius = innerRadius > 0;
         if (!hasRadius && !hasInnerRadius) {
             return;
         }
@@ -13517,78 +14579,78 @@
             innerRadius = 0;
         }
         if (innerRadius > radius) {
-            const tmp = radius;
+            var tmp = radius;
             radius = innerRadius;
             innerRadius = tmp;
         }
-        const { startAngle, endAngle } = shape;
+        var startAngle = shape.startAngle, endAngle = shape.endAngle;
         if (isNaN(startAngle) || isNaN(endAngle)) {
             return;
         }
-        const { cx, cy } = shape;
-        const clockwise = !!shape.clockwise;
-        let arc = mathAbs$1(endAngle - startAngle);
-        const mod = arc > PI2$5 && arc % PI2$5;
-        mod > e$1 && (arc = mod);
-        if (!(radius > e$1)) {
+        var cx = shape.cx, cy = shape.cy;
+        var clockwise = !!shape.clockwise;
+        var arc = mathAbs$1(endAngle - startAngle);
+        var mod = arc > PI2$5 && arc % PI2$5;
+        mod > e && (arc = mod);
+        if (!(radius > e)) {
             ctx.moveTo(cx, cy);
         }
-        else if (arc > PI2$5 - e$1) {
+        else if (arc > PI2$5 - e) {
             ctx.moveTo(cx + radius * mathCos$3(startAngle), cy + radius * mathSin$3(startAngle));
             ctx.arc(cx, cy, radius, startAngle, endAngle, !clockwise);
-            if (innerRadius > e$1) {
+            if (innerRadius > e) {
                 ctx.moveTo(cx + innerRadius * mathCos$3(endAngle), cy + innerRadius * mathSin$3(endAngle));
                 ctx.arc(cx, cy, innerRadius, endAngle, startAngle, clockwise);
             }
         }
         else {
-            let icrStart;
-            let icrEnd;
-            let ocrStart;
-            let ocrEnd;
-            let ocrs;
-            let ocre;
-            let icrs;
-            let icre;
-            let ocrMax;
-            let icrMax;
-            let limitedOcrMax;
-            let limitedIcrMax;
-            let xre;
-            let yre;
-            let xirs;
-            let yirs;
-            const xrs = radius * mathCos$3(startAngle);
-            const yrs = radius * mathSin$3(startAngle);
-            const xire = innerRadius * mathCos$3(endAngle);
-            const yire = innerRadius * mathSin$3(endAngle);
-            const hasArc = arc > e$1;
+            var icrStart = void 0;
+            var icrEnd = void 0;
+            var ocrStart = void 0;
+            var ocrEnd = void 0;
+            var ocrs = void 0;
+            var ocre = void 0;
+            var icrs = void 0;
+            var icre = void 0;
+            var ocrMax = void 0;
+            var icrMax = void 0;
+            var limitedOcrMax = void 0;
+            var limitedIcrMax = void 0;
+            var xre = void 0;
+            var yre = void 0;
+            var xirs = void 0;
+            var yirs = void 0;
+            var xrs = radius * mathCos$3(startAngle);
+            var yrs = radius * mathSin$3(startAngle);
+            var xire = innerRadius * mathCos$3(endAngle);
+            var yire = innerRadius * mathSin$3(endAngle);
+            var hasArc = arc > e;
             if (hasArc) {
-                const cornerRadius = shape.cornerRadius;
+                var cornerRadius = shape.cornerRadius;
                 if (cornerRadius) {
-                    [icrStart, icrEnd, ocrStart, ocrEnd] = normalizeCornerRadius(cornerRadius);
+                    _a = normalizeCornerRadius(cornerRadius), icrStart = _a[0], icrEnd = _a[1], ocrStart = _a[2], ocrEnd = _a[3];
                 }
-                const halfRd = mathAbs$1(radius - innerRadius) / 2;
+                var halfRd = mathAbs$1(radius - innerRadius) / 2;
                 ocrs = mathMin$3(halfRd, ocrStart);
                 ocre = mathMin$3(halfRd, ocrEnd);
                 icrs = mathMin$3(halfRd, icrStart);
                 icre = mathMin$3(halfRd, icrEnd);
                 limitedOcrMax = ocrMax = mathMax$3(ocrs, ocre);
                 limitedIcrMax = icrMax = mathMax$3(icrs, icre);
-                if (ocrMax > e$1 || icrMax > e$1) {
+                if (ocrMax > e || icrMax > e) {
                     xre = radius * mathCos$3(endAngle);
                     yre = radius * mathSin$3(endAngle);
                     xirs = innerRadius * mathCos$3(startAngle);
                     yirs = innerRadius * mathSin$3(startAngle);
                     if (arc < PI$2) {
-                        const it = intersect(xrs, yrs, xirs, yirs, xre, yre, xire, yire);
-                        if (it) {
-                            const x0 = xrs - it[0];
-                            const y0 = yrs - it[1];
-                            const x1 = xre - it[0];
-                            const y1 = yre - it[1];
-                            const a = 1 / mathSin$3(mathACos((x0 * x1 + y0 * y1) / (mathSqrt$3(x0 * x0 + y0 * y0) * mathSqrt$3(x1 * x1 + y1 * y1))) / 2);
-                            const b = mathSqrt$3(it[0] * it[0] + it[1] * it[1]);
+                        var it_1 = intersect(xrs, yrs, xirs, yirs, xre, yre, xire, yire);
+                        if (it_1) {
+                            var x0 = xrs - it_1[0];
+                            var y0 = yrs - it_1[1];
+                            var x1 = xre - it_1[0];
+                            var y1 = yre - it_1[1];
+                            var a = 1 / mathSin$3(mathACos((x0 * x1 + y0 * y1) / (mathSqrt$3(x0 * x0 + y0 * y0) * mathSqrt$3(x1 * x1 + y1 * y1))) / 2);
+                            var b = mathSqrt$3(it_1[0] * it_1[0] + it_1[1] * it_1[1]);
                             limitedOcrMax = mathMin$3(ocrMax, (radius - b) / (a + 1));
                             limitedIcrMax = mathMin$3(icrMax, (innerRadius - b) / (a - 1));
                         }
@@ -13598,11 +14660,11 @@
             if (!hasArc) {
                 ctx.moveTo(cx + xrs, cy + yrs);
             }
-            else if (limitedOcrMax > e$1) {
-                const crStart = mathMin$3(ocrStart, limitedOcrMax);
-                const crEnd = mathMin$3(ocrEnd, limitedOcrMax);
-                const ct0 = computeCornerTangents(xirs, yirs, xrs, yrs, radius, crStart, clockwise);
-                const ct1 = computeCornerTangents(xre, yre, xire, yire, radius, crEnd, clockwise);
+            else if (limitedOcrMax > e) {
+                var crStart = mathMin$3(ocrStart, limitedOcrMax);
+                var crEnd = mathMin$3(ocrEnd, limitedOcrMax);
+                var ct0 = computeCornerTangents(xirs, yirs, xrs, yrs, radius, crStart, clockwise);
+                var ct1 = computeCornerTangents(xre, yre, xire, yire, radius, crEnd, clockwise);
                 ctx.moveTo(cx + ct0.cx + ct0.x0, cy + ct0.cy + ct0.y0);
                 if (limitedOcrMax < ocrMax && crStart === crEnd) {
                     ctx.arc(cx + ct0.cx, cy + ct0.cy, limitedOcrMax, mathATan2(ct0.y0, ct0.x0), mathATan2(ct1.y0, ct1.x0), !clockwise);
@@ -13617,14 +14679,14 @@
                 ctx.moveTo(cx + xrs, cy + yrs);
                 ctx.arc(cx, cy, radius, startAngle, endAngle, !clockwise);
             }
-            if (!(innerRadius > e$1) || !hasArc) {
+            if (!(innerRadius > e) || !hasArc) {
                 ctx.lineTo(cx + xire, cy + yire);
             }
-            else if (limitedIcrMax > e$1) {
-                const crStart = mathMin$3(icrStart, limitedIcrMax);
-                const crEnd = mathMin$3(icrEnd, limitedIcrMax);
-                const ct0 = computeCornerTangents(xire, yire, xre, yre, innerRadius, -crEnd, clockwise);
-                const ct1 = computeCornerTangents(xrs, yrs, xirs, yirs, innerRadius, -crStart, clockwise);
+            else if (limitedIcrMax > e) {
+                var crStart = mathMin$3(icrStart, limitedIcrMax);
+                var crEnd = mathMin$3(icrEnd, limitedIcrMax);
+                var ct0 = computeCornerTangents(xire, yire, xre, yre, innerRadius, -crEnd, clockwise);
+                var ct1 = computeCornerTangents(xrs, yrs, xirs, yirs, innerRadius, -crStart, clockwise);
                 ctx.lineTo(cx + ct0.cx + ct0.x0, cy + ct0.cy + ct0.y0);
                 if (limitedIcrMax < icrMax && crStart === crEnd) {
                     ctx.arc(cx + ct0.cx, cy + ct0.cy, limitedIcrMax, mathATan2(ct0.y0, ct0.x0), mathATan2(ct1.y0, ct1.x0), !clockwise);
@@ -13643,8 +14705,8 @@
         ctx.closePath();
     }
 
-    class SectorShape {
-        constructor() {
+    var SectorShape = (function () {
+        function SectorShape() {
             this.cx = 0;
             this.cy = 0;
             this.r0 = 0;
@@ -13654,72 +14716,135 @@
             this.clockwise = true;
             this.cornerRadius = 0;
         }
-    }
-    class Sector extends Path {
-        constructor(opts) {
-            super(opts);
+        return SectorShape;
+    }());
+    var Sector = (function (_super) {
+        __extends$1(Sector, _super);
+        function Sector(opts) {
+            return _super.call(this, opts) || this;
         }
-        getDefaultShape() {
+        Sector.prototype.getDefaultShape = function () {
             return new SectorShape();
-        }
-        buildPath(ctx, shape) {
-            buildPath(ctx, shape);
-        }
-        isZeroArea() {
+        };
+        Sector.prototype.buildPath = function (ctx, shape) {
+            if (this.roughness) {
+                var fill = typeof this.style.fill === 'string' ? this.style.fill : undefined;
+                var rc = rough.canvas(ctx, {
+                    options: {
+                        roughness: this.roughness,
+                        fillStyle: this.filler,
+                        fill: fill,
+                    },
+                });
+                var recorder = {
+                    d: [],
+                    moveTo: function (x, y) {
+                        this.d.push("M " + x + " " + y);
+                    },
+                    lineTo: function (x, y) {
+                        this.d.push("L " + x + " " + y);
+                    },
+                    bezierCurveTo: function (x1, y1, x2, y2, x3, y3) {
+                        this.d.push("C " + x1 + " " + y1 + " " + x2 + " " + y2 + " " + x3 + " " + y3);
+                    },
+                    quadraticCurveTo: function (x1, y1, x2, y2) {
+                        this.d.push("Q " + x1 + " " + y1 + " " + x2 + " " + y2);
+                    },
+                    arc: function (x, y, r, startAngle, endAngle, anticlockwise) {
+                        var endX = x + r * Math.cos(endAngle);
+                        var endY = y + r * Math.sin(endAngle);
+                        var largeArc = Math.abs(endAngle - startAngle) > Math.PI ? 1 : 0;
+                        if (Math.abs(endAngle - startAngle) > Math.PI * 2 - 1e-4) {
+                            largeArc = 1;
+                        }
+                        var sweep = anticlockwise ? 0 : 1;
+                        this.d.push("A " + r + " " + r + " 0 " + largeArc + " " + sweep + " " + endX + " " + endY);
+                    },
+                    closePath: function () {
+                        this.d.push('Z');
+                    }
+                };
+                buildPath$1(recorder, shape);
+                rc.path(recorder.d.join(' '));
+                return;
+            }
+            buildPath$1(ctx, shape);
+        };
+        Sector.prototype.isZeroArea = function () {
             return this.shape.startAngle === this.shape.endAngle
                 || this.shape.r === this.shape.r0;
-        }
-    }
+        };
+        return Sector;
+    }(Path));
     Sector.prototype.type = 'sector';
 
-    class RingShape {
-        constructor() {
+    var RingShape = (function () {
+        function RingShape() {
             this.cx = 0;
             this.cy = 0;
             this.r = 0;
             this.r0 = 0;
         }
-    }
-    class Ring extends Path {
-        constructor(opts) {
-            super(opts);
+        return RingShape;
+    }());
+    var Ring = (function (_super) {
+        __extends$1(Ring, _super);
+        function Ring(opts) {
+            return _super.call(this, opts) || this;
         }
-        getDefaultShape() {
+        Ring.prototype.getDefaultShape = function () {
             return new RingShape();
-        }
-        buildPath(ctx, shape) {
-            const x = shape.cx;
-            const y = shape.cy;
-            const PI2 = Math.PI * 2;
+        };
+        Ring.prototype.buildPath = function (ctx, shape) {
+            var x = shape.cx;
+            var y = shape.cy;
+            var PI2 = Math.PI * 2;
+            if (this.roughness) {
+                var fill = typeof this.style.fill === 'string' ? this.style.fill : undefined;
+                var rc = rough.canvas(ctx, {
+                    options: {
+                        roughness: this.roughness,
+                        fillStyle: this.filler,
+                        fill: fill,
+                    },
+                });
+                var r = shape.r;
+                var r0 = shape.r0;
+                var outer = "M " + (x + r) + " " + y + " A " + r + " " + r + " 0 1 0 " + (x - r) + " " + y + " A " + r + " " + r + " 0 1 0 " + (x + r) + " " + y + " Z";
+                var inner = "M " + (x + r0) + " " + y + " A " + r0 + " " + r0 + " 0 1 1 " + (x - r0) + " " + y + " A " + r0 + " " + r0 + " 0 1 1 " + (x + r0) + " " + y + " Z";
+                rc.path(outer + ' ' + inner);
+                return;
+            }
             ctx.moveTo(x + shape.r, y);
             ctx.arc(x, y, shape.r, 0, PI2, false);
             ctx.moveTo(x + shape.r0, y);
             ctx.arc(x, y, shape.r0, 0, PI2, true);
-        }
-    }
+        };
+        return Ring;
+    }(Path));
     Ring.prototype.type = 'ring';
 
     function smoothBezier(points, smooth, isLoop, constraint) {
-        const cps = [];
-        const v = [];
-        const v1 = [];
-        const v2 = [];
-        let prevPoint;
-        let nextPoint;
-        let min$1;
-        let max$1;
+        var cps = [];
+        var v = [];
+        var v1 = [];
+        var v2 = [];
+        var prevPoint;
+        var nextPoint;
+        var min$1;
+        var max$1;
         if (constraint) {
             min$1 = [Infinity, Infinity];
             max$1 = [-Infinity, -Infinity];
-            for (let i = 0, len = points.length; i < len; i++) {
+            for (var i = 0, len = points.length; i < len; i++) {
                 min(min$1, min$1, points[i]);
                 max(max$1, max$1, points[i]);
             }
             min(min$1, min$1, constraint[0]);
             max(max$1, max$1, constraint[1]);
         }
-        for (let i = 0, len = points.length; i < len; i++) {
-            const point = points[i];
+        for (var i = 0, len = points.length; i < len; i++) {
+            var point = points[i];
             if (isLoop) {
                 prevPoint = points[i ? i - 1 : len - 1];
                 nextPoint = points[(i + 1) % len];
@@ -13736,17 +14861,17 @@
             }
             sub(v, nextPoint, prevPoint);
             scale(v, v, smooth);
-            let d0 = distance(point, prevPoint);
-            let d1 = distance(point, nextPoint);
-            const sum = d0 + d1;
+            var d0 = distance(point, prevPoint);
+            var d1 = distance(point, nextPoint);
+            var sum = d0 + d1;
             if (sum !== 0) {
                 d0 /= sum;
                 d1 /= sum;
             }
             scale(v1, v, -d0);
             scale(v2, v, d1);
-            const cp0 = add([], point, v1);
-            const cp1 = add([], point, v2);
+            var cp0 = add([], point, v1);
+            var cp1 = add([], point, v2);
             if (constraint) {
                 max(cp0, cp0, min$1);
                 min(cp0, cp0, max$1);
@@ -13762,24 +14887,24 @@
         return cps;
     }
 
-    function buildPath$1(ctx, shape, closePath) {
-        const smooth = shape.smooth;
-        let points = shape.points;
+    function buildPath$2(ctx, shape, closePath) {
+        var smooth = shape.smooth;
+        var points = shape.points;
         if (points && points.length >= 2) {
             if (smooth) {
-                const controlPoints = smoothBezier(points, smooth, closePath, shape.smoothConstraint);
+                var controlPoints = smoothBezier(points, smooth, closePath, shape.smoothConstraint);
                 ctx.moveTo(points[0][0], points[0][1]);
-                const len = points.length;
-                for (let i = 0; i < (closePath ? len : len - 1); i++) {
-                    const cp1 = controlPoints[i * 2];
-                    const cp2 = controlPoints[i * 2 + 1];
-                    const p = points[(i + 1) % len];
+                var len = points.length;
+                for (var i = 0; i < (closePath ? len : len - 1); i++) {
+                    var cp1 = controlPoints[i * 2];
+                    var cp2 = controlPoints[i * 2 + 1];
+                    var p = points[(i + 1) % len];
                     ctx.bezierCurveTo(cp1[0], cp1[1], cp2[0], cp2[1], p[0], p[1]);
                 }
             }
             else {
                 ctx.moveTo(points[0][0], points[0][1]);
-                for (let i = 1, l = points.length; i < l; i++) {
+                for (var i = 1, l = points.length; i < l; i++) {
                     ctx.lineTo(points[i][0], points[i][1]);
                 }
             }
@@ -13787,85 +14912,117 @@
         }
     }
 
-    class PolygonShape {
-        constructor() {
+    var PolygonShape = (function () {
+        function PolygonShape() {
             this.points = null;
             this.smooth = 0;
             this.smoothConstraint = null;
         }
-    }
-    class Polygon extends Path {
-        constructor(opts) {
-            super(opts);
+        return PolygonShape;
+    }());
+    var Polygon = (function (_super) {
+        __extends$1(Polygon, _super);
+        function Polygon(opts) {
+            return _super.call(this, opts) || this;
         }
-        getDefaultShape() {
+        Polygon.prototype.getDefaultShape = function () {
             return new PolygonShape();
-        }
-        buildPath(ctx, shape) {
-            buildPath$1(ctx, shape, true);
-        }
-    }
+        };
+        Polygon.prototype.buildPath = function (ctx, shape) {
+            if (this.roughness) {
+                var fill = typeof this.style.fill === 'string' ? this.style.fill : undefined;
+                var rc = rough.canvas(ctx, {
+                    options: {
+                        roughness: this.roughness,
+                        fillStyle: this.filler,
+                        fill: fill,
+                    },
+                });
+                if (shape.points) {
+                    rc.polygon(shape.points);
+                }
+                return;
+            }
+            buildPath$2(ctx, shape, true);
+        };
+        return Polygon;
+    }(Path));
     Polygon.prototype.type = 'polygon';
 
-    class PolylineShape {
-        constructor() {
+    var PolylineShape = (function () {
+        function PolylineShape() {
             this.points = null;
             this.percent = 1;
             this.smooth = 0;
             this.smoothConstraint = null;
         }
-    }
-    class Polyline extends Path {
-        constructor(opts) {
-            super(opts);
+        return PolylineShape;
+    }());
+    var Polyline = (function (_super) {
+        __extends$1(Polyline, _super);
+        function Polyline(opts) {
+            return _super.call(this, opts) || this;
         }
-        getDefaultStyle() {
+        Polyline.prototype.getDefaultStyle = function () {
             return {
                 stroke: '#000',
                 fill: null
             };
-        }
-        getDefaultShape() {
+        };
+        Polyline.prototype.getDefaultShape = function () {
             return new PolylineShape();
-        }
-        buildPath(ctx, shape) {
-            buildPath$1(ctx, shape, false);
-        }
-    }
+        };
+        Polyline.prototype.buildPath = function (ctx, shape) {
+            if (this.roughness) {
+                var rc = rough.canvas(ctx, {
+                    options: {
+                        roughness: this.roughness,
+                        fillStyle: this.filler,
+                    },
+                });
+                if (shape.points) {
+                    rc.linearPath(shape.points);
+                }
+                return;
+            }
+            buildPath$2(ctx, shape, false);
+        };
+        return Polyline;
+    }(Path));
     Polyline.prototype.type = 'polyline';
 
-    const subPixelOptimizeOutputShape$1 = {};
-    class LineShape {
-        constructor() {
+    var subPixelOptimizeOutputShape$1 = {};
+    var LineShape = (function () {
+        function LineShape() {
             this.x1 = 0;
             this.y1 = 0;
             this.x2 = 0;
             this.y2 = 0;
             this.percent = 1;
         }
-    }
-    class Line extends Path {
-        constructor(opts) {
-            console.log("line constructor", opts);
-            super(opts);
+        return LineShape;
+    }());
+    var Line = (function (_super) {
+        __extends$1(Line, _super);
+        function Line(opts) {
+            return _super.call(this, opts) || this;
         }
-        getDefaultStyle() {
+        Line.prototype.getDefaultStyle = function () {
             return {
                 stroke: "#000",
                 fill: null,
             };
-        }
-        getDefaultShape() {
+        };
+        Line.prototype.getDefaultShape = function () {
             return new LineShape();
-        }
-        buildPath(ctx, shape) {
-            console.log("line buildPath", this.id, this.roughness);
-            let x1;
-            let y1;
-            let x2;
-            let y2;
+        };
+        Line.prototype.buildPath = function (ctx, shape) {
+            var x1;
+            var y1;
+            var x2;
+            var y2;
             if (this.subPixelOptimize) {
-                const optimizedShape = subPixelOptimizeLine(subPixelOptimizeOutputShape$1, shape, this.style);
+                var optimizedShape = subPixelOptimizeLine(subPixelOptimizeOutputShape$1, shape, this.style);
                 x1 = optimizedShape.x1;
                 y1 = optimizedShape.y1;
                 x2 = optimizedShape.x2;
@@ -13877,17 +15034,17 @@
                 x2 = shape.x2;
                 y2 = shape.y2;
             }
-            const percent = shape.percent;
+            var percent = shape.percent;
             if (percent === 0) {
                 return;
             }
             if (this.roughness) {
-                const rc = at.canvas(null, ctx, {
+                var rc = rough.canvas(ctx, {
                     options: {
                         roughness: this.roughness,
+                        fillStyle: this.filler,
                     },
                 });
-                console.log(rc);
                 rc.line(x1, y1, x2, y2);
                 return;
             }
@@ -13897,36 +15054,38 @@
                 y2 = y1 * (1 - percent) + y2 * percent;
             }
             ctx.lineTo(x2, y2);
-        }
-        getRandomOffset(radius) {
+        };
+        Line.prototype.getRandomOffset = function (radius) {
             return Math.random() * radius * 2 - radius;
-        }
-        drawHandDrawnLine(context, x1, y1, x2, y2, roughness = 1) {
-            const steps = Math.floor(Math.hypot(x2 - x1, y2 - y1) / 10);
+        };
+        Line.prototype.drawHandDrawnLine = function (context, x1, y1, x2, y2, roughness) {
+            if (roughness === void 0) { roughness = 1; }
+            var steps = Math.floor(Math.hypot(x2 - x1, y2 - y1) / 10);
             context.beginPath();
             context.moveTo(x1 + this.getRandomOffset(roughness), y1 + this.getRandomOffset(roughness));
-            for (let i = 1; i <= steps; i++) {
-                const t = i / steps;
-                const x = x1 + t * (x2 - x1);
-                const y = y1 + t * (y2 - y1);
+            for (var i = 1; i <= steps; i++) {
+                var t = i / steps;
+                var x = x1 + t * (x2 - x1);
+                var y = y1 + t * (y2 - y1);
                 context.lineTo(x + this.getRandomOffset(roughness), y + this.getRandomOffset(roughness));
             }
             context.lineTo(x2 + this.getRandomOffset(roughness), y2 + this.getRandomOffset(roughness));
             context.stroke();
-        }
-        pointAt(p) {
-            const shape = this.shape;
+        };
+        Line.prototype.pointAt = function (p) {
+            var shape = this.shape;
             return [
                 shape.x1 * (1 - p) + shape.x2 * p,
                 shape.y1 * (1 - p) + shape.y2 * p,
             ];
-        }
-    }
-    Line.prototype.type = "line";
+        };
+        return Line;
+    }(Path));
+    Line.prototype.type = 'line';
 
-    const out = [];
-    class BezierCurveShape {
-        constructor() {
+    var out = [];
+    var BezierCurveShape = (function () {
+        function BezierCurveShape() {
             this.x1 = 0;
             this.y1 = 0;
             this.x2 = 0;
@@ -13935,10 +15094,11 @@
             this.cpy1 = 0;
             this.percent = 1;
         }
-    }
+        return BezierCurveShape;
+    }());
     function someVectorAt(shape, t, isTangent) {
-        const cpx2 = shape.cpx2;
-        const cpy2 = shape.cpy2;
+        var cpx2 = shape.cpx2;
+        var cpy2 = shape.cpy2;
         if (cpx2 != null || cpy2 != null) {
             return [
                 (isTangent ? cubicDerivativeAt : cubicAt)(shape.x1, shape.cpx1, shape.cpx2, shape.x2, t),
@@ -13952,33 +15112,33 @@
             ];
         }
     }
-    class BezierCurve extends Path {
-        constructor(opts) {
-            super(opts);
+    var BezierCurve = (function (_super) {
+        __extends$1(BezierCurve, _super);
+        function BezierCurve(opts) {
+            return _super.call(this, opts) || this;
         }
-        getDefaultStyle() {
+        BezierCurve.prototype.getDefaultStyle = function () {
             return {
                 stroke: '#000',
                 fill: null
             };
-        }
-        getDefaultShape() {
+        };
+        BezierCurve.prototype.getDefaultShape = function () {
             return new BezierCurveShape();
-        }
-        buildPath(ctx, shape) {
-            let x1 = shape.x1;
-            let y1 = shape.y1;
-            let x2 = shape.x2;
-            let y2 = shape.y2;
-            let cpx1 = shape.cpx1;
-            let cpy1 = shape.cpy1;
-            let cpx2 = shape.cpx2;
-            let cpy2 = shape.cpy2;
-            let percent = shape.percent;
+        };
+        BezierCurve.prototype.buildPath = function (ctx, shape) {
+            var x1 = shape.x1;
+            var y1 = shape.y1;
+            var x2 = shape.x2;
+            var y2 = shape.y2;
+            var cpx1 = shape.cpx1;
+            var cpy1 = shape.cpy1;
+            var cpx2 = shape.cpx2;
+            var cpy2 = shape.cpy2;
+            var percent = shape.percent;
             if (percent === 0) {
                 return;
             }
-            ctx.moveTo(x1, y1);
             if (cpx2 == null || cpy2 == null) {
                 if (percent < 1) {
                     quadraticSubdivide(x1, cpx1, x2, percent, out);
@@ -13988,7 +15148,6 @@
                     cpy1 = out[1];
                     y2 = out[2];
                 }
-                ctx.quadraticCurveTo(cpx1, cpy1, x2, y2);
             }
             else {
                 if (percent < 1) {
@@ -14001,21 +15160,47 @@
                     cpy2 = out[2];
                     y2 = out[3];
                 }
+            }
+            if (this.roughness) {
+                var fill = typeof this.style.fill === 'string' ? this.style.fill : undefined;
+                var rc = rough.canvas(ctx, {
+                    options: {
+                        roughness: this.roughness,
+                        fillStyle: this.filler,
+                        fill: fill,
+                    },
+                });
+                var d = "M " + x1 + " " + y1;
+                if (cpx2 == null || cpy2 == null) {
+                    d += " Q " + cpx1 + " " + cpy1 + " " + x2 + " " + y2;
+                }
+                else {
+                    d += " C " + cpx1 + " " + cpy1 + " " + cpx2 + " " + cpy2 + " " + x2 + " " + y2;
+                }
+                rc.path(d);
+                return;
+            }
+            ctx.moveTo(x1, y1);
+            if (cpx2 == null || cpy2 == null) {
+                ctx.quadraticCurveTo(cpx1, cpy1, x2, y2);
+            }
+            else {
                 ctx.bezierCurveTo(cpx1, cpy1, cpx2, cpy2, x2, y2);
             }
-        }
-        pointAt(t) {
+        };
+        BezierCurve.prototype.pointAt = function (t) {
             return someVectorAt(this.shape, t, false);
-        }
-        tangentAt(t) {
-            const p = someVectorAt(this.shape, t, true);
+        };
+        BezierCurve.prototype.tangentAt = function (t) {
+            var p = someVectorAt(this.shape, t, true);
             return normalize(p, p);
-        }
-    }
+        };
+        return BezierCurve;
+    }(Path));
     BezierCurve.prototype.type = 'bezier-curve';
 
-    class ArcShape {
-        constructor() {
+    var ArcShape = (function () {
+        function ArcShape() {
             this.cx = 0;
             this.cy = 0;
             this.r = 0;
@@ -14023,146 +15208,171 @@
             this.endAngle = Math.PI * 2;
             this.clockwise = true;
         }
-    }
-    class Arc extends Path {
-        constructor(opts) {
-            super(opts);
+        return ArcShape;
+    }());
+    var Arc = (function (_super) {
+        __extends$1(Arc, _super);
+        function Arc(opts) {
+            return _super.call(this, opts) || this;
         }
-        getDefaultStyle() {
+        Arc.prototype.getDefaultStyle = function () {
             return {
-                stroke: "#000",
+                stroke: '#000',
                 fill: null,
             };
-        }
-        getDefaultShape() {
+        };
+        Arc.prototype.getDefaultShape = function () {
             return new ArcShape();
-        }
-        buildPath(ctx, shape) {
-            const x = shape.cx;
-            const y = shape.cy;
-            const r = Math.max(shape.r, 0);
-            const startAngle = shape.startAngle;
-            const endAngle = shape.endAngle;
-            const clockwise = shape.clockwise;
-            const unitX = Math.cos(startAngle);
-            const unitY = Math.sin(startAngle);
+        };
+        Arc.prototype.buildPath = function (ctx, shape) {
+            var x = shape.cx;
+            var y = shape.cy;
+            var r = Math.max(shape.r, 0);
+            var startAngle = shape.startAngle;
+            var endAngle = shape.endAngle;
+            var clockwise = shape.clockwise;
+            var unitX = Math.cos(startAngle);
+            var unitY = Math.sin(startAngle);
+            if (this.roughness) {
+                var fill = typeof this.style.fill === 'string' ? this.style.fill : undefined;
+                var rc = rough.canvas(ctx, {
+                    options: {
+                        roughness: this.roughness,
+                        fillStyle: this.filler,
+                        fill: fill,
+                    },
+                });
+                rc.arc(x, y, r, startAngle, endAngle, !clockwise);
+                return;
+            }
             ctx.moveTo(unitX * r + x, unitY * r + y);
             ctx.arc(x, y, r, startAngle, endAngle, !clockwise);
-        }
-    }
-    Arc.prototype.type = "arc";
+        };
+        return Arc;
+    }(Path));
+    Arc.prototype.type = 'arc';
 
-    class CompoundPath extends Path {
-        constructor() {
-            super(...arguments);
-            this.type = 'compound';
+    var CompoundPath = (function (_super) {
+        __extends$1(CompoundPath, _super);
+        function CompoundPath() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.type = 'compound';
+            return _this;
         }
-        _updatePathDirty() {
-            const paths = this.shape.paths;
-            let dirtyPath = this.shapeChanged();
-            for (let i = 0; i < paths.length; i++) {
+        CompoundPath.prototype._updatePathDirty = function () {
+            var paths = this.shape.paths;
+            var dirtyPath = this.shapeChanged();
+            for (var i = 0; i < paths.length; i++) {
                 dirtyPath = dirtyPath || paths[i].shapeChanged();
             }
             if (dirtyPath) {
                 this.dirtyShape();
             }
-        }
-        beforeBrush() {
+        };
+        CompoundPath.prototype.beforeBrush = function () {
             this._updatePathDirty();
-            const paths = this.shape.paths || [];
-            const scale = this.getGlobalScale();
-            for (let i = 0; i < paths.length; i++) {
+            var paths = this.shape.paths || [];
+            var scale = this.getGlobalScale();
+            for (var i = 0; i < paths.length; i++) {
                 if (!paths[i].path) {
                     paths[i].createPathProxy();
                 }
                 paths[i].path.setScale(scale[0], scale[1], paths[i].segmentIgnoreThreshold);
             }
-        }
-        buildPath(ctx, shape) {
-            const paths = shape.paths || [];
-            for (let i = 0; i < paths.length; i++) {
+        };
+        CompoundPath.prototype.buildPath = function (ctx, shape) {
+            var paths = shape.paths || [];
+            for (var i = 0; i < paths.length; i++) {
                 paths[i].buildPath(ctx, paths[i].shape, true);
             }
-        }
-        afterBrush() {
-            const paths = this.shape.paths || [];
-            for (let i = 0; i < paths.length; i++) {
+        };
+        CompoundPath.prototype.afterBrush = function () {
+            var paths = this.shape.paths || [];
+            for (var i = 0; i < paths.length; i++) {
                 paths[i].pathUpdated();
             }
-        }
-        getBoundingRect() {
+        };
+        CompoundPath.prototype.getBoundingRect = function () {
             this._updatePathDirty.call(this);
             return Path.prototype.getBoundingRect.call(this);
-        }
-    }
+        };
+        return CompoundPath;
+    }(Path));
 
-    class Gradient {
-        constructor(colorStops) {
+    var Gradient = (function () {
+        function Gradient(colorStops) {
             this.colorStops = colorStops || [];
         }
-        addColorStop(offset, color) {
+        Gradient.prototype.addColorStop = function (offset, color) {
             this.colorStops.push({
-                offset,
-                color
+                offset: offset,
+                color: color
             });
-        }
-    }
+        };
+        return Gradient;
+    }());
 
-    class LinearGradient extends Gradient {
-        constructor(x, y, x2, y2, colorStops, globalCoord) {
-            super(colorStops);
-            this.x = x == null ? 0 : x;
-            this.y = y == null ? 0 : y;
-            this.x2 = x2 == null ? 1 : x2;
-            this.y2 = y2 == null ? 0 : y2;
-            this.type = 'linear';
-            this.global = globalCoord || false;
+    var LinearGradient = (function (_super) {
+        __extends$1(LinearGradient, _super);
+        function LinearGradient(x, y, x2, y2, colorStops, globalCoord) {
+            var _this = _super.call(this, colorStops) || this;
+            _this.x = x == null ? 0 : x;
+            _this.y = y == null ? 0 : y;
+            _this.x2 = x2 == null ? 1 : x2;
+            _this.y2 = y2 == null ? 0 : y2;
+            _this.type = 'linear';
+            _this.global = globalCoord || false;
+            return _this;
         }
-    }
+        return LinearGradient;
+    }(Gradient));
 
-    class RadialGradient extends Gradient {
-        constructor(x, y, r, colorStops, globalCoord) {
-            super(colorStops);
-            this.x = x == null ? 0.5 : x;
-            this.y = y == null ? 0.5 : y;
-            this.r = r == null ? 0.5 : r;
-            this.type = 'radial';
-            this.global = globalCoord || false;
+    var RadialGradient = (function (_super) {
+        __extends$1(RadialGradient, _super);
+        function RadialGradient(x, y, r, colorStops, globalCoord) {
+            var _this = _super.call(this, colorStops) || this;
+            _this.x = x == null ? 0.5 : x;
+            _this.y = y == null ? 0.5 : y;
+            _this.r = r == null ? 0.5 : r;
+            _this.type = 'radial';
+            _this.global = globalCoord || false;
+            return _this;
         }
-    }
+        return RadialGradient;
+    }(Gradient));
 
-    const extent = [0, 0];
-    const extent2 = [0, 0];
-    const minTv$1 = new Point();
-    const maxTv$1 = new Point();
-    class OrientedBoundingRect {
-        constructor(rect, transform) {
+    var extent = [0, 0];
+    var extent2 = [0, 0];
+    var minTv$1 = new Point();
+    var maxTv$1 = new Point();
+    var OrientedBoundingRect = (function () {
+        function OrientedBoundingRect(rect, transform) {
             this._corners = [];
             this._axes = [];
             this._origin = [0, 0];
-            for (let i = 0; i < 4; i++) {
+            for (var i = 0; i < 4; i++) {
                 this._corners[i] = new Point();
             }
-            for (let i = 0; i < 2; i++) {
+            for (var i = 0; i < 2; i++) {
                 this._axes[i] = new Point();
             }
             if (rect) {
                 this.fromBoundingRect(rect, transform);
             }
         }
-        fromBoundingRect(rect, transform) {
-            const corners = this._corners;
-            const axes = this._axes;
-            const x = rect.x;
-            const y = rect.y;
-            const x2 = x + rect.width;
-            const y2 = y + rect.height;
+        OrientedBoundingRect.prototype.fromBoundingRect = function (rect, transform) {
+            var corners = this._corners;
+            var axes = this._axes;
+            var x = rect.x;
+            var y = rect.y;
+            var x2 = x + rect.width;
+            var y2 = y + rect.height;
             corners[0].set(x, y);
             corners[1].set(x2, y);
             corners[2].set(x2, y2);
             corners[3].set(x, y2);
             if (transform) {
-                for (let i = 0; i < 4; i++) {
+                for (var i = 0; i < 4; i++) {
                     corners[i].transform(transform);
                 }
             }
@@ -14170,13 +15380,13 @@
             Point.sub(axes[1], corners[3], corners[0]);
             axes[0].normalize();
             axes[1].normalize();
-            for (let i = 0; i < 2; i++) {
+            for (var i = 0; i < 2; i++) {
                 this._origin[i] = axes[i].dot(corners[0]);
             }
-        }
-        intersect(other, mtv) {
-            let overlapped = true;
-            const noMtv = !mtv;
+        };
+        OrientedBoundingRect.prototype.intersect = function (other, mtv) {
+            var overlapped = true;
+            var noMtv = !mtv;
             minTv$1.set(Infinity, Infinity);
             maxTv$1.set(0, 0);
             if (!this._intersectCheckOneSide(this, other, minTv$1, maxTv$1, noMtv, 1)) {
@@ -14195,11 +15405,11 @@
                 Point.copy(mtv, overlapped ? minTv$1 : maxTv$1);
             }
             return overlapped;
-        }
-        _intersectCheckOneSide(self, other, minTv, maxTv, noMtv, inverse) {
-            let overlapped = true;
-            for (let i = 0; i < 2; i++) {
-                const axis = this._axes[i];
+        };
+        OrientedBoundingRect.prototype._intersectCheckOneSide = function (self, other, minTv, maxTv, noMtv, inverse) {
+            var overlapped = true;
+            for (var i = 0; i < 2; i++) {
+                var axis = this._axes[i];
                 this._getProjMinMaxOnAxis(i, self._corners, extent);
                 this._getProjMinMaxOnAxis(i, other._corners, extent2);
                 if (extent[1] < extent2[0] || extent[0] > extent2[1]) {
@@ -14207,8 +15417,8 @@
                     if (noMtv) {
                         return overlapped;
                     }
-                    const dist0 = Math.abs(extent2[0] - extent[1]);
-                    const dist1 = Math.abs(extent[0] - extent2[1]);
+                    var dist0 = Math.abs(extent2[0] - extent[1]);
+                    var dist1 = Math.abs(extent[0] - extent2[1]);
                     if (Math.min(dist0, dist1) > maxTv.len()) {
                         if (dist0 < dist1) {
                             Point.scale(maxTv, axis, -dist0 * inverse);
@@ -14219,8 +15429,8 @@
                     }
                 }
                 else if (minTv) {
-                    const dist0 = Math.abs(extent2[0] - extent[1]);
-                    const dist1 = Math.abs(extent[0] - extent2[1]);
+                    var dist0 = Math.abs(extent2[0] - extent[1]);
+                    var dist1 = Math.abs(extent[0] - extent2[1]);
                     if (Math.min(dist0, dist1) < minTv.len()) {
                         if (dist0 < dist1) {
                             Point.scale(minTv, axis, dist0 * inverse);
@@ -14232,56 +15442,59 @@
                 }
             }
             return overlapped;
-        }
-        _getProjMinMaxOnAxis(dim, corners, out) {
-            const axis = this._axes[dim];
-            const origin = this._origin;
-            const proj = corners[0].dot(axis) + origin[dim];
-            let min = proj;
-            let max = proj;
-            for (let i = 1; i < corners.length; i++) {
-                const proj = corners[i].dot(axis) + origin[dim];
-                min = Math.min(proj, min);
-                max = Math.max(proj, max);
+        };
+        OrientedBoundingRect.prototype._getProjMinMaxOnAxis = function (dim, corners, out) {
+            var axis = this._axes[dim];
+            var origin = this._origin;
+            var proj = corners[0].dot(axis) + origin[dim];
+            var min = proj;
+            var max = proj;
+            for (var i = 1; i < corners.length; i++) {
+                var proj_1 = corners[i].dot(axis) + origin[dim];
+                min = Math.min(proj_1, min);
+                max = Math.max(proj_1, max);
             }
             out[0] = min;
             out[1] = max;
-        }
-    }
+        };
+        return OrientedBoundingRect;
+    }());
 
-    const m$1 = [];
-    class IncrementalDisplayable extends Displayable {
-        constructor() {
-            super(...arguments);
-            this.notClear = true;
-            this.incremental = true;
-            this._displayables = [];
-            this._temporaryDisplayables = [];
-            this._cursor = 0;
+    var m = [];
+    var IncrementalDisplayable = (function (_super) {
+        __extends$1(IncrementalDisplayable, _super);
+        function IncrementalDisplayable() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.notClear = true;
+            _this.incremental = true;
+            _this._displayables = [];
+            _this._temporaryDisplayables = [];
+            _this._cursor = 0;
+            return _this;
         }
-        traverse(cb, context) {
+        IncrementalDisplayable.prototype.traverse = function (cb, context) {
             cb.call(context, this);
-        }
-        useStyle() {
+        };
+        IncrementalDisplayable.prototype.useStyle = function () {
             this.style = {};
-        }
-        getCursor() {
+        };
+        IncrementalDisplayable.prototype.getCursor = function () {
             return this._cursor;
-        }
-        innerAfterBrush() {
+        };
+        IncrementalDisplayable.prototype.innerAfterBrush = function () {
             this._cursor = this._displayables.length;
-        }
-        clearDisplaybles() {
+        };
+        IncrementalDisplayable.prototype.clearDisplaybles = function () {
             this._displayables = [];
             this._temporaryDisplayables = [];
             this._cursor = 0;
             this.markRedraw();
             this.notClear = false;
-        }
-        clearTemporalDisplayables() {
+        };
+        IncrementalDisplayable.prototype.clearTemporalDisplayables = function () {
             this._temporaryDisplayables = [];
-        }
-        addDisplayable(displayable, notPersistent) {
+        };
+        IncrementalDisplayable.prototype.addDisplayable = function (displayable, notPersistent) {
             if (notPersistent) {
                 this._temporaryDisplayables.push(displayable);
             }
@@ -14289,71 +15502,72 @@
                 this._displayables.push(displayable);
             }
             this.markRedraw();
-        }
-        addDisplayables(displayables, notPersistent) {
+        };
+        IncrementalDisplayable.prototype.addDisplayables = function (displayables, notPersistent) {
             notPersistent = notPersistent || false;
-            for (let i = 0; i < displayables.length; i++) {
+            for (var i = 0; i < displayables.length; i++) {
                 this.addDisplayable(displayables[i], notPersistent);
             }
-        }
-        getDisplayables() {
+        };
+        IncrementalDisplayable.prototype.getDisplayables = function () {
             return this._displayables;
-        }
-        getTemporalDisplayables() {
+        };
+        IncrementalDisplayable.prototype.getTemporalDisplayables = function () {
             return this._temporaryDisplayables;
-        }
-        eachPendingDisplayable(cb) {
-            for (let i = this._cursor; i < this._displayables.length; i++) {
+        };
+        IncrementalDisplayable.prototype.eachPendingDisplayable = function (cb) {
+            for (var i = this._cursor; i < this._displayables.length; i++) {
                 cb && cb(this._displayables[i]);
             }
-            for (let i = 0; i < this._temporaryDisplayables.length; i++) {
+            for (var i = 0; i < this._temporaryDisplayables.length; i++) {
                 cb && cb(this._temporaryDisplayables[i]);
             }
-        }
-        update() {
+        };
+        IncrementalDisplayable.prototype.update = function () {
             this.updateTransform();
-            for (let i = this._cursor; i < this._displayables.length; i++) {
-                const displayable = this._displayables[i];
+            for (var i = this._cursor; i < this._displayables.length; i++) {
+                var displayable = this._displayables[i];
                 displayable.parent = this;
                 displayable.update();
                 displayable.parent = null;
             }
-            for (let i = 0; i < this._temporaryDisplayables.length; i++) {
-                const displayable = this._temporaryDisplayables[i];
+            for (var i = 0; i < this._temporaryDisplayables.length; i++) {
+                var displayable = this._temporaryDisplayables[i];
                 displayable.parent = this;
                 displayable.update();
                 displayable.parent = null;
             }
-        }
-        getBoundingRect() {
+        };
+        IncrementalDisplayable.prototype.getBoundingRect = function () {
             if (!this._rect) {
-                const rect = new BoundingRect(Infinity, Infinity, -Infinity, -Infinity);
-                for (let i = 0; i < this._displayables.length; i++) {
-                    const displayable = this._displayables[i];
-                    const childRect = displayable.getBoundingRect().clone();
+                var rect = new BoundingRect(Infinity, Infinity, -Infinity, -Infinity);
+                for (var i = 0; i < this._displayables.length; i++) {
+                    var displayable = this._displayables[i];
+                    var childRect = displayable.getBoundingRect().clone();
                     if (displayable.needLocalTransform()) {
-                        childRect.applyTransform(displayable.getLocalTransform(m$1));
+                        childRect.applyTransform(displayable.getLocalTransform(m));
                     }
                     rect.union(childRect);
                 }
                 this._rect = rect;
             }
             return this._rect;
-        }
-        contain(x, y) {
-            const localPos = this.transformCoordToLocal(x, y);
-            const rect = this.getBoundingRect();
+        };
+        IncrementalDisplayable.prototype.contain = function (x, y) {
+            var localPos = this.transformCoordToLocal(x, y);
+            var rect = this.getBoundingRect();
             if (rect.contain(localPos[0], localPos[1])) {
-                for (let i = 0; i < this._displayables.length; i++) {
-                    const displayable = this._displayables[i];
+                for (var i = 0; i < this._displayables.length; i++) {
+                    var displayable = this._displayables[i];
                     if (displayable.contain(x, y)) {
                         return true;
                     }
                 }
             }
             return false;
-        }
-    }
+        };
+        return IncrementalDisplayable;
+    }(Displayable));
 
     // Stored properties for further transition.
     var transitionStore = makeInner();
@@ -16679,6 +17893,22 @@
      * @param {number} [height=Infinity]
      */
     var box = boxLayout;
+    /**
+     * VBox layouting
+     * @param {module:zrender/graphic/Group} group
+     * @param {number} gap
+     * @param {number} [width=Infinity]
+     * @param {number} [height=Infinity]
+     */
+    var vbox = curry(boxLayout, 'vertical');
+    /**
+     * HBox layouting
+     * @param {module:zrender/graphic/Group} group
+     * @param {number} gap
+     * @param {number} [width=Infinity]
+     * @param {number} [height=Infinity]
+     */
+    var hbox = curry(boxLayout, 'horizontal');
     /**
      * If x or x2 is not specified or 'center' 'left' 'right',
      * the width would be as long as possible.
@@ -24862,17 +26092,17 @@
       return found;
     }
 
-    let wmUniqueIndex = Math.round(Math.random() * 9);
-    const supportDefineProperty = typeof Object.defineProperty === 'function';
-    class WeakMap {
-        constructor() {
+    var wmUniqueIndex = Math.round(Math.random() * 9);
+    var supportDefineProperty = typeof Object.defineProperty === 'function';
+    var WeakMap = (function () {
+        function WeakMap() {
             this._id = '__ec_inner_' + wmUniqueIndex++;
         }
-        get(key) {
+        WeakMap.prototype.get = function (key) {
             return this._guard(key)[this._id];
-        }
-        set(key, value) {
-            const target = this._guard(key);
+        };
+        WeakMap.prototype.set = function (key, value) {
+            var target = this._guard(key);
             if (supportDefineProperty) {
                 Object.defineProperty(target, this._id, {
                     value: value,
@@ -24884,24 +26114,25 @@
                 target[this._id] = value;
             }
             return this;
-        }
-        delete(key) {
+        };
+        WeakMap.prototype.delete = function (key) {
             if (this.has(key)) {
                 delete this._guard(key)[this._id];
                 return true;
             }
             return false;
-        }
-        has(key) {
+        };
+        WeakMap.prototype.has = function (key) {
             return !!this._guard(key)[this._id];
-        }
-        _guard(key) {
+        };
+        WeakMap.prototype._guard = function (key) {
             if (key !== Object(key)) {
                 throw TypeError('Value of WeakMap is not a non-null object.');
             }
             return key;
-        }
-    }
+        };
+        return WeakMap;
+    }());
 
     /**
      * Triangle shape
@@ -25196,10 +26427,10 @@
         return isFinite(num);
     }
     function createLinearGradient(ctx, obj, rect) {
-        let x = obj.x == null ? 0 : obj.x;
-        let x2 = obj.x2 == null ? 1 : obj.x2;
-        let y = obj.y == null ? 0 : obj.y;
-        let y2 = obj.y2 == null ? 0 : obj.y2;
+        var x = obj.x == null ? 0 : obj.x;
+        var x2 = obj.x2 == null ? 1 : obj.x2;
+        var y = obj.y == null ? 0 : obj.y;
+        var y2 = obj.y2 == null ? 0 : obj.y2;
         if (!obj.global) {
             x = x * rect.width + rect.x;
             x2 = x2 * rect.width + rect.x;
@@ -25210,16 +26441,16 @@
         x2 = isSafeNum(x2) ? x2 : 1;
         y = isSafeNum(y) ? y : 0;
         y2 = isSafeNum(y2) ? y2 : 0;
-        const canvasGradient = ctx.createLinearGradient(x, y, x2, y2);
+        var canvasGradient = ctx.createLinearGradient(x, y, x2, y2);
         return canvasGradient;
     }
     function createRadialGradient(ctx, obj, rect) {
-        const width = rect.width;
-        const height = rect.height;
-        const min = Math.min(width, height);
-        let x = obj.x == null ? 0.5 : obj.x;
-        let y = obj.y == null ? 0.5 : obj.y;
-        let r = obj.r == null ? 0.5 : obj.r;
+        var width = rect.width;
+        var height = rect.height;
+        var min = Math.min(width, height);
+        var x = obj.x == null ? 0.5 : obj.x;
+        var y = obj.y == null ? 0.5 : obj.y;
+        var r = obj.r == null ? 0.5 : obj.r;
         if (!obj.global) {
             x = x * width + rect.x;
             y = y * height + rect.y;
@@ -25228,15 +26459,15 @@
         x = isSafeNum(x) ? x : 0.5;
         y = isSafeNum(y) ? y : 0.5;
         r = r >= 0 && isSafeNum(r) ? r : 0.5;
-        const canvasGradient = ctx.createRadialGradient(x, y, 0, x, y, r);
+        var canvasGradient = ctx.createRadialGradient(x, y, 0, x, y, r);
         return canvasGradient;
     }
     function getCanvasGradient(ctx, obj, rect) {
-        const canvasGradient = obj.type === 'radial'
+        var canvasGradient = obj.type === 'radial'
             ? createRadialGradient(ctx, obj, rect)
             : createLinearGradient(ctx, obj, rect);
-        const colorStops = obj.colorStops;
-        for (let i = 0; i < colorStops.length; i++) {
+        var colorStops = obj.colorStops;
+        for (var i = 0; i < colorStops.length; i++) {
             canvasGradient.addColorStop(colorStops[i].offset, colorStops[i].color);
         }
         return canvasGradient;
@@ -25248,7 +26479,7 @@
         if (!clipPaths || !prevClipPaths || (clipPaths.length !== prevClipPaths.length)) {
             return true;
         }
-        for (let i = 0; i < clipPaths.length; i++) {
+        for (var i = 0; i < clipPaths.length; i++) {
             if (clipPaths[i] !== prevClipPaths[i]) {
                 return true;
             }
@@ -25259,14 +26490,14 @@
         return parseInt(val, 10);
     }
     function getSize(root, whIdx, opts) {
-        const wh = ['width', 'height'][whIdx];
-        const cwh = ['clientWidth', 'clientHeight'][whIdx];
-        const plt = ['paddingLeft', 'paddingTop'][whIdx];
-        const prb = ['paddingRight', 'paddingBottom'][whIdx];
+        var wh = ['width', 'height'][whIdx];
+        var cwh = ['clientWidth', 'clientHeight'][whIdx];
+        var plt = ['paddingLeft', 'paddingTop'][whIdx];
+        var prb = ['paddingRight', 'paddingBottom'][whIdx];
         if (opts[wh] != null && opts[wh] !== 'auto') {
             return parseFloat(opts[wh]);
         }
-        const stl = document.defaultView.getComputedStyle(root);
+        var stl = document.defaultView.getComputedStyle(root);
         return ((root[cwh] || parseInt10(stl[wh]) || parseInt10(root.style[wh]))
             - (parseInt10(stl[plt]) || 0)
             - (parseInt10(stl[prb]) || 0)) | 0;
@@ -25284,36 +26515,36 @@
                     ? [lineType] : isArray(lineType) ? lineType : null;
     }
     function getLineDash(el) {
-        const style = el.style;
-        let lineDash = style.lineDash && style.lineWidth > 0 && normalizeLineDash(style.lineDash, style.lineWidth);
-        let lineDashOffset = style.lineDashOffset;
+        var style = el.style;
+        var lineDash = style.lineDash && style.lineWidth > 0 && normalizeLineDash(style.lineDash, style.lineWidth);
+        var lineDashOffset = style.lineDashOffset;
         if (lineDash) {
-            const lineScale = (style.strokeNoScale && el.getLineScale) ? el.getLineScale() : 1;
-            if (lineScale && lineScale !== 1) {
+            var lineScale_1 = (style.strokeNoScale && el.getLineScale) ? el.getLineScale() : 1;
+            if (lineScale_1 && lineScale_1 !== 1) {
                 lineDash = map(lineDash, function (rawVal) {
-                    return rawVal / lineScale;
+                    return rawVal / lineScale_1;
                 });
-                lineDashOffset /= lineScale;
+                lineDashOffset /= lineScale_1;
             }
         }
         return [lineDash, lineDashOffset];
     }
 
-    const pathProxyForDraw = new PathProxy(true);
+    var pathProxyForDraw = new PathProxy(true);
     function styleHasStroke(style) {
-        const stroke = style.stroke;
+        var stroke = style.stroke;
         return !(stroke == null || stroke === 'none' || !(style.lineWidth > 0));
     }
     function isValidStrokeFillStyle(strokeOrFill) {
         return typeof strokeOrFill === 'string' && strokeOrFill !== 'none';
     }
     function styleHasFill(style) {
-        const fill = style.fill;
+        var fill = style.fill;
         return fill != null && fill !== 'none';
     }
     function doFillPath(ctx, style) {
         if (style.fillOpacity != null && style.fillOpacity !== 1) {
-            const originalGlobalAlpha = ctx.globalAlpha;
+            var originalGlobalAlpha = ctx.globalAlpha;
             ctx.globalAlpha = style.fillOpacity * style.opacity;
             ctx.fill();
             ctx.globalAlpha = originalGlobalAlpha;
@@ -25324,7 +26555,7 @@
     }
     function doStrokePath(ctx, style) {
         if (style.strokeOpacity != null && style.strokeOpacity !== 1) {
-            const originalGlobalAlpha = ctx.globalAlpha;
+            var originalGlobalAlpha = ctx.globalAlpha;
             ctx.globalAlpha = style.strokeOpacity * style.opacity;
             ctx.stroke();
             ctx.globalAlpha = originalGlobalAlpha;
@@ -25334,13 +26565,13 @@
         }
     }
     function createCanvasPattern(ctx, pattern, el) {
-        const image = createOrUpdateImage(pattern.image, pattern.__image, el);
+        var image = createOrUpdateImage(pattern.image, pattern.__image, el);
         if (isImageReady(image)) {
-            const canvasPattern = ctx.createPattern(image, pattern.repeat || 'repeat');
+            var canvasPattern = ctx.createPattern(image, pattern.repeat || 'repeat');
             if (typeof DOMMatrix === 'function'
                 && canvasPattern
                 && canvasPattern.setTransform) {
-                const matrix = new DOMMatrix();
+                var matrix = new DOMMatrix();
                 matrix.translateSelf((pattern.x || 0), (pattern.y || 0));
                 matrix.rotateSelf(0, 0, (pattern.rotation || 0) * RADIAN_TO_DEGREE);
                 matrix.scaleSelf((pattern.scaleX || 1), (pattern.scaleY || 1));
@@ -25350,28 +26581,29 @@
         }
     }
     function brushPath(ctx, el, style, inBatch) {
-        let hasStroke = styleHasStroke(style);
-        let hasFill = styleHasFill(style);
-        const strokePercent = style.strokePercent;
-        const strokePart = strokePercent < 1;
-        const firstDraw = !el.path;
+        var _a;
+        var hasStroke = styleHasStroke(style);
+        var hasFill = styleHasFill(style);
+        var strokePercent = style.strokePercent;
+        var strokePart = strokePercent < 1;
+        var firstDraw = !el.path;
         if ((!el.silent || strokePart) && firstDraw) {
             el.createPathProxy();
         }
-        const path = el.path || pathProxyForDraw;
-        const dirtyFlag = el.__dirty;
+        var path = el.path || pathProxyForDraw;
+        var dirtyFlag = el.__dirty;
         if (!inBatch) {
-            const fill = style.fill;
-            const stroke = style.stroke;
-            const hasFillGradient = hasFill && !!fill.colorStops;
-            const hasStrokeGradient = hasStroke && !!stroke.colorStops;
-            const hasFillPattern = hasFill && !!fill.image;
-            const hasStrokePattern = hasStroke && !!stroke.image;
-            let fillGradient;
-            let strokeGradient;
-            let fillPattern;
-            let strokePattern;
-            let rect;
+            var fill = style.fill;
+            var stroke = style.stroke;
+            var hasFillGradient = hasFill && !!fill.colorStops;
+            var hasStrokeGradient = hasStroke && !!stroke.colorStops;
+            var hasFillPattern = hasFill && !!fill.image;
+            var hasStrokePattern = hasStroke && !!stroke.image;
+            var fillGradient = void 0;
+            var strokeGradient = void 0;
+            var fillPattern = void 0;
+            var strokePattern = void 0;
+            var rect = void 0;
             if (hasFillGradient || hasStrokeGradient) {
                 rect = el.getBoundingRect();
             }
@@ -25422,14 +26654,14 @@
                 }
             }
         }
-        const scale = el.getGlobalScale();
+        var scale = el.getGlobalScale();
         path.setScale(scale[0], scale[1], el.segmentIgnoreThreshold);
-        let lineDash;
-        let lineDashOffset;
+        var lineDash;
+        var lineDashOffset;
         if (ctx.setLineDash && style.lineDash) {
-            [lineDash, lineDashOffset] = getLineDash(el);
+            _a = getLineDash(el), lineDash = _a[0], lineDashOffset = _a[1];
         }
-        let needsRebuild = true;
+        var needsRebuild = true;
         if (firstDraw || (dirtyFlag & SHAPE_CHANGED_BIT)) {
             path.setDPR(ctx.dpr);
             if (strokePart) {
@@ -25474,15 +26706,15 @@
         }
     }
     function brushImage(ctx, el, style) {
-        const image = el.__image = createOrUpdateImage(style.image, el.__image, el, el.onload);
+        var image = el.__image = createOrUpdateImage(style.image, el.__image, el, el.onload);
         if (!image || !isImageReady(image)) {
             return;
         }
-        const x = style.x || 0;
-        const y = style.y || 0;
-        let width = el.getWidth();
-        let height = el.getHeight();
-        const aspect = image.width / image.height;
+        var x = style.x || 0;
+        var y = style.y || 0;
+        var width = el.getWidth();
+        var height = el.getHeight();
+        var aspect = image.width / image.height;
         if (width == null && height != null) {
             width = height * aspect;
         }
@@ -25494,15 +26726,15 @@
             height = image.height;
         }
         if (style.sWidth && style.sHeight) {
-            const sx = style.sx || 0;
-            const sy = style.sy || 0;
+            var sx = style.sx || 0;
+            var sy = style.sy || 0;
             ctx.drawImage(image, sx, sy, style.sWidth, style.sHeight, x, y, width, height);
         }
         else if (style.sx && style.sy) {
-            const sx = style.sx;
-            const sy = style.sy;
-            const sWidth = width - sx;
-            const sHeight = height - sy;
+            var sx = style.sx;
+            var sy = style.sy;
+            var sWidth = width - sx;
+            var sHeight = height - sy;
             ctx.drawImage(image, sx, sy, sWidth, sHeight, x, y, width, height);
         }
         else {
@@ -25510,16 +26742,17 @@
         }
     }
     function brushText(ctx, el, style) {
-        let text = style.text;
+        var _a;
+        var text = style.text;
         text != null && (text += '');
         if (text) {
             ctx.font = style.font || DEFAULT_FONT;
             ctx.textAlign = style.textAlign;
             ctx.textBaseline = style.textBaseline;
-            let lineDash;
-            let lineDashOffset;
+            var lineDash = void 0;
+            var lineDashOffset = void 0;
             if (ctx.setLineDash && style.lineDash) {
-                [lineDash, lineDashOffset] = getLineDash(el);
+                _a = getLineDash(el), lineDash = _a[0], lineDashOffset = _a[1];
             }
             if (lineDash) {
                 ctx.setLineDash(lineDash);
@@ -25546,12 +26779,12 @@
             }
         }
     }
-    const SHADOW_NUMBER_PROPS = ['shadowBlur', 'shadowOffsetX', 'shadowOffsetY'];
-    const STROKE_PROPS = [
+    var SHADOW_NUMBER_PROPS = ['shadowBlur', 'shadowOffsetX', 'shadowOffsetY'];
+    var STROKE_PROPS = [
         ['lineCap', 'butt'], ['lineJoin', 'miter'], ['miterLimit', 10]
     ];
     function bindCommonProps(ctx, style, prevStyle, forceSetAll, scope) {
-        let styleChanged = false;
+        var styleChanged = false;
         if (!forceSetAll) {
             prevStyle = prevStyle || {};
             if (style === prevStyle) {
@@ -25561,7 +26794,7 @@
         if (forceSetAll || style.opacity !== prevStyle.opacity) {
             flushPathDrawn(ctx, scope);
             styleChanged = true;
-            const opacity = Math.max(Math.min(style.opacity, 1), 0);
+            var opacity = Math.max(Math.min(style.opacity, 1), 0);
             ctx.globalAlpha = isNaN(opacity) ? DEFAULT_COMMON_STYLE.opacity : opacity;
         }
         if (forceSetAll || style.blend !== prevStyle.blend) {
@@ -25571,8 +26804,8 @@
             }
             ctx.globalCompositeOperation = style.blend || DEFAULT_COMMON_STYLE.blend;
         }
-        for (let i = 0; i < SHADOW_NUMBER_PROPS.length; i++) {
-            const propName = SHADOW_NUMBER_PROPS[i];
+        for (var i = 0; i < SHADOW_NUMBER_PROPS.length; i++) {
+            var propName = SHADOW_NUMBER_PROPS[i];
             if (forceSetAll || style[propName] !== prevStyle[propName]) {
                 if (!styleChanged) {
                     flushPathDrawn(ctx, scope);
@@ -25591,14 +26824,14 @@
         return styleChanged;
     }
     function bindPathAndTextCommonStyle(ctx, el, prevEl, forceSetAll, scope) {
-        const style = getStyle(el, scope.inHover);
-        const prevStyle = forceSetAll
+        var style = getStyle(el, scope.inHover);
+        var prevStyle = forceSetAll
             ? null
             : (prevEl && getStyle(prevEl, scope.inHover) || {});
         if (style === prevStyle) {
             return false;
         }
-        let styleChanged = bindCommonProps(ctx, style, prevStyle, forceSetAll, scope);
+        var styleChanged = bindCommonProps(ctx, style, prevStyle, forceSetAll, scope);
         if (forceSetAll || style.fill !== prevStyle.fill) {
             if (!styleChanged) {
                 flushPathDrawn(ctx, scope);
@@ -25621,8 +26854,8 @@
             ctx.globalAlpha = style.opacity == null ? 1 : style.opacity;
         }
         if (el.hasStroke()) {
-            const lineWidth = style.lineWidth;
-            const newLineWidth = lineWidth / ((style.strokeNoScale && el.getLineScale) ? el.getLineScale() : 1);
+            var lineWidth = style.lineWidth;
+            var newLineWidth = lineWidth / ((style.strokeNoScale && el.getLineScale) ? el.getLineScale() : 1);
             if (ctx.lineWidth !== newLineWidth) {
                 if (!styleChanged) {
                     flushPathDrawn(ctx, scope);
@@ -25631,9 +26864,9 @@
                 ctx.lineWidth = newLineWidth;
             }
         }
-        for (let i = 0; i < STROKE_PROPS.length; i++) {
-            const prop = STROKE_PROPS[i];
-            const propName = prop[0];
+        for (var i = 0; i < STROKE_PROPS.length; i++) {
+            var prop = STROKE_PROPS[i];
+            var propName = prop[0];
             if (forceSetAll || style[propName] !== prevStyle[propName]) {
                 if (!styleChanged) {
                     flushPathDrawn(ctx, scope);
@@ -25648,8 +26881,8 @@
         return bindCommonProps(ctx, getStyle(el, scope.inHover), prevEl && getStyle(prevEl, scope.inHover), forceSetAll, scope);
     }
     function setContextTransform(ctx, el) {
-        const m = el.transform;
-        const dpr = ctx.dpr || 1;
+        var m = el.transform;
+        var dpr = ctx.dpr || 1;
         if (m) {
             ctx.setTransform(dpr * m[0], dpr * m[1], dpr * m[2], dpr * m[3], dpr * m[4], dpr * m[5]);
         }
@@ -25658,9 +26891,9 @@
         }
     }
     function updateClipStatus(clipPaths, ctx, scope) {
-        let allClipped = false;
-        for (let i = 0; i < clipPaths.length; i++) {
-            const clipPath = clipPaths[i];
+        var allClipped = false;
+        for (var i = 0; i < clipPaths.length; i++) {
+            var clipPath = clipPaths[i];
             allClipped = allClipped || clipPath.isZeroArea();
             setContextTransform(ctx, clipPath);
             ctx.beginPath();
@@ -25683,13 +26916,13 @@
         }
         return true;
     }
-    const DRAW_TYPE_PATH = 1;
-    const DRAW_TYPE_IMAGE = 2;
-    const DRAW_TYPE_TEXT = 3;
-    const DRAW_TYPE_INCREMENTAL = 4;
+    var DRAW_TYPE_PATH = 1;
+    var DRAW_TYPE_IMAGE = 2;
+    var DRAW_TYPE_TEXT = 3;
+    var DRAW_TYPE_INCREMENTAL = 4;
     function canPathBatch(style) {
-        const hasFill = styleHasFill(style);
-        const hasStroke = styleHasStroke(style);
+        var hasFill = styleHasFill(style);
+        var hasStroke = styleHasStroke(style);
         return !(style.lineDash
             || !(+hasFill ^ +hasStroke)
             || (hasFill && typeof style.fill !== 'string')
@@ -25711,17 +26944,17 @@
         brush(ctx, el, { inHover: false, viewWidth: 0, viewHeight: 0 }, true);
     }
     function brush(ctx, el, scope, isLast, roughness) {
-        const m = el.transform;
+        var m = el.transform;
         console.log("brush roughness", roughness);
         if (!el.shouldBePainted(scope.viewWidth, scope.viewHeight, false, false)) {
             el.__dirty &= ~REDRAW_BIT;
             el.__isRendered = false;
             return;
         }
-        const clipPaths = el.__clipPaths;
-        const prevElClipPaths = scope.prevElClipPaths;
-        let forceSetTransform = false;
-        let forceSetStyle = false;
+        var clipPaths = el.__clipPaths;
+        var prevElClipPaths = scope.prevElClipPaths;
+        var forceSetTransform = false;
+        var forceSetStyle = false;
         if (!prevElClipPaths || isClipPathChanged(clipPaths, prevElClipPaths)) {
             if (prevElClipPaths && prevElClipPaths.length) {
                 flushPathDrawn(ctx, scope);
@@ -25745,11 +26978,11 @@
         }
         el.beforeBrush && el.beforeBrush();
         el.innerBeforeBrush();
-        const prevEl = scope.prevEl;
+        var prevEl = scope.prevEl;
         if (!prevEl) {
             forceSetStyle = forceSetTransform = true;
         }
-        let canBatchPath = el instanceof Path
+        var canBatchPath = el instanceof Path
             && el.autoBatch
             && canPathBatch(el.style);
         if (forceSetTransform || isTransformChanged(m, prevEl.transform)) {
@@ -25759,7 +26992,7 @@
         else if (!canBatchPath) {
             flushPathDrawn(ctx, scope);
         }
-        const style = getStyle(el, scope.inHover);
+        var style = getStyle(el, scope.inHover);
         if (el instanceof Path) {
             if (scope.lastDrawType !== DRAW_TYPE_PATH) {
                 forceSetStyle = true;
@@ -25810,10 +27043,10 @@
         el.__isRendered = true;
     }
     function brushIncremental(ctx, el, scope) {
-        let displayables = el.getDisplayables();
-        let temporalDisplayables = el.getTemporalDisplayables();
+        var displayables = el.getDisplayables();
+        var temporalDisplayables = el.getTemporalDisplayables();
         ctx.save();
-        let innerScope = {
+        var innerScope = {
             prevElClipPaths: null,
             prevEl: null,
             allClipped: false,
@@ -25821,10 +27054,10 @@
             viewHeight: scope.viewHeight,
             inHover: scope.inHover
         };
-        let i;
-        let len;
+        var i;
+        var len;
         for (i = el.getCursor(), len = displayables.length; i < len; i++) {
-            const displayable = displayables[i];
+            var displayable = displayables[i];
             displayable.beforeBrush && displayable.beforeBrush();
             displayable.innerBeforeBrush();
             brush(ctx, displayable, innerScope, i === len - 1);
@@ -25832,11 +27065,11 @@
             displayable.afterBrush && displayable.afterBrush();
             innerScope.prevEl = displayable;
         }
-        for (let i = 0, len = temporalDisplayables.length; i < len; i++) {
-            const displayable = temporalDisplayables[i];
+        for (var i_1 = 0, len_1 = temporalDisplayables.length; i_1 < len_1; i_1++) {
+            var displayable = temporalDisplayables[i_1];
             displayable.beforeBrush && displayable.beforeBrush();
             displayable.innerBeforeBrush();
-            brush(ctx, displayable, innerScope, i === len - 1);
+            brush(ctx, displayable, innerScope, i_1 === len_1 - 1);
             displayable.innerAfterBrush();
             displayable.afterBrush && displayable.afterBrush();
             innerScope.prevEl = displayable;
@@ -26401,7 +27634,7 @@
           });
         }
         var zr = _this._zr = init(dom, {
-          roughness: 3,
+          roughness: opts.roughness,
           renderer: opts.renderer || defaultRenderer,
           devicePixelRatio: opts.devicePixelRatio,
           width: opts.width,
@@ -32888,22 +34121,22 @@
         enableHoverEmphasis: enableHoverEmphasis
     });
 
-    const EPSILON$4 = 1e-8;
+    var EPSILON$4 = 1e-8;
     function isAroundEqual$1(a, b) {
         return Math.abs(a - b) < EPSILON$4;
     }
     function contain$2(points, x, y) {
-        let w = 0;
-        let p = points[0];
+        var w = 0;
+        var p = points[0];
         if (!p) {
             return false;
         }
-        for (let i = 1; i < points.length; i++) {
-            const p2 = points[i];
+        for (var i = 1; i < points.length; i++) {
+            var p2 = points[i];
             w += windingLine(p[0], p[1], p2[0], p2[1], x, y);
             p = p2;
         }
-        const p0 = points[0];
+        var p0 = points[0];
         if (!isAroundEqual$1(p[0], p0[0]) || !isAroundEqual$1(p[1], p0[1])) {
             w += windingLine(p[0], p[1], p0[0], p0[1], x, y);
         }
@@ -35072,41 +36305,43 @@
       });
     }
 
-    const mathSin$4 = Math.sin;
-    const mathCos$4 = Math.cos;
-    const PI$4 = Math.PI;
-    const PI2$7 = Math.PI * 2;
-    const degree = 180 / PI$4;
-    class SVGPathRebuilder {
-        reset(precision) {
+    var mathSin$4 = Math.sin;
+    var mathCos$4 = Math.cos;
+    var PI$4 = Math.PI;
+    var PI2$7 = Math.PI * 2;
+    var degree = 180 / PI$4;
+    var SVGPathRebuilder = (function () {
+        function SVGPathRebuilder() {
+        }
+        SVGPathRebuilder.prototype.reset = function (precision) {
             this._start = true;
             this._d = [];
             this._str = '';
             this._p = Math.pow(10, precision || 4);
-        }
-        moveTo(x, y) {
+        };
+        SVGPathRebuilder.prototype.moveTo = function (x, y) {
             this._add('M', x, y);
-        }
-        lineTo(x, y) {
+        };
+        SVGPathRebuilder.prototype.lineTo = function (x, y) {
             this._add('L', x, y);
-        }
-        bezierCurveTo(x, y, x2, y2, x3, y3) {
+        };
+        SVGPathRebuilder.prototype.bezierCurveTo = function (x, y, x2, y2, x3, y3) {
             this._add('C', x, y, x2, y2, x3, y3);
-        }
-        quadraticCurveTo(x, y, x2, y2) {
+        };
+        SVGPathRebuilder.prototype.quadraticCurveTo = function (x, y, x2, y2) {
             this._add('Q', x, y, x2, y2);
-        }
-        arc(cx, cy, r, startAngle, endAngle, anticlockwise) {
+        };
+        SVGPathRebuilder.prototype.arc = function (cx, cy, r, startAngle, endAngle, anticlockwise) {
             this.ellipse(cx, cy, r, r, 0, startAngle, endAngle, anticlockwise);
-        }
-        ellipse(cx, cy, rx, ry, psi, startAngle, endAngle, anticlockwise) {
-            let dTheta = endAngle - startAngle;
-            const clockwise = !anticlockwise;
-            const dThetaPositive = Math.abs(dTheta);
-            const isCircle = isAroundZero$1(dThetaPositive - PI2$7)
+        };
+        SVGPathRebuilder.prototype.ellipse = function (cx, cy, rx, ry, psi, startAngle, endAngle, anticlockwise) {
+            var dTheta = endAngle - startAngle;
+            var clockwise = !anticlockwise;
+            var dThetaPositive = Math.abs(dTheta);
+            var isCircle = isAroundZero$1(dThetaPositive - PI2$7)
                 || (clockwise ? dTheta >= PI2$7 : -dTheta >= PI2$7);
-            const unifiedTheta = dTheta > 0 ? dTheta % PI2$7 : (dTheta % PI2$7 + PI2$7);
-            let large = false;
+            var unifiedTheta = dTheta > 0 ? dTheta % PI2$7 : (dTheta % PI2$7 + PI2$7);
+            var large = false;
             if (isCircle) {
                 large = true;
             }
@@ -35116,43 +36351,43 @@
             else {
                 large = (unifiedTheta >= PI$4) === !!clockwise;
             }
-            const x0 = cx + rx * mathCos$4(startAngle);
-            const y0 = cy + ry * mathSin$4(startAngle);
+            var x0 = cx + rx * mathCos$4(startAngle);
+            var y0 = cy + ry * mathSin$4(startAngle);
             if (this._start) {
                 this._add('M', x0, y0);
             }
-            const xRot = Math.round(psi * degree);
+            var xRot = Math.round(psi * degree);
             if (isCircle) {
-                const p = 1 / this._p;
-                const dTheta = (clockwise ? 1 : -1) * (PI2$7 - p);
-                this._add('A', rx, ry, xRot, 1, +clockwise, cx + rx * mathCos$4(startAngle + dTheta), cy + ry * mathSin$4(startAngle + dTheta));
+                var p = 1 / this._p;
+                var dTheta_1 = (clockwise ? 1 : -1) * (PI2$7 - p);
+                this._add('A', rx, ry, xRot, 1, +clockwise, cx + rx * mathCos$4(startAngle + dTheta_1), cy + ry * mathSin$4(startAngle + dTheta_1));
                 if (p > 1e-2) {
                     this._add('A', rx, ry, xRot, 0, +clockwise, x0, y0);
                 }
             }
             else {
-                const x = cx + rx * mathCos$4(endAngle);
-                const y = cy + ry * mathSin$4(endAngle);
+                var x = cx + rx * mathCos$4(endAngle);
+                var y = cy + ry * mathSin$4(endAngle);
                 this._add('A', rx, ry, xRot, +large, +clockwise, x, y);
             }
-        }
-        rect(x, y, w, h) {
+        };
+        SVGPathRebuilder.prototype.rect = function (x, y, w, h) {
             this._add('M', x, y);
             this._add('l', w, 0);
             this._add('l', 0, h);
             this._add('l', -w, 0);
             this._add('Z');
-        }
-        closePath() {
+        };
+        SVGPathRebuilder.prototype.closePath = function () {
             if (this._d.length > 0) {
                 this._add('Z');
             }
-        }
-        _add(cmd, a, b, c, d, e, f, g, h) {
-            const vals = [];
-            const p = this._p;
-            for (let i = 1; i < arguments.length; i++) {
-                const val = arguments[i];
+        };
+        SVGPathRebuilder.prototype._add = function (cmd, a, b, c, d, e, f, g, h) {
+            var vals = [];
+            var p = this._p;
+            for (var i = 1; i < arguments.length; i++) {
+                var val = arguments[i];
                 if (isNaN(val)) {
                     this._invalid = true;
                     return;
@@ -35161,38 +36396,39 @@
             }
             this._d.push(cmd + vals.join(' '));
             this._start = cmd === 'Z';
-        }
-        generateStr() {
+        };
+        SVGPathRebuilder.prototype.generateStr = function () {
             this._str = this._invalid ? '' : this._d.join('');
             this._d = [];
-        }
-        getStr() {
+        };
+        SVGPathRebuilder.prototype.getStr = function () {
             return this._str;
-        }
-    }
+        };
+        return SVGPathRebuilder;
+    }());
 
-    const NONE = 'none';
-    const mathRound$1 = Math.round;
+    var NONE = 'none';
+    var mathRound$1 = Math.round;
     function pathHasFill(style) {
-        const fill = style.fill;
+        var fill = style.fill;
         return fill != null && fill !== NONE;
     }
     function pathHasStroke(style) {
-        const stroke = style.stroke;
+        var stroke = style.stroke;
         return stroke != null && stroke !== NONE;
     }
-    const strokeProps = ['lineCap', 'miterLimit', 'lineJoin'];
-    const svgStrokeProps = map(strokeProps, prop => `stroke-${prop.toLowerCase()}`);
+    var strokeProps = ['lineCap', 'miterLimit', 'lineJoin'];
+    var svgStrokeProps = map(strokeProps, function (prop) { return "stroke-" + prop.toLowerCase(); });
     function mapStyleToAttrs(updateAttr, style, el, forceUpdate) {
-        const opacity = style.opacity == null ? 1 : style.opacity;
+        var opacity = style.opacity == null ? 1 : style.opacity;
         if (el instanceof ZRImage) {
             updateAttr('opacity', opacity);
             return;
         }
         if (pathHasFill(style)) {
-            const fill = normalizeColor(style.fill);
+            var fill = normalizeColor(style.fill);
             updateAttr('fill', fill.color);
-            const fillOpacity = style.fillOpacity != null
+            var fillOpacity = style.fillOpacity != null
                 ? style.fillOpacity * fill.opacity * opacity
                 : fill.opacity * opacity;
             if (forceUpdate || fillOpacity < 1) {
@@ -35203,16 +36439,16 @@
             updateAttr('fill', NONE);
         }
         if (pathHasStroke(style)) {
-            const stroke = normalizeColor(style.stroke);
+            var stroke = normalizeColor(style.stroke);
             updateAttr('stroke', stroke.color);
-            const strokeScale = style.strokeNoScale
+            var strokeScale = style.strokeNoScale
                 ? el.getLineScale()
                 : 1;
-            const strokeWidth = (strokeScale ? (style.lineWidth || 0) / strokeScale : 0);
-            const strokeOpacity = style.strokeOpacity != null
+            var strokeWidth = (strokeScale ? (style.lineWidth || 0) / strokeScale : 0);
+            var strokeOpacity = style.strokeOpacity != null
                 ? style.strokeOpacity * stroke.opacity * opacity
                 : stroke.opacity * opacity;
-            const strokeFirst = style.strokeFirst;
+            var strokeFirst = style.strokeFirst;
             if (forceUpdate || strokeWidth !== 1) {
                 updateAttr('stroke-width', strokeWidth);
             }
@@ -35223,7 +36459,7 @@
                 updateAttr('stroke-opacity', strokeOpacity);
             }
             if (style.lineDash) {
-                let [lineDash, lineDashOffset] = getLineDash(el);
+                var _a = getLineDash(el), lineDash = _a[0], lineDashOffset = _a[1];
                 if (lineDash) {
                     lineDashOffset = mathRound$1(lineDashOffset || 0);
                     updateAttr('stroke-dasharray', lineDash.join(','));
@@ -35235,10 +36471,10 @@
             else if (forceUpdate) {
                 updateAttr('stroke-dasharray', NONE);
             }
-            for (let i = 0; i < strokeProps.length; i++) {
-                const propName = strokeProps[i];
+            for (var i = 0; i < strokeProps.length; i++) {
+                var propName = strokeProps[i];
                 if (forceUpdate || style[propName] !== DEFAULT_PATH_STYLE[propName]) {
-                    const val = style[propName] || DEFAULT_PATH_STYLE[propName];
+                    var val = style[propName] || DEFAULT_PATH_STYLE[propName];
                     val && updateAttr(svgStrokeProps[i], val);
                 }
             }
@@ -35248,73 +36484,73 @@
         }
     }
 
-    const SVGNS = 'http://www.w3.org/2000/svg';
-    const XLINKNS = 'http://www.w3.org/1999/xlink';
-    const XMLNS = 'http://www.w3.org/2000/xmlns/';
-    const XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace';
-    const META_DATA_PREFIX = 'ecmeta_';
+    var SVGNS = 'http://www.w3.org/2000/svg';
+    var XLINKNS = 'http://www.w3.org/1999/xlink';
+    var XMLNS = 'http://www.w3.org/2000/xmlns/';
+    var XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace';
+    var META_DATA_PREFIX = 'ecmeta_';
     function createElement(name) {
         return document.createElementNS(SVGNS, name);
     }
     function createVNode(tag, key, attrs, children, text) {
         return {
-            tag,
+            tag: tag,
             attrs: attrs || {},
-            children,
-            text,
-            key
+            children: children,
+            text: text,
+            key: key
         };
     }
     function createElementOpen(name, attrs) {
-        const attrsStr = [];
+        var attrsStr = [];
         if (attrs) {
-            for (let key in attrs) {
-                const val = attrs[key];
-                let part = key;
+            for (var key in attrs) {
+                var val = attrs[key];
+                var part = key;
                 if (val === false) {
                     continue;
                 }
                 else if (val !== true && val != null) {
-                    part += `="${val}"`;
+                    part += "=\"" + val + "\"";
                 }
                 attrsStr.push(part);
             }
         }
-        return `<${name} ${attrsStr.join(' ')}>`;
+        return "<" + name + " " + attrsStr.join(' ') + ">";
     }
     function createElementClose(name) {
-        return `</${name}>`;
+        return "</" + name + ">";
     }
     function vNodeToString(el, opts) {
         opts = opts || {};
-        const S = opts.newline ? '\n' : '';
+        var S = opts.newline ? '\n' : '';
         function convertElToString(el) {
-            const { children, tag, attrs, text } = el;
+            var children = el.children, tag = el.tag, attrs = el.attrs, text = el.text;
             return createElementOpen(tag, attrs)
                 + (tag !== 'style' ? encodeHTML(text) : text || '')
-                + (children ? `${S}${map(children, child => convertElToString(child)).join(S)}${S}` : '')
+                + (children ? "" + S + map(children, function (child) { return convertElToString(child); }).join(S) + S : '')
                 + createElementClose(tag);
         }
         return convertElToString(el);
     }
     function getCssString(selectorNodes, animationNodes, opts) {
         opts = opts || {};
-        const S = opts.newline ? '\n' : '';
-        const bracketBegin = ` {${S}`;
-        const bracketEnd = `${S}}`;
-        const selectors = map(keys(selectorNodes), className => {
-            return className + bracketBegin + map(keys(selectorNodes[className]), attrName => {
-                return `${attrName}:${selectorNodes[className][attrName]};`;
+        var S = opts.newline ? '\n' : '';
+        var bracketBegin = " {" + S;
+        var bracketEnd = S + "}";
+        var selectors = map(keys(selectorNodes), function (className) {
+            return className + bracketBegin + map(keys(selectorNodes[className]), function (attrName) {
+                return attrName + ":" + selectorNodes[className][attrName] + ";";
             }).join(S) + bracketEnd;
         }).join(S);
-        const animations = map(keys(animationNodes), (animationName) => {
-            return `@keyframes ${animationName}${bracketBegin}` + map(keys(animationNodes[animationName]), percent => {
-                return percent + bracketBegin + map(keys(animationNodes[animationName][percent]), attrName => {
-                    let val = animationNodes[animationName][percent][attrName];
+        var animations = map(keys(animationNodes), function (animationName) {
+            return "@keyframes " + animationName + bracketBegin + map(keys(animationNodes[animationName]), function (percent) {
+                return percent + bracketBegin + map(keys(animationNodes[animationName][percent]), function (attrName) {
+                    var val = animationNodes[animationName][percent][attrName];
                     if (attrName === 'd') {
-                        val = `path("${val}")`;
+                        val = "path(\"" + val + "\")";
                     }
-                    return `${attrName}:${val};`;
+                    return attrName + ":" + val + ";";
                 }).join(S) + bracketEnd;
             }).join(S) + bracketEnd;
         }).join(S);
@@ -35325,7 +36561,7 @@
     }
     function createBrushScope(zrId) {
         return {
-            zrId,
+            zrId: zrId,
             shadowCache: {},
             patternCache: {},
             gradientCache: {},
@@ -35349,16 +36585,16 @@
             'xmlns:xlink': XLINKNS,
             'version': '1.1',
             'baseProfile': 'full',
-            'viewBox': useViewBox ? `0 0 ${width} ${height}` : false
+            'viewBox': useViewBox ? "0 0 " + width + " " + height : false
         }, children);
     }
 
-    let cssClassIdx = 0;
+    var cssClassIdx = 0;
     function getClassId() {
         return cssClassIdx++;
     }
 
-    const EASING_MAP = {
+    var EASING_MAP = {
         cubicIn: '0.32,0,0.67,0',
         cubicOut: '0.33,1,0.68,1',
         cubicInOut: '0.65,0,0.35,1',
@@ -35381,59 +36617,59 @@
         circularOut: '0,0.55,0.45,1',
         circularInOut: '0.85,0,0.15,1'
     };
-    const transformOriginKey = 'transform-origin';
+    var transformOriginKey = 'transform-origin';
     function buildPathString(el, kfShape, path) {
-        const shape = extend({}, el.shape);
+        var shape = extend({}, el.shape);
         extend(shape, kfShape);
         el.buildPath(path, shape);
-        const svgPathBuilder = new SVGPathRebuilder();
+        var svgPathBuilder = new SVGPathRebuilder();
         svgPathBuilder.reset(getPathPrecision(el));
         path.rebuildPath(svgPathBuilder, 1);
         svgPathBuilder.generateStr();
         return svgPathBuilder.getStr();
     }
     function setTransformOrigin(target, transform) {
-        const { originX, originY } = transform;
+        var originX = transform.originX, originY = transform.originY;
         if (originX || originY) {
-            target[transformOriginKey] = `${originX}px ${originY}px`;
+            target[transformOriginKey] = originX + "px " + originY + "px";
         }
     }
-    const ANIMATE_STYLE_MAP = {
+    var ANIMATE_STYLE_MAP = {
         fill: 'fill',
         opacity: 'opacity',
         lineWidth: 'stroke-width',
         lineDashOffset: 'stroke-dashoffset'
     };
     function addAnimation(cssAnim, scope) {
-        const animationName = scope.zrId + '-ani-' + scope.cssAnimIdx++;
+        var animationName = scope.zrId + '-ani-' + scope.cssAnimIdx++;
         scope.cssAnims[animationName] = cssAnim;
         return animationName;
     }
     function createCompoundPathCSSAnimation(el, attrs, scope) {
-        const paths = el.shape.paths;
-        const composedAnim = {};
-        let cssAnimationCfg;
-        let cssAnimationName;
-        each(paths, path => {
-            const subScope = createBrushScope(scope.zrId);
+        var paths = el.shape.paths;
+        var composedAnim = {};
+        var cssAnimationCfg;
+        var cssAnimationName;
+        each(paths, function (path) {
+            var subScope = createBrushScope(scope.zrId);
             subScope.animation = true;
             createCSSAnimation(path, {}, subScope, true);
-            const cssAnims = subScope.cssAnims;
-            const cssNodes = subScope.cssNodes;
-            const animNames = keys(cssAnims);
-            const len = animNames.length;
+            var cssAnims = subScope.cssAnims;
+            var cssNodes = subScope.cssNodes;
+            var animNames = keys(cssAnims);
+            var len = animNames.length;
             if (!len) {
                 return;
             }
             cssAnimationName = animNames[len - 1];
-            const lastAnim = cssAnims[cssAnimationName];
-            for (let percent in lastAnim) {
-                const kf = lastAnim[percent];
+            var lastAnim = cssAnims[cssAnimationName];
+            for (var percent in lastAnim) {
+                var kf = lastAnim[percent];
                 composedAnim[percent] = composedAnim[percent] || { d: '' };
                 composedAnim[percent].d += kf.d || '';
             }
-            for (let className in cssNodes) {
-                const val = cssNodes[className].animation;
+            for (var className in cssNodes) {
+                var val = cssNodes[className].animation;
                 if (val.indexOf(cssAnimationName) >= 0) {
                     cssAnimationCfg = val;
                 }
@@ -35443,22 +36679,22 @@
             return;
         }
         attrs.d = false;
-        const animationName = addAnimation(composedAnim, scope);
+        var animationName = addAnimation(composedAnim, scope);
         return cssAnimationCfg.replace(cssAnimationName, animationName);
     }
     function getEasingFunc(easing) {
         return isString(easing)
             ? EASING_MAP[easing]
-                ? `cubic-bezier(${EASING_MAP[easing]})`
+                ? "cubic-bezier(" + EASING_MAP[easing] + ")"
                 : createCubicEasingFunc(easing) ? easing : ''
             : '';
     }
     function createCSSAnimation(el, attrs, scope, onlyShape) {
-        const animators = el.animators;
-        const len = animators.length;
-        const cssAnimations = [];
+        var animators = el.animators;
+        var len = animators.length;
+        var cssAnimations = [];
         if (el instanceof CompoundPath) {
-            const animationCfg = createCompoundPathCSSAnimation(el, attrs, scope);
+            var animationCfg = createCompoundPathCSSAnimation(el, attrs, scope);
             if (animationCfg) {
                 cssAnimations.push(animationCfg);
             }
@@ -35469,12 +36705,12 @@
         else if (!len) {
             return;
         }
-        const groupAnimators = {};
-        for (let i = 0; i < len; i++) {
-            const animator = animators[i];
-            const cfgArr = [animator.getMaxTime() / 1000 + 's'];
-            const easing = getEasingFunc(animator.getClip().easing);
-            const delay = animator.getDelay();
+        var groupAnimators = {};
+        for (var i = 0; i < len; i++) {
+            var animator = animators[i];
+            var cfgArr = [animator.getMaxTime() / 1000 + 's'];
+            var easing = getEasingFunc(animator.getClip().easing);
+            var delay = animator.getDelay();
             if (easing) {
                 cfgArr.push(easing);
             }
@@ -35487,32 +36723,32 @@
             if (animator.getLoop()) {
                 cfgArr.push('infinite');
             }
-            const cfg = cfgArr.join(' ');
+            var cfg = cfgArr.join(' ');
             groupAnimators[cfg] = groupAnimators[cfg] || [cfg, []];
             groupAnimators[cfg][1].push(animator);
         }
         function createSingleCSSAnimation(groupAnimator) {
-            const animators = groupAnimator[1];
-            const len = animators.length;
-            const transformKfs = {};
-            const shapeKfs = {};
-            const finalKfs = {};
-            const animationTimingFunctionAttrName = 'animation-timing-function';
+            var animators = groupAnimator[1];
+            var len = animators.length;
+            var transformKfs = {};
+            var shapeKfs = {};
+            var finalKfs = {};
+            var animationTimingFunctionAttrName = 'animation-timing-function';
             function saveAnimatorTrackToCssKfs(animator, cssKfs, toCssAttrName) {
-                const tracks = animator.getTracks();
-                const maxTime = animator.getMaxTime();
-                for (let k = 0; k < tracks.length; k++) {
-                    const track = tracks[k];
+                var tracks = animator.getTracks();
+                var maxTime = animator.getMaxTime();
+                for (var k = 0; k < tracks.length; k++) {
+                    var track = tracks[k];
                     if (track.needsAnimate()) {
-                        const kfs = track.keyframes;
-                        let attrName = track.propName;
+                        var kfs = track.keyframes;
+                        var attrName = track.propName;
                         toCssAttrName && (attrName = toCssAttrName(attrName));
                         if (attrName) {
-                            for (let i = 0; i < kfs.length; i++) {
-                                const kf = kfs[i];
-                                const percent = Math.round(kf.time / maxTime * 100) + '%';
-                                const kfEasing = getEasingFunc(kf.easing);
-                                const rawValue = kf.rawValue;
+                            for (var i = 0; i < kfs.length; i++) {
+                                var kf = kfs[i];
+                                var percent = Math.round(kf.time / maxTime * 100) + '%';
+                                var kfEasing = getEasingFunc(kf.easing);
+                                var rawValue = kf.rawValue;
                                 if (isString(rawValue) || isNumber(rawValue)) {
                                     cssKfs[percent] = cssKfs[percent] || {};
                                     cssKfs[percent][attrName] = kf.rawValue;
@@ -35525,9 +36761,9 @@
                     }
                 }
             }
-            for (let i = 0; i < len; i++) {
-                const animator = animators[i];
-                const targetProp = animator.targetName;
+            for (var i = 0; i < len; i++) {
+                var animator = animators[i];
+                var targetProp = animator.targetName;
                 if (!targetProp) {
                     !onlyShape && saveAnimatorTrackToCssKfs(animator, transformKfs);
                 }
@@ -35535,12 +36771,12 @@
                     saveAnimatorTrackToCssKfs(animator, shapeKfs);
                 }
             }
-            for (let percent in transformKfs) {
-                const transform = {};
+            for (var percent in transformKfs) {
+                var transform = {};
                 copyTransform(transform, el);
                 extend(transform, transformKfs[percent]);
-                const str = getSRTTransformString(transform);
-                const timingFunction = transformKfs[percent][animationTimingFunctionAttrName];
+                var str = getSRTTransformString(transform);
+                var timingFunction = transformKfs[percent][animationTimingFunctionAttrName];
                 finalKfs[percent] = str ? {
                     transform: str
                 } : {};
@@ -35549,20 +36785,20 @@
                     finalKfs[percent][animationTimingFunctionAttrName] = timingFunction;
                 }
             }
-            let path;
-            let canAnimateShape = true;
-            for (let percent in shapeKfs) {
+            var path;
+            var canAnimateShape = true;
+            for (var percent in shapeKfs) {
                 finalKfs[percent] = finalKfs[percent] || {};
-                const isFirst = !path;
-                const timingFunction = shapeKfs[percent][animationTimingFunctionAttrName];
+                var isFirst = !path;
+                var timingFunction = shapeKfs[percent][animationTimingFunctionAttrName];
                 if (isFirst) {
                     path = new PathProxy();
                 }
-                let len = path.len();
+                var len_1 = path.len();
                 path.reset();
                 finalKfs[percent].d = buildPathString(el, shapeKfs[percent], path);
-                let newLen = path.len();
-                if (!isFirst && len !== newLen) {
+                var newLen = path.len();
+                if (!isFirst && len_1 !== newLen) {
                     canAnimateShape = false;
                     break;
                 }
@@ -35571,25 +36807,25 @@
                 }
             }
             if (!canAnimateShape) {
-                for (let percent in finalKfs) {
+                for (var percent in finalKfs) {
                     delete finalKfs[percent].d;
                 }
             }
             if (!onlyShape) {
-                for (let i = 0; i < len; i++) {
-                    const animator = animators[i];
-                    const targetProp = animator.targetName;
+                for (var i = 0; i < len; i++) {
+                    var animator = animators[i];
+                    var targetProp = animator.targetName;
                     if (targetProp === 'style') {
-                        saveAnimatorTrackToCssKfs(animator, finalKfs, (propName) => ANIMATE_STYLE_MAP[propName]);
+                        saveAnimatorTrackToCssKfs(animator, finalKfs, function (propName) { return ANIMATE_STYLE_MAP[propName]; });
                     }
                 }
             }
-            const percents = keys(finalKfs);
-            let allTransformOriginSame = true;
-            let transformOrigin;
-            for (let i = 1; i < percents.length; i++) {
-                const p0 = percents[i - 1];
-                const p1 = percents[i];
+            var percents = keys(finalKfs);
+            var allTransformOriginSame = true;
+            var transformOrigin;
+            for (var i = 1; i < percents.length; i++) {
+                var p0 = percents[i - 1];
+                var p1 = percents[i];
                 if (finalKfs[p0][transformOriginKey] !== finalKfs[p1][transformOriginKey]) {
                     allTransformOriginSame = false;
                     break;
@@ -35597,26 +36833,26 @@
                 transformOrigin = finalKfs[p0][transformOriginKey];
             }
             if (allTransformOriginSame && transformOrigin) {
-                for (const percent in finalKfs) {
+                for (var percent in finalKfs) {
                     if (finalKfs[percent][transformOriginKey]) {
                         delete finalKfs[percent][transformOriginKey];
                     }
                 }
                 attrs[transformOriginKey] = transformOrigin;
             }
-            if (filter(percents, (percent) => keys(finalKfs[percent]).length > 0).length) {
-                const animationName = addAnimation(finalKfs, scope);
-                return `${animationName} ${groupAnimator[0]} both`;
+            if (filter(percents, function (percent) { return keys(finalKfs[percent]).length > 0; }).length) {
+                var animationName = addAnimation(finalKfs, scope);
+                return animationName + " " + groupAnimator[0] + " both";
             }
         }
-        for (let key in groupAnimators) {
-            const animationCfg = createSingleCSSAnimation(groupAnimators[key]);
+        for (var key in groupAnimators) {
+            var animationCfg = createSingleCSSAnimation(groupAnimators[key]);
             if (animationCfg) {
                 cssAnimations.push(animationCfg);
             }
         }
         if (cssAnimations.length) {
-            const className = scope.zrId + '-cls-' + getClassId();
+            var className = scope.zrId + '-cls-' + getClassId();
             scope.cssNodes['.' + className] = {
                 animation: cssAnimations.join(',')
             };
@@ -35627,36 +36863,36 @@
     function createCSSEmphasis(el, attrs, scope) {
         if (!el.ignore) {
             if (el.isSilent()) {
-                const style = {
+                var style = {
                     'pointer-events': 'none'
                 };
                 setClassAttribute(style, attrs, scope, true);
             }
             else {
-                const emphasisStyle = el.states.emphasis && el.states.emphasis.style
+                var emphasisStyle = el.states.emphasis && el.states.emphasis.style
                     ? el.states.emphasis.style
                     : {};
-                let fill = emphasisStyle.fill;
+                var fill = emphasisStyle.fill;
                 if (!fill) {
-                    const normalFill = el.style && el.style.fill;
-                    const selectFill = el.states.select
+                    var normalFill = el.style && el.style.fill;
+                    var selectFill = el.states.select
                         && el.states.select.style
                         && el.states.select.style.fill;
-                    const fromFill = el.currentStates.indexOf('select') >= 0
+                    var fromFill = el.currentStates.indexOf('select') >= 0
                         ? (selectFill || normalFill)
                         : normalFill;
                     if (fromFill) {
                         fill = liftColor(fromFill);
                     }
                 }
-                let lineWidth = emphasisStyle.lineWidth;
+                var lineWidth = emphasisStyle.lineWidth;
                 if (lineWidth) {
-                    const scaleX = (!emphasisStyle.strokeNoScale && el.transform)
+                    var scaleX = (!emphasisStyle.strokeNoScale && el.transform)
                         ? el.transform[0]
                         : 1;
                     lineWidth = lineWidth / scaleX;
                 }
-                const style = {
+                var style = {
                     cursor: 'pointer',
                 };
                 if (fill) {
@@ -35673,8 +36909,8 @@
         }
     }
     function setClassAttribute(style, attrs, scope, withHover) {
-        const styleKey = JSON.stringify(style);
-        let className = scope.cssStyleCache[styleKey];
+        var styleKey = JSON.stringify(style);
+        var className = scope.cssStyleCache[styleKey];
         if (!className) {
             className = scope.zrId + '-cls-' + getClassId();
             scope.cssStyleCache[styleKey] = className;
@@ -35683,7 +36919,7 @@
         attrs.class = attrs.class ? (attrs.class + ' ' + className) : className;
     }
 
-    const round$2 = Math.round;
+    var round$2 = Math.round;
     function isImageLike$1(val) {
         return val && isString(val.src);
     }
@@ -35691,8 +36927,8 @@
         return val && isFunction(val.toDataURL);
     }
     function setStyleAttrs(attrs, style, el, scope) {
-        mapStyleToAttrs((key, val) => {
-            const isFillStroke = key === 'fill' || key === 'stroke';
+        mapStyleToAttrs(function (key, val) {
+            var isFillStroke = key === 'fill' || key === 'stroke';
             if (isFillStroke && isGradient(val)) {
                 setGradient(style, attrs, key, scope);
             }
@@ -35709,9 +36945,9 @@
         setShadow(el, attrs, scope);
     }
     function setMetaData(attrs, el) {
-        const metaData = getElementSSRData(el);
+        var metaData = getElementSSRData(el);
         if (metaData) {
-            metaData.each((val, key) => {
+            metaData.each(function (val, key) {
                 val != null && (attrs[(META_DATA_PREFIX + key).toLowerCase()] = val + '');
             });
             if (el.isSilent()) {
@@ -35730,15 +36966,15 @@
     }
     function setTransform(attrs, m, compress) {
         if (m && !(noTranslate(m) && noRotateScale(m))) {
-            const mul = compress ? 10 : 1e4;
+            var mul = compress ? 10 : 1e4;
             attrs.transform = noRotateScale(m)
-                ? `translate(${round$2(m[4] * mul) / mul} ${round$2(m[5] * mul) / mul})` : getMatrixStr(m);
+                ? "translate(" + round$2(m[4] * mul) / mul + " " + round$2(m[5] * mul) / mul + ")" : getMatrixStr(m);
         }
     }
     function convertPolyShape(shape, attrs, mul) {
-        const points = shape.points;
-        const strArr = [];
-        for (let i = 0; i < points.length; i++) {
+        var points = shape.points;
+        var strArr = [];
+        for (var i = 0; i < points.length; i++) {
             strArr.push(round$2(points[i][0] * mul) / mul);
             strArr.push(round$2(points[i][1] * mul) / mul);
         }
@@ -35748,25 +36984,27 @@
         return !shape.smooth;
     }
     function createAttrsConvert(desc) {
-        const normalizedDesc = map(desc, (item) => (typeof item === 'string' ? [item, item] : item));
+        var normalizedDesc = map(desc, function (item) {
+            return (typeof item === 'string' ? [item, item] : item);
+        });
         return function (shape, attrs, mul) {
-            for (let i = 0; i < normalizedDesc.length; i++) {
-                const item = normalizedDesc[i];
-                const val = shape[item[0]];
+            for (var i = 0; i < normalizedDesc.length; i++) {
+                var item = normalizedDesc[i];
+                var val = shape[item[0]];
                 if (val != null) {
                     attrs[item[1]] = round$2(val * mul) / mul;
                 }
             }
         };
     }
-    const builtinShapesDef = {
+    var builtinShapesDef = {
         circle: [createAttrsConvert(['cx', 'cy', 'r'])],
         polyline: [convertPolyShape, validatePolyShape],
         polygon: [convertPolyShape, validatePolyShape]
     };
     function hasShapeAnimation(el) {
-        const animators = el.animators;
-        for (let i = 0; i < animators.length; i++) {
+        var animators = el.animators;
+        for (var i = 0; i < animators.length; i++) {
             if (animators[i].targetName === 'shape') {
                 return true;
             }
@@ -35774,37 +37012,37 @@
         return false;
     }
     function brushSVGPath(el, scope) {
-        const style = el.style;
-        const shape = el.shape;
-        const builtinShpDef = builtinShapesDef[el.type];
-        const attrs = {};
-        const needsAnimate = scope.animation;
-        let svgElType = 'path';
-        const strokePercent = el.style.strokePercent;
-        const precision = (scope.compress && getPathPrecision(el)) || 4;
+        var style = el.style;
+        var shape = el.shape;
+        var builtinShpDef = builtinShapesDef[el.type];
+        var attrs = {};
+        var needsAnimate = scope.animation;
+        var svgElType = 'path';
+        var strokePercent = el.style.strokePercent;
+        var precision = (scope.compress && getPathPrecision(el)) || 4;
         if (builtinShpDef
             && !scope.willUpdate
             && !(builtinShpDef[1] && !builtinShpDef[1](shape))
             && !(needsAnimate && hasShapeAnimation(el))
             && !(strokePercent < 1)) {
             svgElType = el.type;
-            const mul = Math.pow(10, precision);
+            var mul = Math.pow(10, precision);
             builtinShpDef[0](shape, attrs, mul);
         }
         else {
-            const needBuildPath = !el.path || el.shapeChanged();
+            var needBuildPath = !el.path || el.shapeChanged();
             if (!el.path) {
                 el.createPathProxy();
             }
-            const path = el.path;
+            var path = el.path;
             if (needBuildPath) {
                 path.beginPath();
                 el.buildPath(path, el.shape);
                 el.pathUpdated();
             }
-            const pathVersion = path.getVersion();
-            const elExt = el;
-            let svgPathBuilder = elExt.__svgPathBuilder;
+            var pathVersion = path.getVersion();
+            var elExt = el;
+            var svgPathBuilder = elExt.__svgPathBuilder;
             if (elExt.__svgPathVersion !== pathVersion
                 || !svgPathBuilder
                 || strokePercent !== elExt.__svgPathStrokePercent) {
@@ -35827,8 +37065,8 @@
         return createVNode(svgElType, el.id + '', attrs);
     }
     function brushSVGImage(el, scope) {
-        const style = el.style;
-        let image = style.image;
+        var style = el.style;
+        var image = style.image;
         if (image && !isString(image)) {
             if (isImageLike$1(image)) {
                 image = image.src;
@@ -35840,11 +37078,11 @@
         if (!image) {
             return;
         }
-        const x = style.x || 0;
-        const y = style.y || 0;
-        const dw = style.width;
-        const dh = style.height;
-        const attrs = {
+        var x = style.x || 0;
+        var y = style.y || 0;
+        var dw = style.width;
+        var dh = style.height;
+        var attrs = {
             href: image,
             width: dw,
             height: dh
@@ -35862,41 +37100,41 @@
         return createVNode('image', el.id + '', attrs);
     }
     function brushSVGTSpan(el, scope) {
-        const style = el.style;
-        let text = style.text;
+        var style = el.style;
+        var text = style.text;
         text != null && (text += '');
         if (!text || isNaN(style.x) || isNaN(style.y)) {
             return;
         }
-        const font = style.font || DEFAULT_FONT;
-        const x = style.x || 0;
-        const y = adjustTextY(style.y || 0, getLineHeight(font), style.textBaseline);
-        const textAlign = TEXT_ALIGN_TO_ANCHOR[style.textAlign]
+        var font = style.font || DEFAULT_FONT;
+        var x = style.x || 0;
+        var y = adjustTextY(style.y || 0, getLineHeight(font), style.textBaseline);
+        var textAlign = TEXT_ALIGN_TO_ANCHOR[style.textAlign]
             || style.textAlign;
-        const attrs = {
+        var attrs = {
             'dominant-baseline': 'central',
             'text-anchor': textAlign
         };
         if (hasSeparateFont(style)) {
-            let separatedFontStr = '';
-            const fontStyle = style.fontStyle;
-            const fontSize = parseFontSize(style.fontSize);
+            var separatedFontStr = '';
+            var fontStyle = style.fontStyle;
+            var fontSize = parseFontSize(style.fontSize);
             if (!parseFloat(fontSize)) {
                 return;
             }
-            const fontFamily = style.fontFamily || DEFAULT_FONT_FAMILY;
-            const fontWeight = style.fontWeight;
-            separatedFontStr += `font-size:${fontSize};font-family:${fontFamily};`;
+            var fontFamily = style.fontFamily || DEFAULT_FONT_FAMILY;
+            var fontWeight = style.fontWeight;
+            separatedFontStr += "font-size:" + fontSize + ";font-family:" + fontFamily + ";";
             if (fontStyle && fontStyle !== 'normal') {
-                separatedFontStr += `font-style:${fontStyle};`;
+                separatedFontStr += "font-style:" + fontStyle + ";";
             }
             if (fontWeight && fontWeight !== 'normal') {
-                separatedFontStr += `font-weight:${fontWeight};`;
+                separatedFontStr += "font-weight:" + fontWeight + ";";
             }
             attrs.style = separatedFontStr;
         }
         else {
-            attrs.style = `font: ${font}`;
+            attrs.style = "font: " + font;
         }
         if (text.match(/\s/)) {
             attrs['xml:space'] = 'preserve';
@@ -35925,25 +37163,25 @@
         }
     }
     function setShadow(el, attrs, scope) {
-        const style = el.style;
+        var style = el.style;
         if (hasShadow(style)) {
-            const shadowKey = getShadowKey(el);
-            const shadowCache = scope.shadowCache;
-            let shadowId = shadowCache[shadowKey];
+            var shadowKey = getShadowKey(el);
+            var shadowCache = scope.shadowCache;
+            var shadowId = shadowCache[shadowKey];
             if (!shadowId) {
-                const globalScale = el.getGlobalScale();
-                const scaleX = globalScale[0];
-                const scaleY = globalScale[1];
+                var globalScale = el.getGlobalScale();
+                var scaleX = globalScale[0];
+                var scaleY = globalScale[1];
                 if (!scaleX || !scaleY) {
                     return;
                 }
-                const offsetX = style.shadowOffsetX || 0;
-                const offsetY = style.shadowOffsetY || 0;
-                const blur = style.shadowBlur;
-                const { opacity, color } = normalizeColor(style.shadowColor);
-                const stdDx = blur / 2 / scaleX;
-                const stdDy = blur / 2 / scaleY;
-                const stdDeviation = stdDx + ' ' + stdDy;
+                var offsetX = style.shadowOffsetX || 0;
+                var offsetY = style.shadowOffsetY || 0;
+                var blur_1 = style.shadowBlur;
+                var _a = normalizeColor(style.shadowColor), opacity = _a.opacity, color = _a.color;
+                var stdDx = blur_1 / 2 / scaleX;
+                var stdDy = blur_1 / 2 / scaleY;
+                var stdDeviation = stdDx + ' ' + stdDy;
                 shadowId = scope.zrId + '-s' + scope.shadowIdx++;
                 scope.defs[shadowId] = createVNode('filter', shadowId, {
                     'id': shadowId,
@@ -35966,9 +37204,9 @@
         }
     }
     function setGradient(style, attrs, target, scope) {
-        const val = style[target];
-        let gradientTag;
-        let gradientAttrs = {
+        var val = style[target];
+        var gradientTag;
+        var gradientAttrs = {
             'gradientUnits': val.global
                 ? 'userSpaceOnUse'
                 : 'objectBoundingBox'
@@ -35992,13 +37230,13 @@
             }
             return;
         }
-        const colors = val.colorStops;
-        const colorStops = [];
-        for (let i = 0, len = colors.length; i < len; ++i) {
-            const offset = round4(colors[i].offset) * 100 + '%';
-            const stopColor = colors[i].color;
-            const { color, opacity } = normalizeColor(stopColor);
-            const stopsAttrs = {
+        var colors = val.colorStops;
+        var colorStops = [];
+        for (var i = 0, len = colors.length; i < len; ++i) {
+            var offset = round4(colors[i].offset) * 100 + '%';
+            var stopColor = colors[i].color;
+            var _a = normalizeColor(stopColor), color = _a.color, opacity = _a.opacity;
+            var stopsAttrs = {
                 'offset': offset
             };
             stopsAttrs['stop-color'] = color;
@@ -36007,10 +37245,10 @@
             }
             colorStops.push(createVNode('stop', i + '', stopsAttrs));
         }
-        const gradientVNode = createVNode(gradientTag, '', gradientAttrs, colorStops);
-        const gradientKey = vNodeToString(gradientVNode);
-        const gradientCache = scope.gradientCache;
-        let gradientId = gradientCache[gradientKey];
+        var gradientVNode = createVNode(gradientTag, '', gradientAttrs, colorStops);
+        var gradientKey = vNodeToString(gradientVNode);
+        var gradientCache = scope.gradientCache;
+        var gradientId = gradientCache[gradientKey];
         if (!gradientId) {
             gradientId = scope.zrId + '-g' + scope.gradientIdx++;
             gradientCache[gradientKey] = gradientId;
@@ -36020,19 +37258,19 @@
         attrs[target] = getIdURL(gradientId);
     }
     function setPattern(el, attrs, target, scope) {
-        const val = el.style[target];
-        const boundingRect = el.getBoundingRect();
-        const patternAttrs = {};
-        const repeat = val.repeat;
-        const noRepeat = repeat === 'no-repeat';
-        const repeatX = repeat === 'repeat-x';
-        const repeatY = repeat === 'repeat-y';
-        let child;
+        var val = el.style[target];
+        var boundingRect = el.getBoundingRect();
+        var patternAttrs = {};
+        var repeat = val.repeat;
+        var noRepeat = repeat === 'no-repeat';
+        var repeatX = repeat === 'repeat-x';
+        var repeatY = repeat === 'repeat-y';
+        var child;
         if (isImagePattern(val)) {
-            let imageWidth = val.imageWidth;
-            let imageHeight = val.imageHeight;
-            let imageSrc;
-            const patternImage = val.image;
+            var imageWidth_1 = val.imageWidth;
+            var imageHeight_1 = val.imageHeight;
+            var imageSrc = void 0;
+            var patternImage = val.image;
             if (isString(patternImage)) {
                 imageSrc = patternImage;
             }
@@ -36043,16 +37281,16 @@
                 imageSrc = patternImage.toDataURL();
             }
             if (typeof Image === 'undefined') {
-                const errMsg = 'Image width/height must been given explictly in svg-ssr renderer.';
-                assert(imageWidth, errMsg);
-                assert(imageHeight, errMsg);
+                var errMsg = 'Image width/height must been given explictly in svg-ssr renderer.';
+                assert(imageWidth_1, errMsg);
+                assert(imageHeight_1, errMsg);
             }
-            else if (imageWidth == null || imageHeight == null) {
-                const setSizeToVNode = (vNode, img) => {
+            else if (imageWidth_1 == null || imageHeight_1 == null) {
+                var setSizeToVNode_1 = function (vNode, img) {
                     if (vNode) {
-                        const svgEl = vNode.elm;
-                        let width = imageWidth || img.width;
-                        let height = imageHeight || img.height;
+                        var svgEl = vNode.elm;
+                        var width = imageWidth_1 || img.width;
+                        var height = imageHeight_1 || img.height;
                         if (vNode.tag === 'pattern') {
                             if (repeatX) {
                                 height = 1;
@@ -36071,22 +37309,22 @@
                         }
                     }
                 };
-                const createdImage = createOrUpdateImage(imageSrc, null, el, (img) => {
-                    noRepeat || setSizeToVNode(patternVNode, img);
-                    setSizeToVNode(child, img);
+                var createdImage = createOrUpdateImage(imageSrc, null, el, function (img) {
+                    noRepeat || setSizeToVNode_1(patternVNode, img);
+                    setSizeToVNode_1(child, img);
                 });
                 if (createdImage && createdImage.width && createdImage.height) {
-                    imageWidth = imageWidth || createdImage.width;
-                    imageHeight = imageHeight || createdImage.height;
+                    imageWidth_1 = imageWidth_1 || createdImage.width;
+                    imageHeight_1 = imageHeight_1 || createdImage.height;
                 }
             }
             child = createVNode('image', 'img', {
                 href: imageSrc,
-                width: imageWidth,
-                height: imageHeight
+                width: imageWidth_1,
+                height: imageHeight_1
             });
-            patternAttrs.width = imageWidth;
-            patternAttrs.height = imageHeight;
+            patternAttrs.width = imageWidth_1;
+            patternAttrs.height = imageHeight_1;
         }
         else if (val.svgElement) {
             child = clone(val.svgElement);
@@ -36096,8 +37334,8 @@
         if (!child) {
             return;
         }
-        let patternWidth;
-        let patternHeight;
+        var patternWidth;
+        var patternHeight;
         if (noRepeat) {
             patternWidth = patternHeight = 1;
         }
@@ -36118,12 +37356,12 @@
         if (patternHeight != null && !isNaN(patternHeight)) {
             patternAttrs.height = patternHeight;
         }
-        const patternTransform = getSRTTransformString(val);
+        var patternTransform = getSRTTransformString(val);
         patternTransform && (patternAttrs.patternTransform = patternTransform);
-        let patternVNode = createVNode('pattern', '', patternAttrs, [child]);
-        const patternKey = vNodeToString(patternVNode);
-        const patternCache = scope.patternCache;
-        let patternId = patternCache[patternKey];
+        var patternVNode = createVNode('pattern', '', patternAttrs, [child]);
+        var patternKey = vNodeToString(patternVNode);
+        var patternCache = scope.patternCache;
+        var patternId = patternCache[patternKey];
         if (!patternId) {
             patternId = scope.zrId + '-p' + scope.patternIdx++;
             patternCache[patternKey] = patternId;
@@ -36133,11 +37371,11 @@
         attrs[target] = getIdURL(patternId);
     }
     function setClipPath(clipPath, attrs, scope) {
-        const { clipPathCache, defs } = scope;
-        let clipPathId = clipPathCache[clipPath.id];
+        var clipPathCache = scope.clipPathCache, defs = scope.defs;
+        var clipPathId = clipPathCache[clipPath.id];
         if (!clipPathId) {
             clipPathId = scope.zrId + '-c' + scope.clipPathIdx++;
-            const clipPathAttrs = {
+            var clipPathAttrs = {
                 id: clipPathId
             };
             clipPathCache[clipPath.id] = clipPathId;
@@ -36168,9 +37406,9 @@
         node.textContent = text;
     }
 
-    const colonChar = 58;
-    const xChar = 120;
-    const emptyNode = createVNode('', '');
+    var colonChar = 58;
+    var xChar = 120;
+    var emptyNode = createVNode('', '');
     function isUndef(s) {
         return s === undefined;
     }
@@ -36178,13 +37416,13 @@
         return s !== undefined;
     }
     function createKeyToOldIdx(children, beginIdx, endIdx) {
-        const map = {};
-        for (let i = beginIdx; i <= endIdx; ++i) {
-            const key = children[i].key;
+        var map = {};
+        for (var i = beginIdx; i <= endIdx; ++i) {
+            var key = children[i].key;
             if (key !== undefined) {
                 if ("development" !== 'production') {
                     if (map[key] != null) {
-                        console.error(`Duplicate key ${key}`);
+                        console.error("Duplicate key " + key);
                     }
                 }
                 map[key] = i;
@@ -36193,20 +37431,20 @@
         return map;
     }
     function sameVnode(vnode1, vnode2) {
-        const isSameKey = vnode1.key === vnode2.key;
-        const isSameTag = vnode1.tag === vnode2.tag;
+        var isSameKey = vnode1.key === vnode2.key;
+        var isSameTag = vnode1.tag === vnode2.tag;
         return isSameTag && isSameKey;
     }
     function createElm(vnode) {
-        let i;
-        const children = vnode.children;
-        const tag = vnode.tag;
+        var i;
+        var children = vnode.children;
+        var tag = vnode.tag;
         if (isDef(tag)) {
-            const elm = (vnode.elm = createElement(tag));
+            var elm = (vnode.elm = createElement(tag));
             updateAttrs(emptyNode, vnode);
             if (isArray(children)) {
                 for (i = 0; i < children.length; ++i) {
-                    const ch = children[i];
+                    var ch = children[i];
                     if (ch != null) {
                         appendChild(elm, createElm(ch));
                     }
@@ -36223,7 +37461,7 @@
     }
     function addVnodes(parentElm, before, vnodes, startIdx, endIdx) {
         for (; startIdx <= endIdx; ++startIdx) {
-            const ch = vnodes[startIdx];
+            var ch = vnodes[startIdx];
             if (ch != null) {
                 insertBefore(parentElm, createElm(ch), before);
             }
@@ -36231,11 +37469,11 @@
     }
     function removeVnodes(parentElm, vnodes, startIdx, endIdx) {
         for (; startIdx <= endIdx; ++startIdx) {
-            const ch = vnodes[startIdx];
+            var ch = vnodes[startIdx];
             if (ch != null) {
                 if (isDef(ch.tag)) {
-                    const parent = parentNode(ch.elm);
-                    removeChild(parent, ch.elm);
+                    var parent_1 = parentNode(ch.elm);
+                    removeChild(parent_1, ch.elm);
                 }
                 else {
                     removeChild(parentElm, ch.elm);
@@ -36244,16 +37482,16 @@
         }
     }
     function updateAttrs(oldVnode, vnode) {
-        let key;
-        const elm = vnode.elm;
-        const oldAttrs = oldVnode && oldVnode.attrs || {};
-        const attrs = vnode.attrs || {};
+        var key;
+        var elm = vnode.elm;
+        var oldAttrs = oldVnode && oldVnode.attrs || {};
+        var attrs = vnode.attrs || {};
         if (oldAttrs === attrs) {
             return;
         }
         for (key in attrs) {
-            const cur = attrs[key];
-            const old = oldAttrs[key];
+            var cur = attrs[key];
+            var old = oldAttrs[key];
             if (old !== cur) {
                 if (cur === true) {
                     elm.setAttribute(key, '');
@@ -36290,18 +37528,18 @@
         }
     }
     function updateChildren(parentElm, oldCh, newCh) {
-        let oldStartIdx = 0;
-        let newStartIdx = 0;
-        let oldEndIdx = oldCh.length - 1;
-        let oldStartVnode = oldCh[0];
-        let oldEndVnode = oldCh[oldEndIdx];
-        let newEndIdx = newCh.length - 1;
-        let newStartVnode = newCh[0];
-        let newEndVnode = newCh[newEndIdx];
-        let oldKeyToIdx;
-        let idxInOld;
-        let elmToMove;
-        let before;
+        var oldStartIdx = 0;
+        var newStartIdx = 0;
+        var oldEndIdx = oldCh.length - 1;
+        var oldStartVnode = oldCh[0];
+        var oldEndVnode = oldCh[oldEndIdx];
+        var newEndIdx = newCh.length - 1;
+        var newStartVnode = newCh[0];
+        var newEndVnode = newCh[newEndIdx];
+        var oldKeyToIdx;
+        var idxInOld;
+        var elmToMove;
+        var before;
         while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
             if (oldStartVnode == null) {
                 oldStartVnode = oldCh[++oldStartIdx];
@@ -36370,9 +37608,9 @@
         }
     }
     function patchVnode(oldVnode, vnode) {
-        const elm = (vnode.elm = oldVnode.elm);
-        const oldCh = oldVnode.children;
-        const ch = vnode.children;
+        var elm = (vnode.elm = oldVnode.elm);
+        var oldCh = oldVnode.children;
+        var ch = vnode.children;
         if (oldVnode === vnode) {
             return;
         }
@@ -36408,20 +37646,20 @@
             patchVnode(oldVnode, vnode);
         }
         else {
-            const elm = oldVnode.elm;
-            const parent = parentNode(elm);
+            var elm = oldVnode.elm;
+            var parent_2 = parentNode(elm);
             createElm(vnode);
-            if (parent !== null) {
-                insertBefore(parent, vnode.elm, nextSibling(elm));
-                removeVnodes(parent, [oldVnode], 0, 0);
+            if (parent_2 !== null) {
+                insertBefore(parent_2, vnode.elm, nextSibling(elm));
+                removeVnodes(parent_2, [oldVnode], 0, 0);
             }
         }
         return vnode;
     }
 
-    let svgId = 0;
-    class SVGPainter {
-        constructor(root, storage, opts) {
+    var svgId = 0;
+    var SVGPainter = (function () {
+        function SVGPainter(root, storage, opts) {
             this.type = 'svg';
             this.refreshHover = createMethodNotSupport('refreshHover');
             this.configLayer = createMethodNotSupport('configLayer');
@@ -36431,78 +37669,78 @@
             this._id = 'zr' + svgId++;
             this._oldVNode = createSVGVNode(opts.width, opts.height);
             if (root && !opts.ssr) {
-                const viewport = this._viewport = document.createElement('div');
+                var viewport = this._viewport = document.createElement('div');
                 viewport.style.cssText = 'position:relative;overflow:hidden';
-                const svgDom = this._svgDom = this._oldVNode.elm = createElement('svg');
+                var svgDom = this._svgDom = this._oldVNode.elm = createElement('svg');
                 updateAttrs(null, this._oldVNode);
                 viewport.appendChild(svgDom);
                 root.appendChild(viewport);
             }
             this.resize(opts.width, opts.height);
         }
-        getType() {
+        SVGPainter.prototype.getType = function () {
             return this.type;
-        }
-        getViewportRoot() {
+        };
+        SVGPainter.prototype.getViewportRoot = function () {
             return this._viewport;
-        }
-        getViewportRootOffset() {
-            const viewportRoot = this.getViewportRoot();
+        };
+        SVGPainter.prototype.getViewportRootOffset = function () {
+            var viewportRoot = this.getViewportRoot();
             if (viewportRoot) {
                 return {
                     offsetLeft: viewportRoot.offsetLeft || 0,
                     offsetTop: viewportRoot.offsetTop || 0
                 };
             }
-        }
-        getSvgDom() {
+        };
+        SVGPainter.prototype.getSvgDom = function () {
             return this._svgDom;
-        }
-        refresh() {
+        };
+        SVGPainter.prototype.refresh = function () {
             if (this.root) {
-                const vnode = this.renderToVNode({
+                var vnode = this.renderToVNode({
                     willUpdate: true
                 });
                 vnode.attrs.style = 'position:absolute;left:0;top:0;user-select:none';
                 patch(this._oldVNode, vnode);
                 this._oldVNode = vnode;
             }
-        }
-        renderOneToVNode(el) {
+        };
+        SVGPainter.prototype.renderOneToVNode = function (el) {
             return brush$1(el, createBrushScope(this._id));
-        }
-        renderToVNode(opts) {
+        };
+        SVGPainter.prototype.renderToVNode = function (opts) {
             opts = opts || {};
-            const list = this.storage.getDisplayList(true);
-            const width = this._width;
-            const height = this._height;
-            const scope = createBrushScope(this._id);
+            var list = this.storage.getDisplayList(true);
+            var width = this._width;
+            var height = this._height;
+            var scope = createBrushScope(this._id);
             scope.animation = opts.animation;
             scope.willUpdate = opts.willUpdate;
             scope.compress = opts.compress;
             scope.emphasis = opts.emphasis;
             scope.ssr = this._opts.ssr;
-            const children = [];
-            const bgVNode = this._bgVNode = createBackgroundVNode(width, height, this._backgroundColor, scope);
+            var children = [];
+            var bgVNode = this._bgVNode = createBackgroundVNode(width, height, this._backgroundColor, scope);
             bgVNode && children.push(bgVNode);
-            const mainVNode = !opts.compress
+            var mainVNode = !opts.compress
                 ? (this._mainVNode = createVNode('g', 'main', {}, [])) : null;
             this._paintList(list, scope, mainVNode ? mainVNode.children : children);
             mainVNode && children.push(mainVNode);
-            const defs = map(keys(scope.defs), (id) => scope.defs[id]);
+            var defs = map(keys(scope.defs), function (id) { return scope.defs[id]; });
             if (defs.length) {
                 children.push(createVNode('defs', 'defs', {}, defs));
             }
             if (opts.animation) {
-                const animationCssStr = getCssString(scope.cssNodes, scope.cssAnims, { newline: true });
+                var animationCssStr = getCssString(scope.cssNodes, scope.cssAnims, { newline: true });
                 if (animationCssStr) {
-                    const styleNode = createVNode('style', 'stl', {}, [], animationCssStr);
+                    var styleNode = createVNode('style', 'stl', {}, [], animationCssStr);
                     children.push(styleNode);
                 }
             }
             return createSVGVNode(width, height, children, opts.useViewBox);
-        }
-        renderToString(opts) {
+        };
+        SVGPainter.prototype.renderToString = function (opts) {
             opts = opts || {};
             return vNodeToString(this.renderToVNode({
                 animation: retrieve2(opts.cssAnimation, true),
@@ -36511,57 +37749,57 @@
                 compress: true,
                 useViewBox: retrieve2(opts.useViewBox, true)
             }), { newline: true });
-        }
-        setBackgroundColor(backgroundColor) {
+        };
+        SVGPainter.prototype.setBackgroundColor = function (backgroundColor) {
             this._backgroundColor = backgroundColor;
-        }
-        getSvgRoot() {
+        };
+        SVGPainter.prototype.getSvgRoot = function () {
             return this._mainVNode && this._mainVNode.elm;
-        }
-        _paintList(list, scope, out) {
-            const listLen = list.length;
-            const clipPathsGroupsStack = [];
-            let clipPathsGroupsStackDepth = 0;
-            let currentClipPathGroup;
-            let prevClipPaths;
-            let clipGroupNodeIdx = 0;
-            for (let i = 0; i < listLen; i++) {
-                const displayable = list[i];
+        };
+        SVGPainter.prototype._paintList = function (list, scope, out) {
+            var listLen = list.length;
+            var clipPathsGroupsStack = [];
+            var clipPathsGroupsStackDepth = 0;
+            var currentClipPathGroup;
+            var prevClipPaths;
+            var clipGroupNodeIdx = 0;
+            for (var i = 0; i < listLen; i++) {
+                var displayable = list[i];
                 if (!displayable.invisible) {
-                    const clipPaths = displayable.__clipPaths;
-                    const len = clipPaths && clipPaths.length || 0;
-                    const prevLen = prevClipPaths && prevClipPaths.length || 0;
-                    let lca;
+                    var clipPaths = displayable.__clipPaths;
+                    var len = clipPaths && clipPaths.length || 0;
+                    var prevLen = prevClipPaths && prevClipPaths.length || 0;
+                    var lca = void 0;
                     for (lca = Math.max(len - 1, prevLen - 1); lca >= 0; lca--) {
                         if (clipPaths && prevClipPaths
                             && clipPaths[lca] === prevClipPaths[lca]) {
                             break;
                         }
                     }
-                    for (let i = prevLen - 1; i > lca; i--) {
+                    for (var i_1 = prevLen - 1; i_1 > lca; i_1--) {
                         clipPathsGroupsStackDepth--;
                         currentClipPathGroup = clipPathsGroupsStack[clipPathsGroupsStackDepth - 1];
                     }
-                    for (let i = lca + 1; i < len; i++) {
-                        const groupAttrs = {};
-                        setClipPath(clipPaths[i], groupAttrs, scope);
-                        const g = createVNode('g', 'clip-g-' + clipGroupNodeIdx++, groupAttrs, []);
+                    for (var i_2 = lca + 1; i_2 < len; i_2++) {
+                        var groupAttrs = {};
+                        setClipPath(clipPaths[i_2], groupAttrs, scope);
+                        var g = createVNode('g', 'clip-g-' + clipGroupNodeIdx++, groupAttrs, []);
                         (currentClipPathGroup ? currentClipPathGroup.children : out).push(g);
                         clipPathsGroupsStack[clipPathsGroupsStackDepth++] = g;
                         currentClipPathGroup = g;
                     }
                     prevClipPaths = clipPaths;
-                    const ret = brush$1(displayable, scope);
+                    var ret = brush$1(displayable, scope);
                     if (ret) {
                         (currentClipPathGroup ? currentClipPathGroup.children : out).push(ret);
                     }
                 }
             }
-        }
-        resize(width, height) {
-            const opts = this._opts;
-            const root = this.root;
-            const viewport = this._viewport;
+        };
+        SVGPainter.prototype.resize = function (width, height) {
+            var opts = this._opts;
+            var root = this.root;
+            var viewport = this._viewport;
             width != null && (opts.width = width);
             height != null && (opts.height = height);
             if (root && viewport) {
@@ -36574,17 +37812,17 @@
                 this._width = width;
                 this._height = height;
                 if (viewport) {
-                    const viewportStyle = viewport.style;
+                    var viewportStyle = viewport.style;
                     viewportStyle.width = width + 'px';
                     viewportStyle.height = height + 'px';
                 }
                 if (!isPattern(this._backgroundColor)) {
-                    const svgDom = this._svgDom;
+                    var svgDom = this._svgDom;
                     if (svgDom) {
                         svgDom.setAttribute('width', width);
                         svgDom.setAttribute('height', height);
                     }
-                    const bgEl = this._bgVNode && this._bgVNode.elm;
+                    var bgEl = this._bgVNode && this._bgVNode.elm;
                     if (bgEl) {
                         bgEl.setAttribute('width', width);
                         bgEl.setAttribute('height', height);
@@ -36594,14 +37832,14 @@
                     this.refresh();
                 }
             }
-        }
-        getWidth() {
+        };
+        SVGPainter.prototype.getWidth = function () {
             return this._width;
-        }
-        getHeight() {
+        };
+        SVGPainter.prototype.getHeight = function () {
             return this._height;
-        }
-        dispose() {
+        };
+        SVGPainter.prototype.dispose = function () {
             if (this.root) {
                 this.root.innerHTML = '';
             }
@@ -36611,23 +37849,24 @@
                         this._oldVNode =
                             this._bgVNode =
                                 this._mainVNode = null;
-        }
-        clear() {
+        };
+        SVGPainter.prototype.clear = function () {
             if (this._svgDom) {
                 this._svgDom.innerHTML = null;
             }
             this._oldVNode = null;
-        }
-        toDataURL(base64) {
-            let str = this.renderToString();
-            const prefix = 'data:image/svg+xml;';
+        };
+        SVGPainter.prototype.toDataURL = function (base64) {
+            var str = this.renderToString();
+            var prefix = 'data:image/svg+xml;';
             if (base64) {
                 str = encodeBase64(str);
                 return str && prefix + 'base64,' + str;
             }
             return prefix + 'charset=UTF-8,' + encodeURIComponent(str);
-        }
-    }
+        };
+        return SVGPainter;
+    }());
     function createMethodNotSupport(method) {
         return function () {
             if ("development" !== 'production') {
@@ -36636,11 +37875,11 @@
         };
     }
     function createBackgroundVNode(width, height, backgroundColor, scope) {
-        let bgVNode;
+        var bgVNode;
         if (backgroundColor && backgroundColor !== 'none') {
             bgVNode = createVNode('rect', 'bg', {
-                width,
-                height,
+                width: width,
+                height: height,
                 x: '0',
                 y: '0'
             });
@@ -36653,11 +37892,11 @@
                         fill: backgroundColor
                     },
                     dirty: noop,
-                    getBoundingRect: () => ({ width, height })
+                    getBoundingRect: function () { return ({ width: width, height: height }); }
                 }, bgVNode.attrs, 'fill', scope);
             }
             else {
-                const { color, opacity } = normalizeColor(backgroundColor);
+                var _a = normalizeColor(backgroundColor), color = _a.color, opacity = _a.opacity;
                 bgVNode.attrs.fill = color;
                 opacity < 1 && (bgVNode.attrs['fill-opacity'] = opacity);
             }
@@ -36670,10 +37909,10 @@
     }
 
     function createDom(id, painter, dpr) {
-        const newDom = platformApi.createCanvas();
-        const width = painter.getWidth();
-        const height = painter.getHeight();
-        const newDomStyle = newDom.style;
+        var newDom = platformApi.createCanvas();
+        var width = painter.getWidth();
+        var height = painter.getHeight();
+        var newDomStyle = newDom.style;
         if (newDomStyle) {
             newDomStyle.position = 'absolute';
             newDomStyle.left = '0';
@@ -36686,26 +37925,27 @@
         newDom.height = height * dpr;
         return newDom;
     }
-    class Layer extends Eventful {
-        constructor(id, painter, dpr) {
-            super();
-            this.motionBlur = false;
-            this.lastFrameAlpha = 0.7;
-            this.dpr = 1;
-            this.virtual = false;
-            this.config = {};
-            this.incremental = false;
-            this.zlevel = 0;
-            this.maxRepaintRectCount = 5;
-            this.__dirty = true;
-            this.__firstTimePaint = true;
-            this.__used = false;
-            this.__drawIndex = 0;
-            this.__startIndex = 0;
-            this.__endIndex = 0;
-            this.__prevStartIndex = null;
-            this.__prevEndIndex = null;
-            let dom;
+    var Layer = (function (_super) {
+        __extends$1(Layer, _super);
+        function Layer(id, painter, dpr) {
+            var _this = _super.call(this) || this;
+            _this.motionBlur = false;
+            _this.lastFrameAlpha = 0.7;
+            _this.dpr = 1;
+            _this.virtual = false;
+            _this.config = {};
+            _this.incremental = false;
+            _this.zlevel = 0;
+            _this.maxRepaintRectCount = 5;
+            _this.__dirty = true;
+            _this.__firstTimePaint = true;
+            _this.__used = false;
+            _this.__drawIndex = 0;
+            _this.__startIndex = 0;
+            _this.__endIndex = 0;
+            _this.__prevStartIndex = null;
+            _this.__prevEndIndex = null;
+            var dom;
             dpr = dpr || devicePixelRatio;
             if (typeof id === 'string') {
                 dom = createDom(id, painter, dpr);
@@ -36714,80 +37954,81 @@
                 dom = id;
                 id = dom.id;
             }
-            this.id = id;
-            this.dom = dom;
-            const domStyle = dom.style;
+            _this.id = id;
+            _this.dom = dom;
+            var domStyle = dom.style;
             if (domStyle) {
                 disableUserSelect(dom);
-                dom.onselectstart = () => false;
+                dom.onselectstart = function () { return false; };
                 domStyle.padding = '0';
                 domStyle.margin = '0';
                 domStyle.borderWidth = '0';
             }
-            this.painter = painter;
-            this.dpr = dpr;
+            _this.painter = painter;
+            _this.dpr = dpr;
+            return _this;
         }
-        getElementCount() {
+        Layer.prototype.getElementCount = function () {
             return this.__endIndex - this.__startIndex;
-        }
-        afterBrush() {
+        };
+        Layer.prototype.afterBrush = function () {
             this.__prevStartIndex = this.__startIndex;
             this.__prevEndIndex = this.__endIndex;
-        }
-        initContext() {
+        };
+        Layer.prototype.initContext = function () {
             this.ctx = this.dom.getContext('2d');
             this.ctx.dpr = this.dpr;
-        }
-        setUnpainted() {
+        };
+        Layer.prototype.setUnpainted = function () {
             this.__firstTimePaint = true;
-        }
-        createBackBuffer() {
-            const dpr = this.dpr;
+        };
+        Layer.prototype.createBackBuffer = function () {
+            var dpr = this.dpr;
             this.domBack = createDom('back-' + this.id, this.painter, dpr);
             this.ctxBack = this.domBack.getContext('2d');
             if (dpr !== 1) {
                 this.ctxBack.scale(dpr, dpr);
             }
-        }
-        createRepaintRects(displayList, prevList, viewWidth, viewHeight) {
+        };
+        Layer.prototype.createRepaintRects = function (displayList, prevList, viewWidth, viewHeight) {
             if (this.__firstTimePaint) {
                 this.__firstTimePaint = false;
                 return null;
             }
-            const mergedRepaintRects = [];
-            const maxRepaintRectCount = this.maxRepaintRectCount;
-            let full = false;
-            const pendingRect = new BoundingRect(0, 0, 0, 0);
+            var mergedRepaintRects = [];
+            var maxRepaintRectCount = this.maxRepaintRectCount;
+            var full = false;
+            var pendingRect = new BoundingRect(0, 0, 0, 0);
             function addRectToMergePool(rect) {
                 if (!rect.isFinite() || rect.isZero()) {
                     return;
                 }
                 if (mergedRepaintRects.length === 0) {
-                    const boundingRect = new BoundingRect(0, 0, 0, 0);
+                    var boundingRect = new BoundingRect(0, 0, 0, 0);
                     boundingRect.copy(rect);
                     mergedRepaintRects.push(boundingRect);
                 }
                 else {
-                    let isMerged = false;
-                    let minDeltaArea = Infinity;
-                    let bestRectToMergeIdx = 0;
-                    for (let i = 0; i < mergedRepaintRects.length; ++i) {
-                        const mergedRect = mergedRepaintRects[i];
+                    var isMerged = false;
+                    var minDeltaArea = Infinity;
+                    var bestRectToMergeIdx = 0;
+                    for (var i = 0; i < mergedRepaintRects.length; ++i) {
+                        var mergedRect = mergedRepaintRects[i];
                         if (mergedRect.intersect(rect)) {
-                            const pendingRect = new BoundingRect(0, 0, 0, 0);
-                            pendingRect.copy(mergedRect);
-                            pendingRect.union(rect);
-                            mergedRepaintRects[i] = pendingRect;
+                            var pendingRect_1 = new BoundingRect(0, 0, 0, 0);
+                            pendingRect_1.copy(mergedRect);
+                            pendingRect_1.union(rect);
+                            mergedRepaintRects[i] = pendingRect_1;
                             isMerged = true;
                             break;
                         }
                         else if (full) {
                             pendingRect.copy(rect);
                             pendingRect.union(mergedRect);
-                            const aArea = rect.width * rect.height;
-                            const bArea = mergedRect.width * mergedRect.height;
-                            const pendingArea = pendingRect.width * pendingRect.height;
-                            const deltaArea = pendingArea - aArea - bArea;
+                            var aArea = rect.width * rect.height;
+                            var bArea = mergedRect.width * mergedRect.height;
+                            var pendingArea = pendingRect.width * pendingRect.height;
+                            var deltaArea = pendingArea - aArea - bArea;
                             if (deltaArea < minDeltaArea) {
                                 minDeltaArea = deltaArea;
                                 bestRectToMergeIdx = i;
@@ -36799,7 +38040,7 @@
                         isMerged = true;
                     }
                     if (!isMerged) {
-                        const boundingRect = new BoundingRect(0, 0, 0, 0);
+                        var boundingRect = new BoundingRect(0, 0, 0, 0);
                         boundingRect.copy(rect);
                         mergedRepaintRects.push(boundingRect);
                     }
@@ -36808,17 +38049,17 @@
                     }
                 }
             }
-            for (let i = this.__startIndex; i < this.__endIndex; ++i) {
-                const el = displayList[i];
+            for (var i = this.__startIndex; i < this.__endIndex; ++i) {
+                var el = displayList[i];
                 if (el) {
-                    const shouldPaint = el.shouldBePainted(viewWidth, viewHeight, true, true);
-                    const prevRect = el.__isRendered && ((el.__dirty & REDRAW_BIT) || !shouldPaint)
+                    var shouldPaint = el.shouldBePainted(viewWidth, viewHeight, true, true);
+                    var prevRect = el.__isRendered && ((el.__dirty & REDRAW_BIT) || !shouldPaint)
                         ? el.getPrevPaintRect()
                         : null;
                     if (prevRect) {
                         addRectToMergePool(prevRect);
                     }
-                    const curRect = shouldPaint && ((el.__dirty & REDRAW_BIT) || !el.__isRendered)
+                    var curRect = shouldPaint && ((el.__dirty & REDRAW_BIT) || !el.__isRendered)
                         ? el.getPaintRect()
                         : null;
                     if (curRect) {
@@ -36826,25 +38067,25 @@
                     }
                 }
             }
-            for (let i = this.__prevStartIndex; i < this.__prevEndIndex; ++i) {
-                const el = prevList[i];
-                const shouldPaint = el && el.shouldBePainted(viewWidth, viewHeight, true, true);
+            for (var i = this.__prevStartIndex; i < this.__prevEndIndex; ++i) {
+                var el = prevList[i];
+                var shouldPaint = el && el.shouldBePainted(viewWidth, viewHeight, true, true);
                 if (el && (!shouldPaint || !el.__zr) && el.__isRendered) {
-                    const prevRect = el.getPrevPaintRect();
+                    var prevRect = el.getPrevPaintRect();
                     if (prevRect) {
                         addRectToMergePool(prevRect);
                     }
                 }
             }
-            let hasIntersections;
+            var hasIntersections;
             do {
                 hasIntersections = false;
-                for (let i = 0; i < mergedRepaintRects.length;) {
+                for (var i = 0; i < mergedRepaintRects.length;) {
                     if (mergedRepaintRects[i].isZero()) {
                         mergedRepaintRects.splice(i, 1);
                         continue;
                     }
-                    for (let j = i + 1; j < mergedRepaintRects.length;) {
+                    for (var j = i + 1; j < mergedRepaintRects.length;) {
                         if (mergedRepaintRects[i].intersect(mergedRepaintRects[j])) {
                             hasIntersections = true;
                             mergedRepaintRects[i].union(mergedRepaintRects[j]);
@@ -36859,15 +38100,15 @@
             } while (hasIntersections);
             this._paintRects = mergedRepaintRects;
             return mergedRepaintRects;
-        }
-        debugGetPaintRects() {
+        };
+        Layer.prototype.debugGetPaintRects = function () {
             return (this._paintRects || []).slice();
-        }
-        resize(width, height) {
-            const dpr = this.dpr;
-            const dom = this.dom;
-            const domStyle = dom.style;
-            const domBack = this.domBack;
+        };
+        Layer.prototype.resize = function (width, height) {
+            var dpr = this.dpr;
+            var dom = this.dom;
+            var domStyle = dom.style;
+            var domBack = this.domBack;
             if (domStyle) {
                 domStyle.width = width + 'px';
                 domStyle.height = height + 'px';
@@ -36881,17 +38122,17 @@
                     this.ctxBack.scale(dpr, dpr);
                 }
             }
-        }
-        clear(clearAll, clearColor, repaintRects) {
-            const dom = this.dom;
-            const ctx = this.ctx;
-            const width = dom.width;
-            const height = dom.height;
+        };
+        Layer.prototype.clear = function (clearAll, clearColor, repaintRects) {
+            var dom = this.dom;
+            var ctx = this.ctx;
+            var width = dom.width;
+            var height = dom.height;
             clearColor = clearColor || this.clearColor;
-            const haveMotionBLur = this.motionBlur && !clearAll;
-            const lastFrameAlpha = this.lastFrameAlpha;
-            const dpr = this.dpr;
-            const self = this;
+            var haveMotionBLur = this.motionBlur && !clearAll;
+            var lastFrameAlpha = this.lastFrameAlpha;
+            var dpr = this.dpr;
+            var self = this;
             if (haveMotionBLur) {
                 if (!this.domBack) {
                     this.createBackBuffer();
@@ -36899,13 +38140,13 @@
                 this.ctxBack.globalCompositeOperation = 'copy';
                 this.ctxBack.drawImage(dom, 0, 0, width / dpr, height / dpr);
             }
-            const domBack = this.domBack;
+            var domBack = this.domBack;
             function doClear(x, y, width, height) {
                 ctx.clearRect(x, y, width, height);
                 if (clearColor && clearColor !== 'transparent') {
-                    let clearColorGradientOrPattern;
+                    var clearColorGradientOrPattern = void 0;
                     if (isGradientObject(clearColor)) {
-                        const shouldCache = clearColor.global || (clearColor.__width === width
+                        var shouldCache = clearColor.global || (clearColor.__width === width
                             && clearColor.__height === height);
                         clearColorGradientOrPattern = shouldCache
                             && clearColor.__canvasGradient
@@ -36923,7 +38164,7 @@
                         clearColor.scaleX = clearColor.scaleX || dpr;
                         clearColor.scaleY = clearColor.scaleY || dpr;
                         clearColorGradientOrPattern = createCanvasPattern(ctx, clearColor, {
-                            dirty() {
+                            dirty: function () {
                                 self.setUnpainted();
                                 self.painter.refresh();
                             }
@@ -36945,17 +38186,18 @@
                 doClear(0, 0, width, height);
             }
             else if (repaintRects.length) {
-                each(repaintRects, rect => {
+                each(repaintRects, function (rect) {
                     doClear(rect.x * dpr, rect.y * dpr, rect.width * dpr, rect.height * dpr);
                 });
             }
-        }
-    }
+        };
+        return Layer;
+    }(Eventful));
 
-    const HOVER_LAYER_ZLEVEL = 1e5;
-    const CANVAS_ZLEVEL = 314159;
-    const EL_AFTER_INCREMENTAL_INC = 0.01;
-    const INCREMENTAL_INC = 0.001;
+    var HOVER_LAYER_ZLEVEL = 1e5;
+    var CANVAS_ZLEVEL = 314159;
+    var EL_AFTER_INCREMENTAL_INC = 0.01;
+    var INCREMENTAL_INC = 0.001;
     function isLayerValid(layer) {
         if (!layer) {
             return false;
@@ -36970,7 +38212,7 @@
         return true;
     }
     function createRoot(width, height) {
-        const domRoot = document.createElement('div');
+        var domRoot = document.createElement('div');
         domRoot.style.cssText = [
             'position:relative',
             'width:' + width + 'px',
@@ -36981,8 +38223,8 @@
         ].join(';') + ';';
         return domRoot;
     }
-    class CanvasPainter {
-        constructor(root, storage, opts, id) {
+    var CanvasPainter = (function () {
+        function CanvasPainter(root, storage, opts, id) {
             this.type = 'canvas';
             this._zlevelList = [];
             this._prevDisplayList = [];
@@ -36990,32 +38232,32 @@
             this._layerConfig = {};
             this._needsManuallyCompositing = false;
             this.type = 'canvas';
-            const singleCanvas = !root.nodeName
+            var singleCanvas = !root.nodeName
                 || root.nodeName.toUpperCase() === 'CANVAS';
             this._opts = opts = extend({}, opts || {});
             console.log("this._opts", this._opts);
             this.dpr = opts.devicePixelRatio || devicePixelRatio;
             this._singleCanvas = singleCanvas;
             this.root = root;
-            const rootStyle = root.style;
+            var rootStyle = root.style;
             if (rootStyle) {
                 disableUserSelect(root);
                 root.innerHTML = '';
             }
             this.storage = storage;
-            const zlevelList = this._zlevelList;
+            var zlevelList = this._zlevelList;
             this._prevDisplayList = [];
-            const layers = this._layers;
+            var layers = this._layers;
             if (!singleCanvas) {
                 this._width = getSize(root, 0, opts);
                 this._height = getSize(root, 1, opts);
-                const domRoot = this._domRoot = createRoot(this._width, this._height);
+                var domRoot = this._domRoot = createRoot(this._width, this._height);
                 root.appendChild(domRoot);
             }
             else {
-                const rootCanvas = root;
-                let width = rootCanvas.width;
-                let height = rootCanvas.height;
+                var rootCanvas = root;
+                var width = rootCanvas.width;
+                var height = rootCanvas.height;
                 if (opts.width != null) {
                     width = opts.width;
                 }
@@ -37027,7 +38269,7 @@
                 rootCanvas.height = height * this.dpr;
                 this._width = width;
                 this._height = height;
-                const mainLayer = new Layer(rootCanvas, this, this.dpr);
+                var mainLayer = new Layer(rootCanvas, this, this.dpr);
                 mainLayer.__builtin__ = true;
                 mainLayer.initContext();
                 layers[CANVAS_ZLEVEL] = mainLayer;
@@ -37036,35 +38278,35 @@
                 this._domRoot = root;
             }
         }
-        getType() {
+        CanvasPainter.prototype.getType = function () {
             return 'canvas';
-        }
-        isSingleCanvas() {
+        };
+        CanvasPainter.prototype.isSingleCanvas = function () {
             return this._singleCanvas;
-        }
-        getViewportRoot() {
+        };
+        CanvasPainter.prototype.getViewportRoot = function () {
             return this._domRoot;
-        }
-        getViewportRootOffset() {
-            const viewportRoot = this.getViewportRoot();
+        };
+        CanvasPainter.prototype.getViewportRootOffset = function () {
+            var viewportRoot = this.getViewportRoot();
             if (viewportRoot) {
                 return {
                     offsetLeft: viewportRoot.offsetLeft || 0,
                     offsetTop: viewportRoot.offsetTop || 0
                 };
             }
-        }
-        refresh(paintAll) {
-            const list = this.storage.getDisplayList(true);
-            const prevList = this._prevDisplayList;
-            const zlevelList = this._zlevelList;
+        };
+        CanvasPainter.prototype.refresh = function (paintAll) {
+            var list = this.storage.getDisplayList(true);
+            var prevList = this._prevDisplayList;
+            var zlevelList = this._zlevelList;
             this._redrawId = Math.random();
             this._paintList(list, prevList, paintAll, this._redrawId);
-            for (let i = 0; i < zlevelList.length; i++) {
-                const z = zlevelList[i];
-                const layer = this._layers[z];
+            for (var i = 0; i < zlevelList.length; i++) {
+                var z = zlevelList[i];
+                var layer = this._layers[z];
                 if (!layer.__builtin__ && layer.refresh) {
-                    const clearColor = i === 0 ? this._backgroundColor : null;
+                    var clearColor = i === 0 ? this._backgroundColor : null;
                     layer.refresh(clearColor);
                 }
             }
@@ -37072,25 +38314,25 @@
                 this._prevDisplayList = list.slice();
             }
             return this;
-        }
-        refreshHover() {
+        };
+        CanvasPainter.prototype.refreshHover = function () {
             this._paintHoverList(this.storage.getDisplayList(false));
-        }
-        _paintHoverList(list) {
-            let len = list.length;
-            let hoverLayer = this._hoverlayer;
+        };
+        CanvasPainter.prototype._paintHoverList = function (list) {
+            var len = list.length;
+            var hoverLayer = this._hoverlayer;
             hoverLayer && hoverLayer.clear();
             if (!len) {
                 return;
             }
-            const scope = {
+            var scope = {
                 inHover: true,
                 viewWidth: this._width,
                 viewHeight: this._height
             };
-            let ctx;
-            for (let i = 0; i < len; i++) {
-                const el = list[i];
+            var ctx;
+            for (var i = 0; i < len; i++) {
+                var el = list[i];
                 if (el.__inHover) {
                     if (!hoverLayer) {
                         hoverLayer = this._hoverlayer = this.getLayer(HOVER_LAYER_ZLEVEL);
@@ -37105,20 +38347,20 @@
             if (ctx) {
                 ctx.restore();
             }
-        }
-        getHoverLayer() {
+        };
+        CanvasPainter.prototype.getHoverLayer = function () {
             return this.getLayer(HOVER_LAYER_ZLEVEL);
-        }
-        paintOne(ctx, el) {
+        };
+        CanvasPainter.prototype.paintOne = function (ctx, el) {
             brushSingle(ctx, el);
-        }
-        _paintList(list, prevList, paintAll, redrawId) {
+        };
+        CanvasPainter.prototype._paintList = function (list, prevList, paintAll, redrawId) {
             if (this._redrawId !== redrawId) {
                 return;
             }
             paintAll = paintAll || false;
             this._updateLayerStatus(list);
-            const { finished, needsRefreshHover } = this._doPaintList(list, prevList, paintAll);
+            var _a = this._doPaintList(list, prevList, paintAll), finished = _a.finished, needsRefreshHover = _a.needsRefreshHover;
             if (this._needsManuallyCompositing) {
                 this._compositeManually();
             }
@@ -37126,57 +38368,58 @@
                 this._paintHoverList(list);
             }
             if (!finished) {
-                const self = this;
+                var self_1 = this;
                 requestAnimationFrame$1(function () {
-                    self._paintList(list, prevList, paintAll, redrawId);
+                    self_1._paintList(list, prevList, paintAll, redrawId);
                 });
             }
             else {
-                this.eachLayer(layer => {
+                this.eachLayer(function (layer) {
                     layer.afterBrush && layer.afterBrush();
                 });
             }
-        }
-        _compositeManually() {
-            const ctx = this.getLayer(CANVAS_ZLEVEL).ctx;
-            const width = this._domRoot.width;
-            const height = this._domRoot.height;
+        };
+        CanvasPainter.prototype._compositeManually = function () {
+            var ctx = this.getLayer(CANVAS_ZLEVEL).ctx;
+            var width = this._domRoot.width;
+            var height = this._domRoot.height;
             ctx.clearRect(0, 0, width, height);
             this.eachBuiltinLayer(function (layer) {
                 if (layer.virtual) {
                     ctx.drawImage(layer.dom, 0, 0, width, height);
                 }
             });
-        }
-        _doPaintList(list, prevList, paintAll) {
-            const layerList = [];
-            const useDirtyRect = this._opts.useDirtyRect;
-            for (let zi = 0; zi < this._zlevelList.length; zi++) {
-                const zlevel = this._zlevelList[zi];
-                const layer = this._layers[zlevel];
+        };
+        CanvasPainter.prototype._doPaintList = function (list, prevList, paintAll) {
+            var _this = this;
+            var layerList = [];
+            var useDirtyRect = this._opts.useDirtyRect;
+            for (var zi = 0; zi < this._zlevelList.length; zi++) {
+                var zlevel = this._zlevelList[zi];
+                var layer = this._layers[zlevel];
                 if (layer.__builtin__
                     && layer !== this._hoverlayer
                     && (layer.__dirty || paintAll)) {
                     layerList.push(layer);
                 }
             }
-            let finished = true;
-            let needsRefreshHover = false;
-            for (let k = 0; k < layerList.length; k++) {
-                const layer = layerList[k];
-                const ctx = layer.ctx;
-                const repaintRects = useDirtyRect
-                    && layer.createRepaintRects(list, prevList, this._width, this._height);
-                let start = paintAll ? layer.__startIndex : layer.__drawIndex;
-                const useTimer = !paintAll && layer.incremental && Date.now;
-                const startTime = useTimer && Date.now();
-                const clearColor = layer.zlevel === this._zlevelList[0]
-                    ? this._backgroundColor : null;
+            var finished = true;
+            var needsRefreshHover = false;
+            var _loop_1 = function (k) {
+                var layer = layerList[k];
+                var ctx = layer.ctx;
+                var repaintRects = useDirtyRect
+                    && layer.createRepaintRects(list, prevList, this_1._width, this_1._height);
+                var start = paintAll ? layer.__startIndex : layer.__drawIndex;
+                var useTimer = !paintAll && layer.incremental && Date.now;
+                var startTime = useTimer && Date.now();
+                var clearColor = layer.zlevel === this_1._zlevelList[0]
+                    ? this_1._backgroundColor : null;
                 if (layer.__startIndex === layer.__endIndex) {
                     layer.clear(false, clearColor, repaintRects);
                 }
                 else if (start === layer.__startIndex) {
-                    const firstEl = list[start];
+                    var firstEl = list[start];
                     if (!firstEl.incremental || !firstEl.notClear || paintAll) {
                         layer.clear(false, clearColor, repaintRects);
                     }
@@ -37185,23 +38428,23 @@
                     console.error('For some unknown reason. drawIndex is -1');
                     start = layer.__startIndex;
                 }
-                let i;
-                const repaint = (repaintRect) => {
-                    const scope = {
+                var i;
+                var repaint = function (repaintRect) {
+                    var scope = {
                         inHover: false,
                         allClipped: false,
                         prevEl: null,
-                        viewWidth: this._width,
-                        viewHeight: this._height
+                        viewWidth: _this._width,
+                        viewHeight: _this._height
                     };
                     for (i = start; i < layer.__endIndex; i++) {
-                        const el = list[i];
+                        var el = list[i];
                         if (el.__inHover) {
                             needsRefreshHover = true;
                         }
-                        this._doPaintEl(el, layer, useDirtyRect, repaintRect, scope, i === layer.__endIndex - 1);
+                        _this._doPaintEl(el, layer, useDirtyRect, repaintRect, scope, i === layer.__endIndex - 1);
                         if (useTimer) {
-                            const dTime = Date.now() - startTime;
+                            var dTime = Date.now() - startTime;
                             if (dTime > 15) {
                                 break;
                             }
@@ -37216,9 +38459,9 @@
                         i = layer.__endIndex;
                     }
                     else {
-                        const dpr = this.dpr;
+                        var dpr = this_1.dpr;
                         for (var r = 0; r < repaintRects.length; ++r) {
-                            const rect = repaintRects[r];
+                            var rect = repaintRects[r];
                             ctx.save();
                             ctx.beginPath();
                             ctx.rect(rect.x * dpr, rect.y * dpr, rect.width * dpr, rect.height * dpr);
@@ -37237,6 +38480,10 @@
                 if (layer.__drawIndex < layer.__endIndex) {
                     finished = false;
                 }
+            };
+            var this_1 = this;
+            for (var k = 0; k < layerList.length; k++) {
+                _loop_1(k);
             }
             if (env.wxa) {
                 each(this._layers, function (layer) {
@@ -37246,15 +38493,15 @@
                 });
             }
             return {
-                finished,
-                needsRefreshHover
+                finished: finished,
+                needsRefreshHover: needsRefreshHover
             };
-        }
-        _doPaintEl(el, currentLayer, useDirtyRect, repaintRect, scope, isLast) {
-            const ctx = currentLayer.ctx;
-            const roughness = this._opts.roughness;
+        };
+        CanvasPainter.prototype._doPaintEl = function (el, currentLayer, useDirtyRect, repaintRect, scope, isLast) {
+            var ctx = currentLayer.ctx;
+            var roughness = this._opts.roughness;
             if (useDirtyRect) {
-                const paintRect = el.getPaintRect();
+                var paintRect = el.getPaintRect();
                 if (!repaintRect || paintRect && paintRect.intersect(repaintRect)) {
                     brush(ctx, el, scope, isLast, roughness);
                     el.setPrevPaintRect(paintRect);
@@ -37263,12 +38510,12 @@
             else {
                 brush(ctx, el, scope, isLast, roughness);
             }
-        }
-        getLayer(zlevel, virtual) {
+        };
+        CanvasPainter.prototype.getLayer = function (zlevel, virtual) {
             if (this._singleCanvas && !this._needsManuallyCompositing) {
                 zlevel = CANVAS_ZLEVEL;
             }
-            let layer = this._layers[zlevel];
+            var layer = this._layers[zlevel];
             if (!layer) {
                 layer = new Layer('zr_' + zlevel, this, this.dpr);
                 layer.zlevel = zlevel;
@@ -37286,14 +38533,14 @@
                 layer.initContext();
             }
             return layer;
-        }
-        insertLayer(zlevel, layer) {
-            const layersMap = this._layers;
-            const zlevelList = this._zlevelList;
-            const len = zlevelList.length;
-            const domRoot = this._domRoot;
-            let prevLayer = null;
-            let i = -1;
+        };
+        CanvasPainter.prototype.insertLayer = function (zlevel, layer) {
+            var layersMap = this._layers;
+            var zlevelList = this._zlevelList;
+            var len = zlevelList.length;
+            var domRoot = this._domRoot;
+            var prevLayer = null;
+            var i = -1;
             if (layersMap[zlevel]) {
                 if ("development" !== 'production') {
                     logError('ZLevel ' + zlevel + ' has been used already');
@@ -37319,7 +38566,7 @@
             layersMap[zlevel] = layer;
             if (!layer.virtual) {
                 if (prevLayer) {
-                    const prevDom = prevLayer.dom;
+                    var prevDom = prevLayer.dom;
                     if (prevDom.nextSibling) {
                         domRoot.insertBefore(layer.dom, prevDom.nextSibling);
                     }
@@ -37337,38 +38584,38 @@
                 }
             }
             layer.painter || (layer.painter = this);
-        }
-        eachLayer(cb, context) {
-            const zlevelList = this._zlevelList;
-            for (let i = 0; i < zlevelList.length; i++) {
-                const z = zlevelList[i];
+        };
+        CanvasPainter.prototype.eachLayer = function (cb, context) {
+            var zlevelList = this._zlevelList;
+            for (var i = 0; i < zlevelList.length; i++) {
+                var z = zlevelList[i];
                 cb.call(context, this._layers[z], z);
             }
-        }
-        eachBuiltinLayer(cb, context) {
-            const zlevelList = this._zlevelList;
-            for (let i = 0; i < zlevelList.length; i++) {
-                const z = zlevelList[i];
-                const layer = this._layers[z];
+        };
+        CanvasPainter.prototype.eachBuiltinLayer = function (cb, context) {
+            var zlevelList = this._zlevelList;
+            for (var i = 0; i < zlevelList.length; i++) {
+                var z = zlevelList[i];
+                var layer = this._layers[z];
                 if (layer.__builtin__) {
                     cb.call(context, layer, z);
                 }
             }
-        }
-        eachOtherLayer(cb, context) {
-            const zlevelList = this._zlevelList;
-            for (let i = 0; i < zlevelList.length; i++) {
-                const z = zlevelList[i];
-                const layer = this._layers[z];
+        };
+        CanvasPainter.prototype.eachOtherLayer = function (cb, context) {
+            var zlevelList = this._zlevelList;
+            for (var i = 0; i < zlevelList.length; i++) {
+                var z = zlevelList[i];
+                var layer = this._layers[z];
                 if (!layer.__builtin__) {
                     cb.call(context, layer, z);
                 }
             }
-        }
-        getLayers() {
+        };
+        CanvasPainter.prototype.getLayers = function () {
             return this._layers;
-        }
-        _updateLayerStatus(list) {
+        };
+        CanvasPainter.prototype._updateLayerStatus = function (list) {
             this.eachBuiltinLayer(function (layer, z) {
                 layer.__dirty = layer.__used = false;
             });
@@ -37381,22 +38628,22 @@
                 }
             }
             if (this._singleCanvas) {
-                for (let i = 1; i < list.length; i++) {
-                    const el = list[i];
-                    if (el.zlevel !== list[i - 1].zlevel || el.incremental) {
+                for (var i_1 = 1; i_1 < list.length; i_1++) {
+                    var el = list[i_1];
+                    if (el.zlevel !== list[i_1 - 1].zlevel || el.incremental) {
                         this._needsManuallyCompositing = true;
                         break;
                     }
                 }
             }
-            let prevLayer = null;
-            let incrementalLayerCount = 0;
-            let prevZlevel;
-            let i;
+            var prevLayer = null;
+            var incrementalLayerCount = 0;
+            var prevZlevel;
+            var i;
             for (i = 0; i < list.length; i++) {
-                const el = list[i];
-                const zlevel = el.zlevel;
-                let layer;
+                var el = list[i];
+                var zlevel = el.zlevel;
+                var layer = void 0;
                 if (prevZlevel !== zlevel) {
                     prevZlevel = zlevel;
                     incrementalLayerCount = 0;
@@ -37444,50 +38691,50 @@
                     layer.__drawIndex = layer.__startIndex;
                 }
             });
-        }
-        clear() {
+        };
+        CanvasPainter.prototype.clear = function () {
             this.eachBuiltinLayer(this._clearLayer);
             return this;
-        }
-        _clearLayer(layer) {
+        };
+        CanvasPainter.prototype._clearLayer = function (layer) {
             layer.clear();
-        }
-        setBackgroundColor(backgroundColor) {
+        };
+        CanvasPainter.prototype.setBackgroundColor = function (backgroundColor) {
             this._backgroundColor = backgroundColor;
-            each(this._layers, layer => {
+            each(this._layers, function (layer) {
                 layer.setUnpainted();
             });
-        }
-        configLayer(zlevel, config) {
+        };
+        CanvasPainter.prototype.configLayer = function (zlevel, config) {
             if (config) {
-                const layerConfig = this._layerConfig;
+                var layerConfig = this._layerConfig;
                 if (!layerConfig[zlevel]) {
                     layerConfig[zlevel] = config;
                 }
                 else {
                     merge(layerConfig[zlevel], config, true);
                 }
-                for (let i = 0; i < this._zlevelList.length; i++) {
-                    const _zlevel = this._zlevelList[i];
+                for (var i = 0; i < this._zlevelList.length; i++) {
+                    var _zlevel = this._zlevelList[i];
                     if (_zlevel === zlevel || _zlevel === zlevel + EL_AFTER_INCREMENTAL_INC) {
-                        const layer = this._layers[_zlevel];
+                        var layer = this._layers[_zlevel];
                         merge(layer, layerConfig[zlevel], true);
                     }
                 }
             }
-        }
-        delLayer(zlevel) {
-            const layers = this._layers;
-            const zlevelList = this._zlevelList;
-            const layer = layers[zlevel];
+        };
+        CanvasPainter.prototype.delLayer = function (zlevel) {
+            var layers = this._layers;
+            var zlevelList = this._zlevelList;
+            var layer = layers[zlevel];
             if (!layer) {
                 return;
             }
             layer.dom.parentNode.removeChild(layer.dom);
             delete layers[zlevel];
             zlevelList.splice(indexOf(zlevelList, zlevel), 1);
-        }
-        resize(width, height) {
+        };
+        CanvasPainter.prototype.resize = function (width, height) {
             if (!this._domRoot.style) {
                 if (width == null || height == null) {
                     return;
@@ -37497,10 +38744,10 @@
                 this.getLayer(CANVAS_ZLEVEL).resize(width, height);
             }
             else {
-                const domRoot = this._domRoot;
+                var domRoot = this._domRoot;
                 domRoot.style.display = 'none';
-                const opts = this._opts;
-                const root = this.root;
+                var opts = this._opts;
+                var root = this.root;
                 width != null && (opts.width = width);
                 height != null && (opts.height = height);
                 width = getSize(root, 0, opts);
@@ -37509,7 +38756,7 @@
                 if (this._width !== width || height !== this._height) {
                     domRoot.style.width = width + 'px';
                     domRoot.style.height = height + 'px';
-                    for (let id in this._layers) {
+                    for (var id in this._layers) {
                         if (this._layers.hasOwnProperty(id)) {
                             this._layers[id].resize(width, height);
                         }
@@ -37520,36 +38767,36 @@
                 this._height = height;
             }
             return this;
-        }
-        clearLayer(zlevel) {
-            const layer = this._layers[zlevel];
+        };
+        CanvasPainter.prototype.clearLayer = function (zlevel) {
+            var layer = this._layers[zlevel];
             if (layer) {
                 layer.clear();
             }
-        }
-        dispose() {
+        };
+        CanvasPainter.prototype.dispose = function () {
             this.root.innerHTML = '';
             this.root =
                 this.storage =
                     this._domRoot =
                         this._layers = null;
-        }
-        getRenderedCanvas(opts) {
+        };
+        CanvasPainter.prototype.getRenderedCanvas = function (opts) {
             opts = opts || {};
             if (this._singleCanvas && !this._compositeManually) {
                 return this._layers[CANVAS_ZLEVEL].dom;
             }
-            const imageLayer = new Layer('image', this, opts.pixelRatio || this.dpr);
+            var imageLayer = new Layer('image', this, opts.pixelRatio || this.dpr);
             imageLayer.initContext();
             imageLayer.clear(false, opts.backgroundColor || this._backgroundColor);
-            const ctx = imageLayer.ctx;
+            var ctx = imageLayer.ctx;
             if (opts.pixelRatio <= this.dpr) {
                 this.refresh();
-                const width = imageLayer.dom.width;
-                const height = imageLayer.dom.height;
+                var width_1 = imageLayer.dom.width;
+                var height_1 = imageLayer.dom.height;
                 this.eachLayer(function (layer) {
                     if (layer.__builtin__) {
-                        ctx.drawImage(layer.dom, 0, 0, width, height);
+                        ctx.drawImage(layer.dom, 0, 0, width_1, height_1);
                     }
                     else if (layer.renderToCanvas) {
                         ctx.save();
@@ -37559,26 +38806,27 @@
                 });
             }
             else {
-                const scope = {
+                var scope = {
                     inHover: false,
                     viewWidth: this._width,
                     viewHeight: this._height
                 };
-                const displayList = this.storage.getDisplayList(true);
-                for (let i = 0, len = displayList.length; i < len; i++) {
-                    const el = displayList[i];
+                var displayList = this.storage.getDisplayList(true);
+                for (var i = 0, len = displayList.length; i < len; i++) {
+                    var el = displayList[i];
                     brush(ctx, el, scope, i === len - 1);
                 }
             }
             return imageLayer.dom;
-        }
-        getWidth() {
+        };
+        CanvasPainter.prototype.getWidth = function () {
             return this._width;
-        }
-        getHeight() {
+        };
+        CanvasPainter.prototype.getHeight = function () {
             return this._height;
-        }
-    }
+        };
+        return CanvasPainter;
+    }());
 
     function install$1(registers) {
       registers.registerPainter('canvas', CanvasPainter);
@@ -46344,10 +47592,10 @@
 
     function parseXML(svg) {
         if (isString(svg)) {
-            const parser = new DOMParser();
+            var parser = new DOMParser();
             svg = parser.parseFromString(svg, 'text/xml');
         }
-        let svgNode = svg;
+        var svgNode = svg;
         if (svgNode.nodeType === 9) {
             svgNode = svgNode.firstChild;
         }
@@ -46357,8 +47605,8 @@
         return svgNode;
     }
 
-    let nodeParsers;
-    const INHERITABLE_STYLE_ATTRIBUTES_MAP = {
+    var nodeParsers;
+    var INHERITABLE_STYLE_ATTRIBUTES_MAP = {
         'fill': 'fill',
         'stroke': 'stroke',
         'stroke-width': 'lineWidth',
@@ -46378,46 +47626,46 @@
         'visibility': 'visibility',
         'display': 'display'
     };
-    const INHERITABLE_STYLE_ATTRIBUTES_MAP_KEYS = keys(INHERITABLE_STYLE_ATTRIBUTES_MAP);
-    const SELF_STYLE_ATTRIBUTES_MAP = {
+    var INHERITABLE_STYLE_ATTRIBUTES_MAP_KEYS = keys(INHERITABLE_STYLE_ATTRIBUTES_MAP);
+    var SELF_STYLE_ATTRIBUTES_MAP = {
         'alignment-baseline': 'textBaseline',
         'stop-color': 'stopColor'
     };
-    const SELF_STYLE_ATTRIBUTES_MAP_KEYS = keys(SELF_STYLE_ATTRIBUTES_MAP);
-    class SVGParser {
-        constructor() {
+    var SELF_STYLE_ATTRIBUTES_MAP_KEYS = keys(SELF_STYLE_ATTRIBUTES_MAP);
+    var SVGParser = (function () {
+        function SVGParser() {
             this._defs = {};
             this._root = null;
         }
-        parse(xml, opt) {
+        SVGParser.prototype.parse = function (xml, opt) {
             opt = opt || {};
-            const svg = parseXML(xml);
+            var svg = parseXML(xml);
             if ("development" !== 'production') {
                 if (!svg) {
                     throw new Error('Illegal svg');
                 }
             }
             this._defsUsePending = [];
-            let root = new Group();
+            var root = new Group();
             this._root = root;
-            const named = [];
-            const viewBox = svg.getAttribute('viewBox') || '';
-            let width = parseFloat((svg.getAttribute('width') || opt.width));
-            let height = parseFloat((svg.getAttribute('height') || opt.height));
+            var named = [];
+            var viewBox = svg.getAttribute('viewBox') || '';
+            var width = parseFloat((svg.getAttribute('width') || opt.width));
+            var height = parseFloat((svg.getAttribute('height') || opt.height));
             isNaN(width) && (width = null);
             isNaN(height) && (height = null);
             parseAttributes(svg, root, null, true, false);
-            let child = svg.firstChild;
+            var child = svg.firstChild;
             while (child) {
                 this._parseNode(child, root, named, null, false, false);
                 child = child.nextSibling;
             }
             applyDefs(this._defs, this._defsUsePending);
             this._defsUsePending = [];
-            let viewBoxRect;
-            let viewBoxTransform;
+            var viewBoxRect;
+            var viewBoxTransform;
             if (viewBox) {
-                const viewBoxArr = splitNumberSequence(viewBox);
+                var viewBoxArr = splitNumberSequence(viewBox);
                 if (viewBoxArr.length >= 4) {
                     viewBoxRect = {
                         x: parseFloat((viewBoxArr[0] || 0)),
@@ -46430,7 +47678,7 @@
             if (viewBoxRect && width != null && height != null) {
                 viewBoxTransform = makeViewBoxTransform(viewBoxRect, { x: 0, y: 0, width: width, height: height });
                 if (!opt.ignoreViewBox) {
-                    const elRoot = root;
+                    var elRoot = root;
                     root = new Group();
                     root.add(elRoot);
                     elRoot.scaleX = elRoot.scaleY = viewBoxTransform.scale;
@@ -46451,11 +47699,11 @@
                 viewBoxTransform: viewBoxTransform,
                 named: named
             };
-        }
-        _parseNode(xmlNode, parentGroup, named, namedFrom, isInDefs, isInText) {
-            const nodeName = xmlNode.nodeName.toLowerCase();
-            let el;
-            let namedFromForSub = namedFrom;
+        };
+        SVGParser.prototype._parseNode = function (xmlNode, parentGroup, named, namedFrom, isInDefs, isInText) {
+            var nodeName = xmlNode.nodeName.toLowerCase();
+            var el;
+            var namedFromForSub = namedFrom;
             if (nodeName === 'defs') {
                 isInDefs = true;
             }
@@ -46467,12 +47715,12 @@
             }
             else {
                 if (!isInDefs) {
-                    const parser = nodeParsers[nodeName];
-                    if (parser && hasOwn(nodeParsers, nodeName)) {
-                        el = parser.call(this, xmlNode, parentGroup);
-                        const nameAttr = xmlNode.getAttribute('name');
+                    var parser_1 = nodeParsers[nodeName];
+                    if (parser_1 && hasOwn(nodeParsers, nodeName)) {
+                        el = parser_1.call(this, xmlNode, parentGroup);
+                        var nameAttr = xmlNode.getAttribute('name');
                         if (nameAttr) {
-                            const newNamed = {
+                            var newNamed = {
                                 name: nameAttr,
                                 namedFrom: null,
                                 svgNodeTagLower: nodeName,
@@ -46494,17 +47742,17 @@
                         parentGroup.add(el);
                     }
                 }
-                const parser = paintServerParsers[nodeName];
+                var parser = paintServerParsers[nodeName];
                 if (parser && hasOwn(paintServerParsers, nodeName)) {
-                    const def = parser.call(this, xmlNode);
-                    const id = xmlNode.getAttribute('id');
+                    var def = parser.call(this, xmlNode);
+                    var id = xmlNode.getAttribute('id');
                     if (id) {
                         this._defs[id] = def;
                     }
                 }
             }
             if (el && el.isGroup) {
-                let child = xmlNode.firstChild;
+                var child = xmlNode.firstChild;
                 while (child) {
                     if (child.nodeType === 1) {
                         this._parseNode(child, el, named, namedFromForSub, isInDefs, isInText);
@@ -46515,9 +47763,9 @@
                     child = child.nextSibling;
                 }
             }
-        }
-        _parseText(xmlNode, parentGroup) {
-            const text = new TSpan({
+        };
+        SVGParser.prototype._parseText = function (xmlNode, parentGroup) {
+            var text = new TSpan({
                 style: {
                     text: xmlNode.textContent
                 },
@@ -46528,205 +47776,206 @@
             inheritStyle(parentGroup, text);
             parseAttributes(xmlNode, text, this._defsUsePending, false, false);
             applyTextAlignment(text, parentGroup);
-            const textStyle = text.style;
-            const fontSize = textStyle.fontSize;
+            var textStyle = text.style;
+            var fontSize = textStyle.fontSize;
             if (fontSize && fontSize < 9) {
                 textStyle.fontSize = 9;
                 text.scaleX *= fontSize / 9;
                 text.scaleY *= fontSize / 9;
             }
-            const font = (textStyle.fontSize || textStyle.fontFamily) && [
+            var font = (textStyle.fontSize || textStyle.fontFamily) && [
                 textStyle.fontStyle,
                 textStyle.fontWeight,
                 (textStyle.fontSize || 12) + 'px',
                 textStyle.fontFamily || 'sans-serif'
             ].join(' ');
             textStyle.font = font;
-            const rect = text.getBoundingRect();
+            var rect = text.getBoundingRect();
             this._textX += rect.width;
             parentGroup.add(text);
             return text;
-        }
-    }
-    SVGParser.internalField = (function () {
-        nodeParsers = {
-            'g': function (xmlNode, parentGroup) {
-                const g = new Group();
-                inheritStyle(parentGroup, g);
-                parseAttributes(xmlNode, g, this._defsUsePending, false, false);
-                return g;
-            },
-            'rect': function (xmlNode, parentGroup) {
-                const rect = new Rect();
-                inheritStyle(parentGroup, rect);
-                parseAttributes(xmlNode, rect, this._defsUsePending, false, false);
-                rect.setShape({
-                    x: parseFloat(xmlNode.getAttribute('x') || '0'),
-                    y: parseFloat(xmlNode.getAttribute('y') || '0'),
-                    width: parseFloat(xmlNode.getAttribute('width') || '0'),
-                    height: parseFloat(xmlNode.getAttribute('height') || '0')
-                });
-                rect.silent = true;
-                return rect;
-            },
-            'circle': function (xmlNode, parentGroup) {
-                const circle = new Circle();
-                inheritStyle(parentGroup, circle);
-                parseAttributes(xmlNode, circle, this._defsUsePending, false, false);
-                circle.setShape({
-                    cx: parseFloat(xmlNode.getAttribute('cx') || '0'),
-                    cy: parseFloat(xmlNode.getAttribute('cy') || '0'),
-                    r: parseFloat(xmlNode.getAttribute('r') || '0')
-                });
-                circle.silent = true;
-                return circle;
-            },
-            'line': function (xmlNode, parentGroup) {
-                const line = new Line();
-                inheritStyle(parentGroup, line);
-                parseAttributes(xmlNode, line, this._defsUsePending, false, false);
-                line.setShape({
-                    x1: parseFloat(xmlNode.getAttribute('x1') || '0'),
-                    y1: parseFloat(xmlNode.getAttribute('y1') || '0'),
-                    x2: parseFloat(xmlNode.getAttribute('x2') || '0'),
-                    y2: parseFloat(xmlNode.getAttribute('y2') || '0')
-                });
-                line.silent = true;
-                return line;
-            },
-            'ellipse': function (xmlNode, parentGroup) {
-                const ellipse = new Ellipse();
-                inheritStyle(parentGroup, ellipse);
-                parseAttributes(xmlNode, ellipse, this._defsUsePending, false, false);
-                ellipse.setShape({
-                    cx: parseFloat(xmlNode.getAttribute('cx') || '0'),
-                    cy: parseFloat(xmlNode.getAttribute('cy') || '0'),
-                    rx: parseFloat(xmlNode.getAttribute('rx') || '0'),
-                    ry: parseFloat(xmlNode.getAttribute('ry') || '0')
-                });
-                ellipse.silent = true;
-                return ellipse;
-            },
-            'polygon': function (xmlNode, parentGroup) {
-                const pointsStr = xmlNode.getAttribute('points');
-                let pointsArr;
-                if (pointsStr) {
-                    pointsArr = parsePoints(pointsStr);
-                }
-                const polygon = new Polygon({
-                    shape: {
-                        points: pointsArr || []
-                    },
-                    silent: true
-                });
-                inheritStyle(parentGroup, polygon);
-                parseAttributes(xmlNode, polygon, this._defsUsePending, false, false);
-                return polygon;
-            },
-            'polyline': function (xmlNode, parentGroup) {
-                const pointsStr = xmlNode.getAttribute('points');
-                let pointsArr;
-                if (pointsStr) {
-                    pointsArr = parsePoints(pointsStr);
-                }
-                const polyline = new Polyline({
-                    shape: {
-                        points: pointsArr || []
-                    },
-                    silent: true
-                });
-                inheritStyle(parentGroup, polyline);
-                parseAttributes(xmlNode, polyline, this._defsUsePending, false, false);
-                return polyline;
-            },
-            'image': function (xmlNode, parentGroup) {
-                const img = new ZRImage();
-                inheritStyle(parentGroup, img);
-                parseAttributes(xmlNode, img, this._defsUsePending, false, false);
-                img.setStyle({
-                    image: xmlNode.getAttribute('xlink:href') || xmlNode.getAttribute('href'),
-                    x: +xmlNode.getAttribute('x'),
-                    y: +xmlNode.getAttribute('y'),
-                    width: +xmlNode.getAttribute('width'),
-                    height: +xmlNode.getAttribute('height')
-                });
-                img.silent = true;
-                return img;
-            },
-            'text': function (xmlNode, parentGroup) {
-                const x = xmlNode.getAttribute('x') || '0';
-                const y = xmlNode.getAttribute('y') || '0';
-                const dx = xmlNode.getAttribute('dx') || '0';
-                const dy = xmlNode.getAttribute('dy') || '0';
-                this._textX = parseFloat(x) + parseFloat(dx);
-                this._textY = parseFloat(y) + parseFloat(dy);
-                const g = new Group();
-                inheritStyle(parentGroup, g);
-                parseAttributes(xmlNode, g, this._defsUsePending, false, true);
-                return g;
-            },
-            'tspan': function (xmlNode, parentGroup) {
-                const x = xmlNode.getAttribute('x');
-                const y = xmlNode.getAttribute('y');
-                if (x != null) {
-                    this._textX = parseFloat(x);
-                }
-                if (y != null) {
-                    this._textY = parseFloat(y);
-                }
-                const dx = xmlNode.getAttribute('dx') || '0';
-                const dy = xmlNode.getAttribute('dy') || '0';
-                const g = new Group();
-                inheritStyle(parentGroup, g);
-                parseAttributes(xmlNode, g, this._defsUsePending, false, true);
-                this._textX += parseFloat(dx);
-                this._textY += parseFloat(dy);
-                return g;
-            },
-            'path': function (xmlNode, parentGroup) {
-                const d = xmlNode.getAttribute('d') || '';
-                const path = createFromString(d);
-                inheritStyle(parentGroup, path);
-                parseAttributes(xmlNode, path, this._defsUsePending, false, false);
-                path.silent = true;
-                return path;
-            }
         };
-    })();
-    const paintServerParsers = {
+        SVGParser.internalField = (function () {
+            nodeParsers = {
+                'g': function (xmlNode, parentGroup) {
+                    var g = new Group();
+                    inheritStyle(parentGroup, g);
+                    parseAttributes(xmlNode, g, this._defsUsePending, false, false);
+                    return g;
+                },
+                'rect': function (xmlNode, parentGroup) {
+                    var rect = new Rect();
+                    inheritStyle(parentGroup, rect);
+                    parseAttributes(xmlNode, rect, this._defsUsePending, false, false);
+                    rect.setShape({
+                        x: parseFloat(xmlNode.getAttribute('x') || '0'),
+                        y: parseFloat(xmlNode.getAttribute('y') || '0'),
+                        width: parseFloat(xmlNode.getAttribute('width') || '0'),
+                        height: parseFloat(xmlNode.getAttribute('height') || '0')
+                    });
+                    rect.silent = true;
+                    return rect;
+                },
+                'circle': function (xmlNode, parentGroup) {
+                    var circle = new Circle();
+                    inheritStyle(parentGroup, circle);
+                    parseAttributes(xmlNode, circle, this._defsUsePending, false, false);
+                    circle.setShape({
+                        cx: parseFloat(xmlNode.getAttribute('cx') || '0'),
+                        cy: parseFloat(xmlNode.getAttribute('cy') || '0'),
+                        r: parseFloat(xmlNode.getAttribute('r') || '0')
+                    });
+                    circle.silent = true;
+                    return circle;
+                },
+                'line': function (xmlNode, parentGroup) {
+                    var line = new Line();
+                    inheritStyle(parentGroup, line);
+                    parseAttributes(xmlNode, line, this._defsUsePending, false, false);
+                    line.setShape({
+                        x1: parseFloat(xmlNode.getAttribute('x1') || '0'),
+                        y1: parseFloat(xmlNode.getAttribute('y1') || '0'),
+                        x2: parseFloat(xmlNode.getAttribute('x2') || '0'),
+                        y2: parseFloat(xmlNode.getAttribute('y2') || '0')
+                    });
+                    line.silent = true;
+                    return line;
+                },
+                'ellipse': function (xmlNode, parentGroup) {
+                    var ellipse = new Ellipse();
+                    inheritStyle(parentGroup, ellipse);
+                    parseAttributes(xmlNode, ellipse, this._defsUsePending, false, false);
+                    ellipse.setShape({
+                        cx: parseFloat(xmlNode.getAttribute('cx') || '0'),
+                        cy: parseFloat(xmlNode.getAttribute('cy') || '0'),
+                        rx: parseFloat(xmlNode.getAttribute('rx') || '0'),
+                        ry: parseFloat(xmlNode.getAttribute('ry') || '0')
+                    });
+                    ellipse.silent = true;
+                    return ellipse;
+                },
+                'polygon': function (xmlNode, parentGroup) {
+                    var pointsStr = xmlNode.getAttribute('points');
+                    var pointsArr;
+                    if (pointsStr) {
+                        pointsArr = parsePoints(pointsStr);
+                    }
+                    var polygon = new Polygon({
+                        shape: {
+                            points: pointsArr || []
+                        },
+                        silent: true
+                    });
+                    inheritStyle(parentGroup, polygon);
+                    parseAttributes(xmlNode, polygon, this._defsUsePending, false, false);
+                    return polygon;
+                },
+                'polyline': function (xmlNode, parentGroup) {
+                    var pointsStr = xmlNode.getAttribute('points');
+                    var pointsArr;
+                    if (pointsStr) {
+                        pointsArr = parsePoints(pointsStr);
+                    }
+                    var polyline = new Polyline({
+                        shape: {
+                            points: pointsArr || []
+                        },
+                        silent: true
+                    });
+                    inheritStyle(parentGroup, polyline);
+                    parseAttributes(xmlNode, polyline, this._defsUsePending, false, false);
+                    return polyline;
+                },
+                'image': function (xmlNode, parentGroup) {
+                    var img = new ZRImage();
+                    inheritStyle(parentGroup, img);
+                    parseAttributes(xmlNode, img, this._defsUsePending, false, false);
+                    img.setStyle({
+                        image: xmlNode.getAttribute('xlink:href') || xmlNode.getAttribute('href'),
+                        x: +xmlNode.getAttribute('x'),
+                        y: +xmlNode.getAttribute('y'),
+                        width: +xmlNode.getAttribute('width'),
+                        height: +xmlNode.getAttribute('height')
+                    });
+                    img.silent = true;
+                    return img;
+                },
+                'text': function (xmlNode, parentGroup) {
+                    var x = xmlNode.getAttribute('x') || '0';
+                    var y = xmlNode.getAttribute('y') || '0';
+                    var dx = xmlNode.getAttribute('dx') || '0';
+                    var dy = xmlNode.getAttribute('dy') || '0';
+                    this._textX = parseFloat(x) + parseFloat(dx);
+                    this._textY = parseFloat(y) + parseFloat(dy);
+                    var g = new Group();
+                    inheritStyle(parentGroup, g);
+                    parseAttributes(xmlNode, g, this._defsUsePending, false, true);
+                    return g;
+                },
+                'tspan': function (xmlNode, parentGroup) {
+                    var x = xmlNode.getAttribute('x');
+                    var y = xmlNode.getAttribute('y');
+                    if (x != null) {
+                        this._textX = parseFloat(x);
+                    }
+                    if (y != null) {
+                        this._textY = parseFloat(y);
+                    }
+                    var dx = xmlNode.getAttribute('dx') || '0';
+                    var dy = xmlNode.getAttribute('dy') || '0';
+                    var g = new Group();
+                    inheritStyle(parentGroup, g);
+                    parseAttributes(xmlNode, g, this._defsUsePending, false, true);
+                    this._textX += parseFloat(dx);
+                    this._textY += parseFloat(dy);
+                    return g;
+                },
+                'path': function (xmlNode, parentGroup) {
+                    var d = xmlNode.getAttribute('d') || '';
+                    var path = createFromString(d);
+                    inheritStyle(parentGroup, path);
+                    parseAttributes(xmlNode, path, this._defsUsePending, false, false);
+                    path.silent = true;
+                    return path;
+                }
+            };
+        })();
+        return SVGParser;
+    }());
+    var paintServerParsers = {
         'lineargradient': function (xmlNode) {
-            const x1 = parseInt(xmlNode.getAttribute('x1') || '0', 10);
-            const y1 = parseInt(xmlNode.getAttribute('y1') || '0', 10);
-            const x2 = parseInt(xmlNode.getAttribute('x2') || '10', 10);
-            const y2 = parseInt(xmlNode.getAttribute('y2') || '0', 10);
-            const gradient = new LinearGradient(x1, y1, x2, y2);
+            var x1 = parseInt(xmlNode.getAttribute('x1') || '0', 10);
+            var y1 = parseInt(xmlNode.getAttribute('y1') || '0', 10);
+            var x2 = parseInt(xmlNode.getAttribute('x2') || '10', 10);
+            var y2 = parseInt(xmlNode.getAttribute('y2') || '0', 10);
+            var gradient = new LinearGradient(x1, y1, x2, y2);
             parsePaintServerUnit(xmlNode, gradient);
             parseGradientColorStops(xmlNode, gradient);
             return gradient;
         },
         'radialgradient': function (xmlNode) {
-            const cx = parseInt(xmlNode.getAttribute('cx') || '0', 10);
-            const cy = parseInt(xmlNode.getAttribute('cy') || '0', 10);
-            const r = parseInt(xmlNode.getAttribute('r') || '0', 10);
-            const gradient = new RadialGradient(cx, cy, r);
+            var cx = parseInt(xmlNode.getAttribute('cx') || '0', 10);
+            var cy = parseInt(xmlNode.getAttribute('cy') || '0', 10);
+            var r = parseInt(xmlNode.getAttribute('r') || '0', 10);
+            var gradient = new RadialGradient(cx, cy, r);
             parsePaintServerUnit(xmlNode, gradient);
             parseGradientColorStops(xmlNode, gradient);
             return gradient;
         }
     };
     function parsePaintServerUnit(xmlNode, gradient) {
-        const gradientUnits = xmlNode.getAttribute('gradientUnits');
+        var gradientUnits = xmlNode.getAttribute('gradientUnits');
         if (gradientUnits === 'userSpaceOnUse') {
             gradient.global = true;
         }
     }
     function parseGradientColorStops(xmlNode, gradient) {
-        let stop = xmlNode.firstChild;
+        var stop = xmlNode.firstChild;
         while (stop) {
             if (stop.nodeType === 1
                 && stop.nodeName.toLocaleLowerCase() === 'stop') {
-                const offsetStr = stop.getAttribute('offset');
-                let offset;
+                var offsetStr = stop.getAttribute('offset');
+                var offset = void 0;
                 if (offsetStr && offsetStr.indexOf('%') > 0) {
                     offset = parseInt(offsetStr, 10) / 100;
                 }
@@ -46736,9 +47985,9 @@
                 else {
                     offset = 0;
                 }
-                const styleVals = {};
+                var styleVals = {};
                 parseInlineStyle(stop, styleVals, styleVals);
-                const stopColor = styleVals.stopColor
+                var stopColor = styleVals.stopColor
                     || stop.getAttribute('stop-color')
                     || '#000000';
                 gradient.colorStops.push({
@@ -46758,19 +48007,19 @@
         }
     }
     function parsePoints(pointsString) {
-        const list = splitNumberSequence(pointsString);
-        const points = [];
-        for (let i = 0; i < list.length; i += 2) {
-            const x = parseFloat(list[i]);
-            const y = parseFloat(list[i + 1]);
+        var list = splitNumberSequence(pointsString);
+        var points = [];
+        for (var i = 0; i < list.length; i += 2) {
+            var x = parseFloat(list[i]);
+            var y = parseFloat(list[i + 1]);
             points.push([x, y]);
         }
         return points;
     }
     function parseAttributes(xmlNode, el, defsUsePending, onlyInlineStyle, isTextGroup) {
-        const disp = el;
-        const inheritedStyle = disp.__inheritedStyle = disp.__inheritedStyle || {};
-        const selfStyle = {};
+        var disp = el;
+        var inheritedStyle = disp.__inheritedStyle = disp.__inheritedStyle || {};
+        var selfStyle = {};
         if (xmlNode.nodeType === 1) {
             parseTransformAttribute(xmlNode, el);
             parseInlineStyle(xmlNode, inheritedStyle, selfStyle);
@@ -46815,10 +48064,10 @@
         }
     }
     function applyTextAlignment(text, parentGroup) {
-        const parentSelfStyle = parentGroup.__selfStyle;
+        var parentSelfStyle = parentGroup.__selfStyle;
         if (parentSelfStyle) {
-            const textBaseline = parentSelfStyle.textBaseline;
-            let zrTextBaseline = textBaseline;
+            var textBaseline = parentSelfStyle.textBaseline;
+            var zrTextBaseline = textBaseline;
             if (!textBaseline || textBaseline === 'auto') {
                 zrTextBaseline = 'alphabetic';
             }
@@ -46836,10 +48085,10 @@
             }
             text.style.textBaseline = zrTextBaseline;
         }
-        const parentInheritedStyle = parentGroup.__inheritedStyle;
+        var parentInheritedStyle = parentGroup.__inheritedStyle;
         if (parentInheritedStyle) {
-            const textAlign = parentInheritedStyle.textAlign;
-            let zrTextAlign = textAlign;
+            var textAlign = parentInheritedStyle.textAlign;
+            var zrTextAlign = textAlign;
             if (textAlign) {
                 if (textAlign === 'middle') {
                     zrTextAlign = 'center';
@@ -46848,11 +48097,11 @@
             }
         }
     }
-    const urlRegex = /^url\(\s*#(.*?)\)/;
+    var urlRegex = /^url\(\s*#(.*?)\)/;
     function getFillStrokeStyle(el, method, str, defsUsePending) {
-        const urlMatch = str && str.match(urlRegex);
+        var urlMatch = str && str.match(urlRegex);
         if (urlMatch) {
-            const url = trim(urlMatch[1]);
+            var url = trim(urlMatch[1]);
             defsUsePending.push([el, method, url]);
             return;
         }
@@ -46862,31 +48111,31 @@
         return str;
     }
     function applyDefs(defs, defsUsePending) {
-        for (let i = 0; i < defsUsePending.length; i++) {
-            const item = defsUsePending[i];
+        for (var i = 0; i < defsUsePending.length; i++) {
+            var item = defsUsePending[i];
             item[0].style[item[1]] = defs[item[2]];
         }
     }
-    const numberReg$1 = /-?([0-9]*\.)?[0-9]+([eE]-?[0-9]+)?/g;
+    var numberReg$1 = /-?([0-9]*\.)?[0-9]+([eE]-?[0-9]+)?/g;
     function splitNumberSequence(rawStr) {
         return rawStr.match(numberReg$1) || [];
     }
-    const transformRegex = /(translate|scale|rotate|skewX|skewY|matrix)\(([\-\s0-9\.eE,]*)\)/g;
-    const DEGREE_TO_ANGLE = Math.PI / 180;
+    var transformRegex = /(translate|scale|rotate|skewX|skewY|matrix)\(([\-\s0-9\.eE,]*)\)/g;
+    var DEGREE_TO_ANGLE = Math.PI / 180;
     function parseTransformAttribute(xmlNode, node) {
-        let transform = xmlNode.getAttribute('transform');
+        var transform = xmlNode.getAttribute('transform');
         if (transform) {
             transform = transform.replace(/,/g, ' ');
-            const transformOps = [];
-            let mt = null;
+            var transformOps_1 = [];
+            var mt = null;
             transform.replace(transformRegex, function (str, type, value) {
-                transformOps.push(type, value);
+                transformOps_1.push(type, value);
                 return '';
             });
-            for (let i = transformOps.length - 1; i > 0; i -= 2) {
-                const value = transformOps[i];
-                const type = transformOps[i - 1];
-                const valueArr = splitNumberSequence(value);
+            for (var i = transformOps_1.length - 1; i > 0; i -= 2) {
+                var value = transformOps_1[i];
+                var type = transformOps_1[i - 1];
+                var valueArr = splitNumberSequence(value);
                 mt = mt || create$1();
                 switch (type) {
                     case 'translate':
@@ -46902,11 +48151,11 @@
                         ]);
                         break;
                     case 'skewX':
-                        const sx = Math.tan(parseFloat(valueArr[0]) * DEGREE_TO_ANGLE);
+                        var sx = Math.tan(parseFloat(valueArr[0]) * DEGREE_TO_ANGLE);
                         mul$1(mt, [1, 0, sx, 1, 0, 0], mt);
                         break;
                     case 'skewY':
-                        const sy = Math.tan(parseFloat(valueArr[0]) * DEGREE_TO_ANGLE);
+                        var sy = Math.tan(parseFloat(valueArr[0]) * DEGREE_TO_ANGLE);
                         mul$1(mt, [1, sy, 0, 1, 0, 0], mt);
                         break;
                     case 'matrix':
@@ -46922,23 +48171,23 @@
             node.setLocalTransform(mt);
         }
     }
-    const styleRegex = /([^\s:;]+)\s*:\s*([^:;]+)/g;
+    var styleRegex = /([^\s:;]+)\s*:\s*([^:;]+)/g;
     function parseInlineStyle(xmlNode, inheritableStyleResult, selfStyleResult) {
-        const style = xmlNode.getAttribute('style');
+        var style = xmlNode.getAttribute('style');
         if (!style) {
             return;
         }
         styleRegex.lastIndex = 0;
-        let styleRegResult;
+        var styleRegResult;
         while ((styleRegResult = styleRegex.exec(style)) != null) {
-            const svgStlAttr = styleRegResult[1];
-            const zrInheritableStlAttr = hasOwn(INHERITABLE_STYLE_ATTRIBUTES_MAP, svgStlAttr)
+            var svgStlAttr = styleRegResult[1];
+            var zrInheritableStlAttr = hasOwn(INHERITABLE_STYLE_ATTRIBUTES_MAP, svgStlAttr)
                 ? INHERITABLE_STYLE_ATTRIBUTES_MAP[svgStlAttr]
                 : null;
             if (zrInheritableStlAttr) {
                 inheritableStyleResult[zrInheritableStlAttr] = styleRegResult[2];
             }
-            const zrSelfStlAttr = hasOwn(SELF_STYLE_ATTRIBUTES_MAP, svgStlAttr)
+            var zrSelfStlAttr = hasOwn(SELF_STYLE_ATTRIBUTES_MAP, svgStlAttr)
                 ? SELF_STYLE_ATTRIBUTES_MAP[svgStlAttr]
                 : null;
             if (zrSelfStlAttr) {
@@ -46947,33 +48196,33 @@
         }
     }
     function parseAttributeStyle(xmlNode, inheritableStyleResult, selfStyleResult) {
-        for (let i = 0; i < INHERITABLE_STYLE_ATTRIBUTES_MAP_KEYS.length; i++) {
-            const svgAttrName = INHERITABLE_STYLE_ATTRIBUTES_MAP_KEYS[i];
-            const attrValue = xmlNode.getAttribute(svgAttrName);
+        for (var i = 0; i < INHERITABLE_STYLE_ATTRIBUTES_MAP_KEYS.length; i++) {
+            var svgAttrName = INHERITABLE_STYLE_ATTRIBUTES_MAP_KEYS[i];
+            var attrValue = xmlNode.getAttribute(svgAttrName);
             if (attrValue != null) {
                 inheritableStyleResult[INHERITABLE_STYLE_ATTRIBUTES_MAP[svgAttrName]] = attrValue;
             }
         }
-        for (let i = 0; i < SELF_STYLE_ATTRIBUTES_MAP_KEYS.length; i++) {
-            const svgAttrName = SELF_STYLE_ATTRIBUTES_MAP_KEYS[i];
-            const attrValue = xmlNode.getAttribute(svgAttrName);
+        for (var i = 0; i < SELF_STYLE_ATTRIBUTES_MAP_KEYS.length; i++) {
+            var svgAttrName = SELF_STYLE_ATTRIBUTES_MAP_KEYS[i];
+            var attrValue = xmlNode.getAttribute(svgAttrName);
             if (attrValue != null) {
                 selfStyleResult[SELF_STYLE_ATTRIBUTES_MAP[svgAttrName]] = attrValue;
             }
         }
     }
     function makeViewBoxTransform(viewBoxRect, boundingRect) {
-        const scaleX = boundingRect.width / viewBoxRect.width;
-        const scaleY = boundingRect.height / viewBoxRect.height;
-        const scale = Math.min(scaleX, scaleY);
+        var scaleX = boundingRect.width / viewBoxRect.width;
+        var scaleY = boundingRect.height / viewBoxRect.height;
+        var scale = Math.min(scaleX, scaleY);
         return {
-            scale,
+            scale: scale,
             x: -(viewBoxRect.x + viewBoxRect.width / 2) * scale + (boundingRect.x + boundingRect.width / 2),
             y: -(viewBoxRect.y + viewBoxRect.height / 2) * scale + (boundingRect.y + boundingRect.height / 2)
         };
     }
     function parseSVG(xml, opt) {
-        const parser = new SVGParser();
+        var parser = new SVGParser();
         return parser.parse(xml, opt);
     }
 
@@ -47263,12 +48512,12 @@
     var geoCoord = [126, 25];
     var nanhaiName = '南海诸岛';
     var points$1 = [[[0, 3.5], [7, 11.2], [15, 11.9], [30, 7], [42, 0.7], [52, 0.7], [56, 7.7], [59, 0.7], [64, 0.7], [64, 0], [5, 0], [0, 3.5]], [[13, 16.1], [19, 14.7], [16, 21.7], [11, 23.1], [13, 16.1]], [[12, 32.2], [14, 38.5], [15, 38.5], [13, 32.2], [12, 32.2]], [[16, 47.6], [12, 53.2], [13, 53.2], [18, 47.6], [16, 47.6]], [[6, 64.4], [8, 70], [9, 70], [8, 64.4], [6, 64.4]], [[23, 82.6], [29, 79.8], [30, 79.8], [25, 82.6], [23, 82.6]], [[37, 70.7], [43, 62.3], [44, 62.3], [39, 70.7], [37, 70.7]], [[48, 51.1], [51, 45.5], [53, 45.5], [50, 51.1], [48, 51.1]], [[51, 35], [51, 28.7], [53, 28.7], [53, 35], [51, 35]], [[52, 22.4], [55, 17.5], [56, 17.5], [53, 22.4], [52, 22.4]], [[58, 12.6], [62, 7], [63, 7], [60, 12.6], [58, 12.6]], [[0, 3.5], [0, 93.1], [64, 93.1], [64, 0], [63, 0], [63, 92.4], [1, 92.4], [1, 3.5], [0, 3.5]]];
-    for (var i$1 = 0; i$1 < points$1.length; i$1++) {
-      for (var k$1 = 0; k$1 < points$1[i$1].length; k$1++) {
-        points$1[i$1][k$1][0] /= 10.5;
-        points$1[i$1][k$1][1] /= -10.5 / 0.75;
-        points$1[i$1][k$1][0] += geoCoord[0];
-        points$1[i$1][k$1][1] += geoCoord[1];
+    for (var i = 0; i < points$1.length; i++) {
+      for (var k = 0; k < points$1[i].length; k++) {
+        points$1[i][k][0] /= 10.5;
+        points$1[i][k][1] /= -10.5 / 0.75;
+        points$1[i][k][0] += geoCoord[0];
+        points$1[i][k][1] += geoCoord[1];
       }
     }
     function fixNanhai(mapType, regions) {
@@ -83722,19 +84971,19 @@
       registers.registerComponentView(DatasetView);
     }
 
-    const CMD$4 = PathProxy.CMD;
+    var CMD$4 = PathProxy.CMD;
     function aroundEqual(a, b) {
         return Math.abs(a - b) < 1e-5;
     }
     function pathToBezierCurves(path) {
-        const data = path.data;
-        const len = path.len();
-        const bezierArrayGroups = [];
-        let currentSubpath;
-        let xi = 0;
-        let yi = 0;
-        let x0 = 0;
-        let y0 = 0;
+        var data = path.data;
+        var len = path.len();
+        var bezierArrayGroups = [];
+        var currentSubpath;
+        var xi = 0;
+        var yi = 0;
+        var x0 = 0;
+        var y0 = 0;
         function createNewSubpath(x, y) {
             if (currentSubpath && currentSubpath.length > 2) {
                 bezierArrayGroups.push(currentSubpath);
@@ -83747,28 +84996,28 @@
             }
         }
         function addArc(startAngle, endAngle, cx, cy, rx, ry) {
-            const delta = Math.abs(endAngle - startAngle);
-            const len = Math.tan(delta / 4) * 4 / 3;
-            const dir = endAngle < startAngle ? -1 : 1;
-            const c1 = Math.cos(startAngle);
-            const s1 = Math.sin(startAngle);
-            const c2 = Math.cos(endAngle);
-            const s2 = Math.sin(endAngle);
-            const x1 = c1 * rx + cx;
-            const y1 = s1 * ry + cy;
-            const x4 = c2 * rx + cx;
-            const y4 = s2 * ry + cy;
-            const hx = rx * len * dir;
-            const hy = ry * len * dir;
+            var delta = Math.abs(endAngle - startAngle);
+            var len = Math.tan(delta / 4) * 4 / 3;
+            var dir = endAngle < startAngle ? -1 : 1;
+            var c1 = Math.cos(startAngle);
+            var s1 = Math.sin(startAngle);
+            var c2 = Math.cos(endAngle);
+            var s2 = Math.sin(endAngle);
+            var x1 = c1 * rx + cx;
+            var y1 = s1 * ry + cy;
+            var x4 = c2 * rx + cx;
+            var y4 = s2 * ry + cy;
+            var hx = rx * len * dir;
+            var hy = ry * len * dir;
             currentSubpath.push(x1 - hx * s1, y1 + hy * c1, x4 + hx * s2, y4 - hy * c2, x4, y4);
         }
-        let x1;
-        let y1;
-        let x2;
-        let y2;
-        for (let i = 0; i < len;) {
-            const cmd = data[i++];
-            const isFirst = i === 1;
+        var x1;
+        var y1;
+        var x2;
+        var y2;
+        for (var i = 0; i < len;) {
+            var cmd = data[i++];
+            var isFirst = i === 1;
             if (isFirst) {
                 xi = data[i];
                 yi = data[i + 1];
@@ -83804,14 +85053,14 @@
                     yi = y2;
                     break;
                 case CMD$4.A:
-                    const cx = data[i++];
-                    const cy = data[i++];
-                    const rx = data[i++];
-                    const ry = data[i++];
-                    const startAngle = data[i++];
-                    const endAngle = data[i++] + startAngle;
+                    var cx = data[i++];
+                    var cy = data[i++];
+                    var rx = data[i++];
+                    var ry = data[i++];
+                    var startAngle = data[i++];
+                    var endAngle = data[i++] + startAngle;
                     i += 1;
-                    const anticlockwise = !data[i++];
+                    var anticlockwise = !data[i++];
                     x1 = Math.cos(startAngle) * rx + cx;
                     y1 = Math.sin(startAngle) * ry + cy;
                     if (isFirst) {
@@ -83824,9 +85073,9 @@
                     }
                     xi = Math.cos(endAngle) * rx + cx;
                     yi = Math.sin(endAngle) * ry + cy;
-                    const step = (anticlockwise ? -1 : 1) * Math.PI / 2;
-                    for (let angle = startAngle; anticlockwise ? angle > endAngle : angle < endAngle; angle += step) {
-                        const nextAngle = anticlockwise ? Math.max(angle + step, endAngle)
+                    var step = (anticlockwise ? -1 : 1) * Math.PI / 2;
+                    for (var angle = startAngle; anticlockwise ? angle > endAngle : angle < endAngle; angle += step) {
+                        var nextAngle = anticlockwise ? Math.max(angle + step, endAngle)
                             : Math.min(angle + step, endAngle);
                         addArc(angle, nextAngle, cx, cy, rx, ry);
                     }
@@ -83859,56 +85108,56 @@
             out.push(x3, y3);
             return;
         }
-        const PIXEL_DISTANCE = 2 / scale;
-        const PIXEL_DISTANCE_SQR = PIXEL_DISTANCE * PIXEL_DISTANCE;
-        let dx = x3 - x0;
-        let dy = y3 - y0;
-        const d = Math.sqrt(dx * dx + dy * dy);
+        var PIXEL_DISTANCE = 2 / scale;
+        var PIXEL_DISTANCE_SQR = PIXEL_DISTANCE * PIXEL_DISTANCE;
+        var dx = x3 - x0;
+        var dy = y3 - y0;
+        var d = Math.sqrt(dx * dx + dy * dy);
         dx /= d;
         dy /= d;
-        const dx1 = x1 - x0;
-        const dy1 = y1 - y0;
-        const dx2 = x2 - x3;
-        const dy2 = y2 - y3;
-        const cp1LenSqr = dx1 * dx1 + dy1 * dy1;
-        const cp2LenSqr = dx2 * dx2 + dy2 * dy2;
+        var dx1 = x1 - x0;
+        var dy1 = y1 - y0;
+        var dx2 = x2 - x3;
+        var dy2 = y2 - y3;
+        var cp1LenSqr = dx1 * dx1 + dy1 * dy1;
+        var cp2LenSqr = dx2 * dx2 + dy2 * dy2;
         if (cp1LenSqr < PIXEL_DISTANCE_SQR && cp2LenSqr < PIXEL_DISTANCE_SQR) {
             out.push(x3, y3);
             return;
         }
-        const projLen1 = dx * dx1 + dy * dy1;
-        const projLen2 = -dx * dx2 - dy * dy2;
-        const d1Sqr = cp1LenSqr - projLen1 * projLen1;
-        const d2Sqr = cp2LenSqr - projLen2 * projLen2;
+        var projLen1 = dx * dx1 + dy * dy1;
+        var projLen2 = -dx * dx2 - dy * dy2;
+        var d1Sqr = cp1LenSqr - projLen1 * projLen1;
+        var d2Sqr = cp2LenSqr - projLen2 * projLen2;
         if (d1Sqr < PIXEL_DISTANCE_SQR && projLen1 >= 0
             && d2Sqr < PIXEL_DISTANCE_SQR && projLen2 >= 0) {
             out.push(x3, y3);
             return;
         }
-        const tmpSegX = [];
-        const tmpSegY = [];
+        var tmpSegX = [];
+        var tmpSegY = [];
         cubicSubdivide(x0, x1, x2, x3, 0.5, tmpSegX);
         cubicSubdivide(y0, y1, y2, y3, 0.5, tmpSegY);
         adpativeBezier(tmpSegX[0], tmpSegY[0], tmpSegX[1], tmpSegY[1], tmpSegX[2], tmpSegY[2], tmpSegX[3], tmpSegY[3], out, scale);
         adpativeBezier(tmpSegX[4], tmpSegY[4], tmpSegX[5], tmpSegY[5], tmpSegX[6], tmpSegY[6], tmpSegX[7], tmpSegY[7], out, scale);
     }
     function pathToPolygons(path, scale) {
-        const bezierArrayGroups = pathToBezierCurves(path);
-        const polygons = [];
+        var bezierArrayGroups = pathToBezierCurves(path);
+        var polygons = [];
         scale = scale || 1;
-        for (let i = 0; i < bezierArrayGroups.length; i++) {
-            const beziers = bezierArrayGroups[i];
-            const polygon = [];
-            let x0 = beziers[0];
-            let y0 = beziers[1];
+        for (var i = 0; i < bezierArrayGroups.length; i++) {
+            var beziers = bezierArrayGroups[i];
+            var polygon = [];
+            var x0 = beziers[0];
+            var y0 = beziers[1];
             polygon.push(x0, y0);
-            for (let k = 2; k < beziers.length;) {
-                const x1 = beziers[k++];
-                const y1 = beziers[k++];
-                const x2 = beziers[k++];
-                const y2 = beziers[k++];
-                const x3 = beziers[k++];
-                const y3 = beziers[k++];
+            for (var k = 2; k < beziers.length;) {
+                var x1 = beziers[k++];
+                var y1 = beziers[k++];
+                var x2 = beziers[k++];
+                var y2 = beziers[k++];
+                var x3 = beziers[k++];
+                var y3 = beziers[k++];
                 adpativeBezier(x0, y0, x1, y1, x2, y2, x3, y3, polygon, scale);
                 x0 = x3;
                 y0 = y3;
@@ -83919,43 +85168,43 @@
     }
 
     function getDividingGrids(dimSize, rowDim, count) {
-        const rowSize = dimSize[rowDim];
-        const columnSize = dimSize[1 - rowDim];
-        const ratio = Math.abs(rowSize / columnSize);
-        let rowCount = Math.ceil(Math.sqrt(ratio * count));
-        let columnCount = Math.floor(count / rowCount);
+        var rowSize = dimSize[rowDim];
+        var columnSize = dimSize[1 - rowDim];
+        var ratio = Math.abs(rowSize / columnSize);
+        var rowCount = Math.ceil(Math.sqrt(ratio * count));
+        var columnCount = Math.floor(count / rowCount);
         if (columnCount === 0) {
             columnCount = 1;
             rowCount = count;
         }
-        const grids = [];
-        for (let i = 0; i < rowCount; i++) {
+        var grids = [];
+        for (var i = 0; i < rowCount; i++) {
             grids.push(columnCount);
         }
-        const currentCount = rowCount * columnCount;
-        const remained = count - currentCount;
+        var currentCount = rowCount * columnCount;
+        var remained = count - currentCount;
         if (remained > 0) {
-            for (let i = 0; i < remained; i++) {
+            for (var i = 0; i < remained; i++) {
                 grids[i % rowCount] += 1;
             }
         }
         return grids;
     }
     function divideSector(sectorShape, count, outShapes) {
-        const r0 = sectorShape.r0;
-        const r = sectorShape.r;
-        const startAngle = sectorShape.startAngle;
-        const endAngle = sectorShape.endAngle;
-        const angle = Math.abs(endAngle - startAngle);
-        const arcLen = angle * r;
-        const deltaR = r - r0;
-        const isAngleRow = arcLen > Math.abs(deltaR);
-        const grids = getDividingGrids([arcLen, deltaR], isAngleRow ? 0 : 1, count);
-        const rowSize = (isAngleRow ? angle : deltaR) / grids.length;
-        for (let row = 0; row < grids.length; row++) {
-            const columnSize = (isAngleRow ? deltaR : angle) / grids[row];
-            for (let column = 0; column < grids[row]; column++) {
-                const newShape = {};
+        var r0 = sectorShape.r0;
+        var r = sectorShape.r;
+        var startAngle = sectorShape.startAngle;
+        var endAngle = sectorShape.endAngle;
+        var angle = Math.abs(endAngle - startAngle);
+        var arcLen = angle * r;
+        var deltaR = r - r0;
+        var isAngleRow = arcLen > Math.abs(deltaR);
+        var grids = getDividingGrids([arcLen, deltaR], isAngleRow ? 0 : 1, count);
+        var rowSize = (isAngleRow ? angle : deltaR) / grids.length;
+        for (var row = 0; row < grids.length; row++) {
+            var columnSize = (isAngleRow ? deltaR : angle) / grids[row];
+            for (var column = 0; column < grids[row]; column++) {
+                var newShape = {};
                 if (isAngleRow) {
                     newShape.startAngle = startAngle + rowSize * row;
                     newShape.endAngle = startAngle + rowSize * (row + 1);
@@ -83976,19 +85225,19 @@
         }
     }
     function divideRect(rectShape, count, outShapes) {
-        const width = rectShape.width;
-        const height = rectShape.height;
-        const isHorizontalRow = width > height;
-        const grids = getDividingGrids([width, height], isHorizontalRow ? 0 : 1, count);
-        const rowSizeDim = isHorizontalRow ? 'width' : 'height';
-        const columnSizeDim = isHorizontalRow ? 'height' : 'width';
-        const rowDim = isHorizontalRow ? 'x' : 'y';
-        const columnDim = isHorizontalRow ? 'y' : 'x';
-        const rowSize = rectShape[rowSizeDim] / grids.length;
-        for (let row = 0; row < grids.length; row++) {
-            const columnSize = rectShape[columnSizeDim] / grids[row];
-            for (let column = 0; column < grids[row]; column++) {
-                const newShape = {};
+        var width = rectShape.width;
+        var height = rectShape.height;
+        var isHorizontalRow = width > height;
+        var grids = getDividingGrids([width, height], isHorizontalRow ? 0 : 1, count);
+        var rowSizeDim = isHorizontalRow ? 'width' : 'height';
+        var columnSizeDim = isHorizontalRow ? 'height' : 'width';
+        var rowDim = isHorizontalRow ? 'x' : 'y';
+        var columnDim = isHorizontalRow ? 'y' : 'x';
+        var rowSize = rectShape[rowSizeDim] / grids.length;
+        for (var row = 0; row < grids.length; row++) {
+            var columnSize = rectShape[columnSizeDim] / grids[row];
+            for (var column = 0; column < grids[row]; column++) {
+                var newShape = {};
                 newShape[rowDim] = row * rowSize;
                 newShape[columnDim] = column * columnSize;
                 newShape[rowSizeDim] = rowSize;
@@ -84003,45 +85252,45 @@
         return x1 * y2 - x2 * y1;
     }
     function lineLineIntersect$1(a1x, a1y, a2x, a2y, b1x, b1y, b2x, b2y) {
-        const mx = a2x - a1x;
-        const my = a2y - a1y;
-        const nx = b2x - b1x;
-        const ny = b2y - b1y;
-        const nmCrossProduct = crossProduct2d$1(nx, ny, mx, my);
+        var mx = a2x - a1x;
+        var my = a2y - a1y;
+        var nx = b2x - b1x;
+        var ny = b2y - b1y;
+        var nmCrossProduct = crossProduct2d$1(nx, ny, mx, my);
         if (Math.abs(nmCrossProduct) < 1e-6) {
             return null;
         }
-        const b1a1x = a1x - b1x;
-        const b1a1y = a1y - b1y;
-        const p = crossProduct2d$1(b1a1x, b1a1y, nx, ny) / nmCrossProduct;
+        var b1a1x = a1x - b1x;
+        var b1a1y = a1y - b1y;
+        var p = crossProduct2d$1(b1a1x, b1a1y, nx, ny) / nmCrossProduct;
         if (p < 0 || p > 1) {
             return null;
         }
         return new Point(p * mx + a1x, p * my + a1y);
     }
     function projPtOnLine(pt, lineA, lineB) {
-        const dir = new Point();
+        var dir = new Point();
         Point.sub(dir, lineB, lineA);
         dir.normalize();
-        const dir2 = new Point();
+        var dir2 = new Point();
         Point.sub(dir2, pt, lineA);
-        const len = dir2.dot(dir);
+        var len = dir2.dot(dir);
         return len;
     }
     function addToPoly(poly, pt) {
-        const last = poly[poly.length - 1];
+        var last = poly[poly.length - 1];
         if (last && last[0] === pt[0] && last[1] === pt[1]) {
             return;
         }
         poly.push(pt);
     }
     function splitPolygonByLine(points, lineA, lineB) {
-        const len = points.length;
-        const intersections = [];
-        for (let i = 0; i < len; i++) {
-            const p0 = points[i];
-            const p1 = points[(i + 1) % len];
-            const intersectionPt = lineLineIntersect$1(p0[0], p0[1], p1[0], p1[1], lineA.x, lineA.y, lineB.x, lineB.y);
+        var len = points.length;
+        var intersections = [];
+        for (var i = 0; i < len; i++) {
+            var p0 = points[i];
+            var p1 = points[(i + 1) % len];
+            var intersectionPt = lineLineIntersect$1(p0[0], p0[1], p1[0], p1[1], lineA.x, lineA.y, lineB.x, lineB.y);
             if (intersectionPt) {
                 intersections.push({
                     projPt: projPtOnLine(intersectionPt, lineA, lineB),
@@ -84051,28 +85300,28 @@
             }
         }
         if (intersections.length < 2) {
-            return [{ points }, { points }];
+            return [{ points: points }, { points: points }];
         }
-        intersections.sort((a, b) => {
+        intersections.sort(function (a, b) {
             return a.projPt - b.projPt;
         });
-        let splitPt0 = intersections[0];
-        let splitPt1 = intersections[intersections.length - 1];
+        var splitPt0 = intersections[0];
+        var splitPt1 = intersections[intersections.length - 1];
         if (splitPt1.idx < splitPt0.idx) {
-            const tmp = splitPt0;
+            var tmp = splitPt0;
             splitPt0 = splitPt1;
             splitPt1 = tmp;
         }
-        const splitPt0Arr = [splitPt0.pt.x, splitPt0.pt.y];
-        const splitPt1Arr = [splitPt1.pt.x, splitPt1.pt.y];
-        const newPolyA = [splitPt0Arr];
-        const newPolyB = [splitPt1Arr];
-        for (let i = splitPt0.idx + 1; i <= splitPt1.idx; i++) {
+        var splitPt0Arr = [splitPt0.pt.x, splitPt0.pt.y];
+        var splitPt1Arr = [splitPt1.pt.x, splitPt1.pt.y];
+        var newPolyA = [splitPt0Arr];
+        var newPolyB = [splitPt1Arr];
+        for (var i = splitPt0.idx + 1; i <= splitPt1.idx; i++) {
             addToPoly(newPolyA, points[i].slice());
         }
         addToPoly(newPolyA, splitPt1Arr);
         addToPoly(newPolyA, splitPt0Arr);
-        for (let i = splitPt1.idx + 1; i <= splitPt0.idx + len; i++) {
+        for (var i = splitPt1.idx + 1; i <= splitPt0.idx + len; i++) {
             addToPoly(newPolyB, points[i % len].slice());
         }
         addToPoly(newPolyB, splitPt0Arr);
@@ -84084,17 +85333,17 @@
             }];
     }
     function binaryDividePolygon(polygonShape) {
-        const points = polygonShape.points;
-        const min = [];
-        const max = [];
+        var points = polygonShape.points;
+        var min = [];
+        var max = [];
         fromPoints(points, min, max);
-        const boundingRect = new BoundingRect(min[0], min[1], max[0] - min[0], max[1] - min[1]);
-        const width = boundingRect.width;
-        const height = boundingRect.height;
-        const x = boundingRect.x;
-        const y = boundingRect.y;
-        const pt0 = new Point();
-        const pt1 = new Point();
+        var boundingRect = new BoundingRect(min[0], min[1], max[0] - min[0], max[1] - min[1]);
+        var width = boundingRect.width;
+        var height = boundingRect.height;
+        var x = boundingRect.x;
+        var y = boundingRect.y;
+        var pt0 = new Point();
+        var pt1 = new Point();
         if (width > height) {
             pt0.x = pt1.x = x + width / 2;
             pt0.y = y;
@@ -84112,16 +85361,16 @@
             out.push(shape);
         }
         else {
-            const mid = Math.floor(count / 2);
-            const sub = divider(shape);
+            var mid = Math.floor(count / 2);
+            var sub = divider(shape);
             binaryDivideRecursive(divider, sub[0], mid, out);
             binaryDivideRecursive(divider, sub[1], count - mid, out);
         }
         return out;
     }
     function clone$4(path, count) {
-        const paths = [];
-        for (let i = 0; i < count; i++) {
+        var paths = [];
+        for (var i = 0; i < count; i++) {
             paths.push(clonePath(path));
         }
         return paths;
@@ -84133,16 +85382,16 @@
         target.zlevel = source.zlevel;
     }
     function polygonConvert(points) {
-        const out = [];
-        for (let i = 0; i < points.length;) {
+        var out = [];
+        for (var i = 0; i < points.length;) {
             out.push([points[i++], points[i++]]);
         }
         return out;
     }
     function split(path, count) {
-        const outShapes = [];
-        const shape = path.shape;
-        let OutShapeCtor;
+        var outShapes = [];
+        var shape = path.shape;
+        var OutShapeCtor;
         switch (path.type) {
             case 'rect':
                 divideRect(shape, count, outShapes);
@@ -84160,42 +85409,42 @@
                 OutShapeCtor = Sector;
                 break;
             default:
-                const m = path.getComputedTransform();
-                const scale = m ? Math.sqrt(Math.max(m[0] * m[0] + m[1] * m[1], m[2] * m[2] + m[3] * m[3])) : 1;
-                const polygons = map(pathToPolygons(path.getUpdatedPathProxy(), scale), poly => polygonConvert(poly));
-                const polygonCount = polygons.length;
+                var m = path.getComputedTransform();
+                var scale = m ? Math.sqrt(Math.max(m[0] * m[0] + m[1] * m[1], m[2] * m[2] + m[3] * m[3])) : 1;
+                var polygons = map(pathToPolygons(path.getUpdatedPathProxy(), scale), function (poly) { return polygonConvert(poly); });
+                var polygonCount = polygons.length;
                 if (polygonCount === 0) {
                     binaryDivideRecursive(binaryDividePolygon, {
                         points: polygons[0]
                     }, count, outShapes);
                 }
                 else if (polygonCount === count) {
-                    for (let i = 0; i < polygonCount; i++) {
+                    for (var i = 0; i < polygonCount; i++) {
                         outShapes.push({
                             points: polygons[i]
                         });
                     }
                 }
                 else {
-                    let totalArea = 0;
-                    const items = map(polygons, poly => {
-                        const min = [];
-                        const max = [];
+                    var totalArea_1 = 0;
+                    var items = map(polygons, function (poly) {
+                        var min = [];
+                        var max = [];
                         fromPoints(poly, min, max);
-                        const area = (max[1] - min[1]) * (max[0] - min[0]);
-                        totalArea += area;
-                        return { poly, area };
+                        var area = (max[1] - min[1]) * (max[0] - min[0]);
+                        totalArea_1 += area;
+                        return { poly: poly, area: area };
                     });
-                    items.sort((a, b) => b.area - a.area);
-                    let left = count;
-                    for (let i = 0; i < polygonCount; i++) {
-                        const item = items[i];
+                    items.sort(function (a, b) { return b.area - a.area; });
+                    var left = count;
+                    for (var i = 0; i < polygonCount; i++) {
+                        var item = items[i];
                         if (left <= 0) {
                             break;
                         }
-                        const selfCount = i === polygonCount - 1
+                        var selfCount = i === polygonCount - 1
                             ? left
-                            : Math.ceil(item.area / totalArea * count);
+                            : Math.ceil(item.area / totalArea_1 * count);
                         if (selfCount < 0) {
                             continue;
                         }
@@ -84211,9 +85460,9 @@
         if (!OutShapeCtor) {
             return clone$4(path, count);
         }
-        const out = [];
-        for (let i = 0; i < outShapes.length; i++) {
-            const subPath = new OutShapeCtor();
+        var out = [];
+        for (var i = 0; i < outShapes.length; i++) {
+            var subPath = new OutShapeCtor();
             subPath.setShape(outShapes[i]);
             copyPathProps(path, subPath);
             out.push(subPath);
@@ -84222,36 +85471,36 @@
     }
 
     function alignSubpath(subpath1, subpath2) {
-        const len1 = subpath1.length;
-        const len2 = subpath2.length;
+        var len1 = subpath1.length;
+        var len2 = subpath2.length;
         if (len1 === len2) {
             return [subpath1, subpath2];
         }
-        const tmpSegX = [];
-        const tmpSegY = [];
-        const shorterPath = len1 < len2 ? subpath1 : subpath2;
-        const shorterLen = Math.min(len1, len2);
-        const diff = Math.abs(len2 - len1) / 6;
-        const shorterBezierCount = (shorterLen - 2) / 6;
-        const eachCurveSubDivCount = Math.ceil(diff / shorterBezierCount) + 1;
-        const newSubpath = [shorterPath[0], shorterPath[1]];
-        let remained = diff;
-        for (let i = 2; i < shorterLen;) {
-            let x0 = shorterPath[i - 2];
-            let y0 = shorterPath[i - 1];
-            let x1 = shorterPath[i++];
-            let y1 = shorterPath[i++];
-            let x2 = shorterPath[i++];
-            let y2 = shorterPath[i++];
-            let x3 = shorterPath[i++];
-            let y3 = shorterPath[i++];
+        var tmpSegX = [];
+        var tmpSegY = [];
+        var shorterPath = len1 < len2 ? subpath1 : subpath2;
+        var shorterLen = Math.min(len1, len2);
+        var diff = Math.abs(len2 - len1) / 6;
+        var shorterBezierCount = (shorterLen - 2) / 6;
+        var eachCurveSubDivCount = Math.ceil(diff / shorterBezierCount) + 1;
+        var newSubpath = [shorterPath[0], shorterPath[1]];
+        var remained = diff;
+        for (var i = 2; i < shorterLen;) {
+            var x0 = shorterPath[i - 2];
+            var y0 = shorterPath[i - 1];
+            var x1 = shorterPath[i++];
+            var y1 = shorterPath[i++];
+            var x2 = shorterPath[i++];
+            var y2 = shorterPath[i++];
+            var x3 = shorterPath[i++];
+            var y3 = shorterPath[i++];
             if (remained <= 0) {
                 newSubpath.push(x1, y1, x2, y2, x3, y3);
                 continue;
             }
-            let actualSubDivCount = Math.min(remained, eachCurveSubDivCount - 1) + 1;
-            for (let k = 1; k <= actualSubDivCount; k++) {
-                const p = k / actualSubDivCount;
+            var actualSubDivCount = Math.min(remained, eachCurveSubDivCount - 1) + 1;
+            for (var k = 1; k <= actualSubDivCount; k++) {
+                var p = k / actualSubDivCount;
                 cubicSubdivide(x0, x1, x2, x3, p, tmpSegX);
                 cubicSubdivide(y0, y1, y2, y3, p, tmpSegY);
                 x0 = tmpSegX[3];
@@ -84267,26 +85516,27 @@
         return shorterPath === subpath1 ? [newSubpath, subpath2] : [subpath1, newSubpath];
     }
     function createSubpath(lastSubpathSubpath, otherSubpath) {
-        const len = lastSubpathSubpath.length;
-        const lastX = lastSubpathSubpath[len - 2];
-        const lastY = lastSubpathSubpath[len - 1];
-        const newSubpath = [];
-        for (let i = 0; i < otherSubpath.length;) {
+        var len = lastSubpathSubpath.length;
+        var lastX = lastSubpathSubpath[len - 2];
+        var lastY = lastSubpathSubpath[len - 1];
+        var newSubpath = [];
+        for (var i = 0; i < otherSubpath.length;) {
             newSubpath[i++] = lastX;
             newSubpath[i++] = lastY;
         }
         return newSubpath;
     }
     function alignBezierCurves(array1, array2) {
-        let lastSubpath1;
-        let lastSubpath2;
-        let newArray1 = [];
-        let newArray2 = [];
-        for (let i = 0; i < Math.max(array1.length, array2.length); i++) {
-            const subpath1 = array1[i];
-            const subpath2 = array2[i];
-            let newSubpath1;
-            let newSubpath2;
+        var _a;
+        var lastSubpath1;
+        var lastSubpath2;
+        var newArray1 = [];
+        var newArray2 = [];
+        for (var i = 0; i < Math.max(array1.length, array2.length); i++) {
+            var subpath1 = array1[i];
+            var subpath2 = array2[i];
+            var newSubpath1 = void 0;
+            var newSubpath2 = void 0;
             if (!subpath1) {
                 newSubpath1 = createSubpath(lastSubpath1 || subpath2, subpath2);
                 newSubpath2 = subpath2;
@@ -84296,7 +85546,7 @@
                 newSubpath1 = subpath1;
             }
             else {
-                [newSubpath1, newSubpath2] = alignSubpath(subpath1, subpath2);
+                _a = alignSubpath(subpath1, subpath2), newSubpath1 = _a[0], newSubpath2 = _a[1];
                 lastSubpath1 = newSubpath1;
                 lastSubpath2 = newSubpath2;
             }
@@ -84306,16 +85556,16 @@
         return [newArray1, newArray2];
     }
     function centroid$1(array) {
-        let signedArea = 0;
-        let cx = 0;
-        let cy = 0;
-        const len = array.length;
-        for (let i = 0, j = len - 2; i < len; j = i, i += 2) {
-            const x0 = array[j];
-            const y0 = array[j + 1];
-            const x1 = array[i];
-            const y1 = array[i + 1];
-            const a = x0 * y1 - x1 * y0;
+        var signedArea = 0;
+        var cx = 0;
+        var cy = 0;
+        var len = array.length;
+        for (var i = 0, j = len - 2; i < len; j = i, i += 2) {
+            var x0 = array[j];
+            var y0 = array[j + 1];
+            var x1 = array[i];
+            var y1 = array[i + 1];
+            var a = x0 * y1 - x1 * y0;
             signedArea += a;
             cx += (x0 + x1) * a;
             cy += (y0 + y1) * a;
@@ -84326,22 +85576,22 @@
         return [cx / signedArea / 3, cy / signedArea / 3, signedArea];
     }
     function findBestRingOffset(fromSubBeziers, toSubBeziers, fromCp, toCp) {
-        const bezierCount = (fromSubBeziers.length - 2) / 6;
-        let bestScore = Infinity;
-        let bestOffset = 0;
-        const len = fromSubBeziers.length;
-        const len2 = len - 2;
-        for (let offset = 0; offset < bezierCount; offset++) {
-            const cursorOffset = offset * 6;
-            let score = 0;
-            for (let k = 0; k < len; k += 2) {
-                let idx = k === 0 ? cursorOffset : ((cursorOffset + k - 2) % len2 + 2);
-                const x0 = fromSubBeziers[idx] - fromCp[0];
-                const y0 = fromSubBeziers[idx + 1] - fromCp[1];
-                const x1 = toSubBeziers[k] - toCp[0];
-                const y1 = toSubBeziers[k + 1] - toCp[1];
-                const dx = x1 - x0;
-                const dy = y1 - y0;
+        var bezierCount = (fromSubBeziers.length - 2) / 6;
+        var bestScore = Infinity;
+        var bestOffset = 0;
+        var len = fromSubBeziers.length;
+        var len2 = len - 2;
+        for (var offset = 0; offset < bezierCount; offset++) {
+            var cursorOffset = offset * 6;
+            var score = 0;
+            for (var k = 0; k < len; k += 2) {
+                var idx = k === 0 ? cursorOffset : ((cursorOffset + k - 2) % len2 + 2);
+                var x0 = fromSubBeziers[idx] - fromCp[0];
+                var y0 = fromSubBeziers[idx + 1] - fromCp[1];
+                var x1 = toSubBeziers[k] - toCp[0];
+                var y1 = toSubBeziers[k + 1] - toCp[1];
+                var dx = x1 - x0;
+                var dy = y1 - y0;
                 score += dx * dx + dy * dy;
             }
             if (score < bestScore) {
@@ -84352,82 +85602,82 @@
         return bestOffset;
     }
     function reverse(array) {
-        const newArr = [];
-        const len = array.length;
-        for (let i = 0; i < len; i += 2) {
+        var newArr = [];
+        var len = array.length;
+        for (var i = 0; i < len; i += 2) {
             newArr[i] = array[len - i - 2];
             newArr[i + 1] = array[len - i - 1];
         }
         return newArr;
     }
     function findBestMorphingRotation(fromArr, toArr, searchAngleIteration, searchAngleRange) {
-        const result = [];
-        let fromNeedsReverse;
-        for (let i = 0; i < fromArr.length; i++) {
-            let fromSubpathBezier = fromArr[i];
-            const toSubpathBezier = toArr[i];
-            const fromCp = centroid$1(fromSubpathBezier);
-            const toCp = centroid$1(toSubpathBezier);
+        var result = [];
+        var fromNeedsReverse;
+        for (var i = 0; i < fromArr.length; i++) {
+            var fromSubpathBezier = fromArr[i];
+            var toSubpathBezier = toArr[i];
+            var fromCp = centroid$1(fromSubpathBezier);
+            var toCp = centroid$1(toSubpathBezier);
             if (fromNeedsReverse == null) {
                 fromNeedsReverse = fromCp[2] < 0 !== toCp[2] < 0;
             }
-            const newFromSubpathBezier = [];
-            const newToSubpathBezier = [];
-            let bestAngle = 0;
-            let bestScore = Infinity;
-            let tmpArr = [];
-            const len = fromSubpathBezier.length;
+            var newFromSubpathBezier = [];
+            var newToSubpathBezier = [];
+            var bestAngle = 0;
+            var bestScore = Infinity;
+            var tmpArr = [];
+            var len = fromSubpathBezier.length;
             if (fromNeedsReverse) {
                 fromSubpathBezier = reverse(fromSubpathBezier);
             }
-            const offset = findBestRingOffset(fromSubpathBezier, toSubpathBezier, fromCp, toCp) * 6;
-            const len2 = len - 2;
-            for (let k = 0; k < len2; k += 2) {
-                const idx = (offset + k) % len2 + 2;
+            var offset = findBestRingOffset(fromSubpathBezier, toSubpathBezier, fromCp, toCp) * 6;
+            var len2 = len - 2;
+            for (var k = 0; k < len2; k += 2) {
+                var idx = (offset + k) % len2 + 2;
                 newFromSubpathBezier[k + 2] = fromSubpathBezier[idx] - fromCp[0];
                 newFromSubpathBezier[k + 3] = fromSubpathBezier[idx + 1] - fromCp[1];
             }
             newFromSubpathBezier[0] = fromSubpathBezier[offset] - fromCp[0];
             newFromSubpathBezier[1] = fromSubpathBezier[offset + 1] - fromCp[1];
             if (searchAngleIteration > 0) {
-                const step = searchAngleRange / searchAngleIteration;
-                for (let angle = -searchAngleRange / 2; angle <= searchAngleRange / 2; angle += step) {
-                    const sa = Math.sin(angle);
-                    const ca = Math.cos(angle);
-                    let score = 0;
-                    for (let k = 0; k < fromSubpathBezier.length; k += 2) {
-                        const x0 = newFromSubpathBezier[k];
-                        const y0 = newFromSubpathBezier[k + 1];
-                        const x1 = toSubpathBezier[k] - toCp[0];
-                        const y1 = toSubpathBezier[k + 1] - toCp[1];
-                        const newX1 = x1 * ca - y1 * sa;
-                        const newY1 = x1 * sa + y1 * ca;
+                var step = searchAngleRange / searchAngleIteration;
+                for (var angle = -searchAngleRange / 2; angle <= searchAngleRange / 2; angle += step) {
+                    var sa = Math.sin(angle);
+                    var ca = Math.cos(angle);
+                    var score = 0;
+                    for (var k = 0; k < fromSubpathBezier.length; k += 2) {
+                        var x0 = newFromSubpathBezier[k];
+                        var y0 = newFromSubpathBezier[k + 1];
+                        var x1 = toSubpathBezier[k] - toCp[0];
+                        var y1 = toSubpathBezier[k + 1] - toCp[1];
+                        var newX1 = x1 * ca - y1 * sa;
+                        var newY1 = x1 * sa + y1 * ca;
                         tmpArr[k] = newX1;
                         tmpArr[k + 1] = newY1;
-                        const dx = newX1 - x0;
-                        const dy = newY1 - y0;
+                        var dx = newX1 - x0;
+                        var dy = newY1 - y0;
                         score += dx * dx + dy * dy;
                     }
                     if (score < bestScore) {
                         bestScore = score;
                         bestAngle = angle;
-                        for (let m = 0; m < tmpArr.length; m++) {
+                        for (var m = 0; m < tmpArr.length; m++) {
                             newToSubpathBezier[m] = tmpArr[m];
                         }
                     }
                 }
             }
             else {
-                for (let i = 0; i < len; i += 2) {
-                    newToSubpathBezier[i] = toSubpathBezier[i] - toCp[0];
-                    newToSubpathBezier[i + 1] = toSubpathBezier[i + 1] - toCp[1];
+                for (var i_1 = 0; i_1 < len; i_1 += 2) {
+                    newToSubpathBezier[i_1] = toSubpathBezier[i_1] - toCp[0];
+                    newToSubpathBezier[i_1 + 1] = toSubpathBezier[i_1 + 1] - toCp[1];
                 }
             }
             result.push({
                 from: newFromSubpathBezier,
                 to: newToSubpathBezier,
-                fromCp,
-                toCp,
+                fromCp: fromCp,
+                toCp: toCp,
                 rotation: -bestAngle
             });
         }
@@ -84436,19 +85686,19 @@
     function isCombineMorphing(path) {
         return path.__isCombineMorphing;
     }
-    const SAVED_METHOD_PREFIX = '__mOriginal_';
+    var SAVED_METHOD_PREFIX = '__mOriginal_';
     function saveAndModifyMethod(obj, methodName, modifiers) {
-        const savedMethodName = SAVED_METHOD_PREFIX + methodName;
-        const originalMethod = obj[savedMethodName] || obj[methodName];
+        var savedMethodName = SAVED_METHOD_PREFIX + methodName;
+        var originalMethod = obj[savedMethodName] || obj[methodName];
         if (!obj[savedMethodName]) {
             obj[savedMethodName] = obj[methodName];
         }
-        const replace = modifiers.replace;
-        const after = modifiers.after;
-        const before = modifiers.before;
+        var replace = modifiers.replace;
+        var after = modifiers.after;
+        var before = modifiers.before;
         obj[methodName] = function () {
-            const args = arguments;
-            let res;
+            var args = arguments;
+            var res;
             before && before.apply(this, args);
             if (replace) {
                 res = replace.apply(this, args);
@@ -84461,29 +85711,29 @@
         };
     }
     function restoreMethod(obj, methodName) {
-        const savedMethodName = SAVED_METHOD_PREFIX + methodName;
+        var savedMethodName = SAVED_METHOD_PREFIX + methodName;
         if (obj[savedMethodName]) {
             obj[methodName] = obj[savedMethodName];
             obj[savedMethodName] = null;
         }
     }
     function applyTransformOnBeziers(bezierCurves, mm) {
-        for (let i = 0; i < bezierCurves.length; i++) {
-            const subBeziers = bezierCurves[i];
-            for (let k = 0; k < subBeziers.length;) {
-                const x = subBeziers[k];
-                const y = subBeziers[k + 1];
+        for (var i = 0; i < bezierCurves.length; i++) {
+            var subBeziers = bezierCurves[i];
+            for (var k = 0; k < subBeziers.length;) {
+                var x = subBeziers[k];
+                var y = subBeziers[k + 1];
                 subBeziers[k++] = mm[0] * x + mm[2] * y + mm[4];
                 subBeziers[k++] = mm[1] * x + mm[3] * y + mm[5];
             }
         }
     }
     function prepareMorphPath(fromPath, toPath) {
-        const fromPathProxy = fromPath.getUpdatedPathProxy();
-        const toPathProxy = toPath.getUpdatedPathProxy();
-        const [fromBezierCurves, toBezierCurves] = alignBezierCurves(pathToBezierCurves(fromPathProxy), pathToBezierCurves(toPathProxy));
-        const fromPathTransform = fromPath.getComputedTransform();
-        const toPathTransform = toPath.getComputedTransform();
+        var fromPathProxy = fromPath.getUpdatedPathProxy();
+        var toPathProxy = toPath.getUpdatedPathProxy();
+        var _a = alignBezierCurves(pathToBezierCurves(fromPathProxy), pathToBezierCurves(toPathProxy)), fromBezierCurves = _a[0], toBezierCurves = _a[1];
+        var fromPathTransform = fromPath.getComputedTransform();
+        var toPathTransform = toPath.getComputedTransform();
         function updateIdentityTransform() {
             this.transform = null;
         }
@@ -84491,42 +85741,42 @@
         toPathTransform && applyTransformOnBeziers(toBezierCurves, toPathTransform);
         saveAndModifyMethod(toPath, 'updateTransform', { replace: updateIdentityTransform });
         toPath.transform = null;
-        const morphingData = findBestMorphingRotation(fromBezierCurves, toBezierCurves, 10, Math.PI);
-        const tmpArr = [];
-        saveAndModifyMethod(toPath, 'buildPath', { replace(path) {
-                const t = toPath.__morphT;
-                const onet = 1 - t;
-                const newCp = [];
-                for (let i = 0; i < morphingData.length; i++) {
-                    const item = morphingData[i];
-                    const from = item.from;
-                    const to = item.to;
-                    const angle = item.rotation * t;
-                    const fromCp = item.fromCp;
-                    const toCp = item.toCp;
-                    const sa = Math.sin(angle);
-                    const ca = Math.cos(angle);
+        var morphingData = findBestMorphingRotation(fromBezierCurves, toBezierCurves, 10, Math.PI);
+        var tmpArr = [];
+        saveAndModifyMethod(toPath, 'buildPath', { replace: function (path) {
+                var t = toPath.__morphT;
+                var onet = 1 - t;
+                var newCp = [];
+                for (var i = 0; i < morphingData.length; i++) {
+                    var item = morphingData[i];
+                    var from = item.from;
+                    var to = item.to;
+                    var angle = item.rotation * t;
+                    var fromCp = item.fromCp;
+                    var toCp = item.toCp;
+                    var sa = Math.sin(angle);
+                    var ca = Math.cos(angle);
                     lerp(newCp, fromCp, toCp, t);
-                    for (let m = 0; m < from.length; m += 2) {
-                        const x0 = from[m];
-                        const y0 = from[m + 1];
-                        const x1 = to[m];
-                        const y1 = to[m + 1];
-                        const x = x0 * onet + x1 * t;
-                        const y = y0 * onet + y1 * t;
+                    for (var m = 0; m < from.length; m += 2) {
+                        var x0_1 = from[m];
+                        var y0_1 = from[m + 1];
+                        var x1 = to[m];
+                        var y1 = to[m + 1];
+                        var x = x0_1 * onet + x1 * t;
+                        var y = y0_1 * onet + y1 * t;
                         tmpArr[m] = (x * ca - y * sa) + newCp[0];
                         tmpArr[m + 1] = (x * sa + y * ca) + newCp[1];
                     }
-                    let x0 = tmpArr[0];
-                    let y0 = tmpArr[1];
+                    var x0 = tmpArr[0];
+                    var y0 = tmpArr[1];
                     path.moveTo(x0, y0);
-                    for (let m = 2; m < from.length;) {
-                        const x1 = tmpArr[m++];
-                        const y1 = tmpArr[m++];
-                        const x2 = tmpArr[m++];
-                        const y2 = tmpArr[m++];
-                        const x3 = tmpArr[m++];
-                        const y3 = tmpArr[m++];
+                    for (var m = 2; m < from.length;) {
+                        var x1 = tmpArr[m++];
+                        var y1 = tmpArr[m++];
+                        var x2 = tmpArr[m++];
+                        var y2 = tmpArr[m++];
+                        var x3 = tmpArr[m++];
+                        var y3 = tmpArr[m++];
                         if (x0 === x1 && y0 === y1 && x2 === x3 && y2 === y3) {
                             path.lineTo(x3, y3);
                         }
@@ -84543,8 +85793,8 @@
         if (!fromPath || !toPath) {
             return toPath;
         }
-        const oldDone = animationOpts.done;
-        const oldDuring = animationOpts.during;
+        var oldDone = animationOpts.done;
+        var oldDuring = animationOpts.during;
         prepareMorphPath(fromPath, toPath);
         toPath.__morphT = 0;
         function restoreToPath() {
@@ -84557,11 +85807,11 @@
         toPath.animateTo({
             __morphT: 1
         }, defaults({
-            during(p) {
+            during: function (p) {
                 toPath.dirtyShape();
                 oldDuring && oldDuring(p);
             },
-            done() {
+            done: function () {
                 restoreToPath();
                 oldDone && oldDone();
             }
@@ -84569,14 +85819,14 @@
         return toPath;
     }
     function hilbert(x, y, minX, minY, maxX, maxY) {
-        const bits = 16;
+        var bits = 16;
         x = (maxX === minX) ? 0 : Math.round(32767 * (x - minX) / (maxX - minX));
         y = (maxY === minY) ? 0 : Math.round(32767 * (y - minY) / (maxY - minY));
-        let d = 0;
-        let tmp;
-        for (let s = (1 << bits) / 2; s > 0; s /= 2) {
-            let rx = 0;
-            let ry = 0;
+        var d = 0;
+        var tmp;
+        for (var s = (1 << bits) / 2; s > 0; s /= 2) {
+            var rx = 0;
+            var ry = 0;
             if ((x & s) > 0) {
                 rx = 1;
             }
@@ -84597,29 +85847,29 @@
         return d;
     }
     function sortPaths(pathList) {
-        let xMin = Infinity;
-        let yMin = Infinity;
-        let xMax = -Infinity;
-        let yMax = -Infinity;
-        const cps = map(pathList, path => {
-            const rect = path.getBoundingRect();
-            const m = path.getComputedTransform();
-            const x = rect.x + rect.width / 2 + (m ? m[4] : 0);
-            const y = rect.y + rect.height / 2 + (m ? m[5] : 0);
+        var xMin = Infinity;
+        var yMin = Infinity;
+        var xMax = -Infinity;
+        var yMax = -Infinity;
+        var cps = map(pathList, function (path) {
+            var rect = path.getBoundingRect();
+            var m = path.getComputedTransform();
+            var x = rect.x + rect.width / 2 + (m ? m[4] : 0);
+            var y = rect.y + rect.height / 2 + (m ? m[5] : 0);
             xMin = Math.min(x, xMin);
             yMin = Math.min(y, yMin);
             xMax = Math.max(x, xMax);
             yMax = Math.max(y, yMax);
             return [x, y];
         });
-        const items = map(cps, (cp, idx) => {
+        var items = map(cps, function (cp, idx) {
             return {
-                cp,
+                cp: cp,
                 z: hilbert(cp[0], cp[1], xMin, yMin, xMax, yMax),
                 path: pathList[idx]
             };
         });
-        return items.sort((a, b) => a.z - b.z).map(item => item.path);
+        return items.sort(function (a, b) { return a.z - b.z; }).map(function (item) { return item.path; });
     }
     function defaultDividePath(param) {
         return split(param.path, param.count);
@@ -84632,10 +85882,10 @@
         };
     }
     function combineMorph(fromList, toPath, animationOpts) {
-        let fromPathList = [];
+        var fromPathList = [];
         function addFromPath(fromList) {
-            for (let i = 0; i < fromList.length; i++) {
-                const from = fromList[i];
+            for (var i = 0; i < fromList.length; i++) {
+                var from = fromList[i];
                 if (isCombineMorphing(from)) {
                     addFromPath(from.childrenRef());
                 }
@@ -84645,12 +85895,12 @@
             }
         }
         addFromPath(fromList);
-        const separateCount = fromPathList.length;
+        var separateCount = fromPathList.length;
         if (!separateCount) {
             return createEmptyReturn();
         }
-        const dividePath = animationOpts.dividePath || defaultDividePath;
-        let toSubPathList = dividePath({
+        var dividePath = animationOpts.dividePath || defaultDividePath;
+        var toSubPathList = dividePath({
             path: toPath, count: separateCount
         });
         if (toSubPathList.length !== separateCount) {
@@ -84659,13 +85909,13 @@
         }
         fromPathList = sortPaths(fromPathList);
         toSubPathList = sortPaths(toSubPathList);
-        const oldDone = animationOpts.done;
-        const oldDuring = animationOpts.during;
-        const individualDelay = animationOpts.individualDelay;
-        const identityTransform = new Transformable();
-        for (let i = 0; i < separateCount; i++) {
-            const from = fromPathList[i];
-            const to = toSubPathList[i];
+        var oldDone = animationOpts.done;
+        var oldDuring = animationOpts.during;
+        var individualDelay = animationOpts.individualDelay;
+        var identityTransform = new Transformable();
+        for (var i = 0; i < separateCount; i++) {
+            var from = fromPathList[i];
+            var to = toSubPathList[i];
             to.parent = toPath;
             to.copyTransform(identityTransform);
             if (!individualDelay) {
@@ -84677,18 +85927,18 @@
             return toSubPathList;
         };
         function addToSubPathListToZr(zr) {
-            for (let i = 0; i < toSubPathList.length; i++) {
+            for (var i = 0; i < toSubPathList.length; i++) {
                 toSubPathList[i].addSelfToZr(zr);
             }
         }
         saveAndModifyMethod(toPath, 'addSelfToZr', {
-            after(zr) {
+            after: function (zr) {
                 addToSubPathListToZr(zr);
             }
         });
         saveAndModifyMethod(toPath, 'removeSelfFromZr', {
-            after(zr) {
-                for (let i = 0; i < toSubPathList.length; i++) {
+            after: function (zr) {
+                for (var i = 0; i < toSubPathList.length; i++) {
                     toSubPathList[i].removeSelfFromZr(zr);
                 }
             }
@@ -84700,18 +85950,18 @@
             restoreMethod(toPath, 'addSelfToZr');
             restoreMethod(toPath, 'removeSelfFromZr');
         }
-        const toLen = toSubPathList.length;
+        var toLen = toSubPathList.length;
         if (individualDelay) {
-            let animating = toLen;
-            const eachDone = () => {
-                animating--;
-                if (animating === 0) {
+            var animating_1 = toLen;
+            var eachDone = function () {
+                animating_1--;
+                if (animating_1 === 0) {
                     restoreToPath();
                     oldDone && oldDone();
                 }
             };
-            for (let i = 0; i < toLen; i++) {
-                const indivdualAnimationOpts = individualDelay ? defaults({
+            for (var i = 0; i < toLen; i++) {
+                var indivdualAnimationOpts = individualDelay ? defaults({
                     delay: (animationOpts.delay || 0) + individualDelay(i, toLen, fromPathList[i], toSubPathList[i]),
                     done: eachDone
                 }, animationOpts) : animationOpts;
@@ -84723,17 +85973,17 @@
             toPath.animateTo({
                 __morphT: 1
             }, defaults({
-                during(p) {
-                    for (let i = 0; i < toLen; i++) {
-                        const child = toSubPathList[i];
+                during: function (p) {
+                    for (var i = 0; i < toLen; i++) {
+                        var child = toSubPathList[i];
                         child.__morphT = toPath.__morphT;
                         child.dirtyShape();
                     }
                     oldDuring && oldDuring(p);
                 },
-                done() {
+                done: function () {
                     restoreToPath();
-                    for (let i = 0; i < fromList.length; i++) {
+                    for (var i = 0; i < fromList.length; i++) {
                         restoreMethod(fromList[i], 'updateTransform');
                     }
                     oldDone && oldDone();
@@ -84750,12 +86000,12 @@
         };
     }
     function separateMorph(fromPath, toPathList, animationOpts) {
-        const toLen = toPathList.length;
-        let fromPathList = [];
-        const dividePath = animationOpts.dividePath || defaultDividePath;
+        var toLen = toPathList.length;
+        var fromPathList = [];
+        var dividePath = animationOpts.dividePath || defaultDividePath;
         function addFromPath(fromList) {
-            for (let i = 0; i < fromList.length; i++) {
-                const from = fromList[i];
+            for (var i = 0; i < fromList.length; i++) {
+                var from = fromList[i];
                 if (isCombineMorphing(from)) {
                     addFromPath(from.childrenRef());
                 }
@@ -84766,10 +86016,10 @@
         }
         if (isCombineMorphing(fromPath)) {
             addFromPath(fromPath.childrenRef());
-            const fromLen = fromPathList.length;
+            var fromLen = fromPathList.length;
             if (fromLen < toLen) {
-                let k = 0;
-                for (let i = fromLen; i < toLen; i++) {
+                var k = 0;
+                for (var i = fromLen; i < toLen; i++) {
                     fromPathList.push(clonePath(fromPathList[k++ % fromLen]));
                 }
             }
@@ -84777,8 +86027,8 @@
         }
         else {
             fromPathList = dividePath({ path: fromPath, count: toLen });
-            const fromPathTransform = fromPath.getComputedTransform();
-            for (let i = 0; i < fromPathList.length; i++) {
+            var fromPathTransform = fromPath.getComputedTransform();
+            for (var i = 0; i < fromPathList.length; i++) {
                 fromPathList[i].setLocalTransform(fromPathTransform);
             }
             if (fromPathList.length !== toLen) {
@@ -84788,9 +86038,9 @@
         }
         fromPathList = sortPaths(fromPathList);
         toPathList = sortPaths(toPathList);
-        const individualDelay = animationOpts.individualDelay;
-        for (let i = 0; i < toLen; i++) {
-            const indivdualAnimationOpts = individualDelay ? defaults({
+        var individualDelay = animationOpts.individualDelay;
+        for (var i = 0; i < toLen; i++) {
+            var indivdualAnimationOpts = individualDelay ? defaults({
                 delay: (animationOpts.delay || 0) + individualDelay(i, toLen, fromPathList[i], toPathList[i])
             }, animationOpts) : animationOpts;
             morphPath(fromPathList[i], toPathList[i], indivdualAnimationOpts);

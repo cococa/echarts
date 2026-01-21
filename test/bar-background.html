@@ -151,6 +151,7 @@ under the License.
 
                 var chart = testHelper.create(echarts, 'main0', {
                     option: option,
+                    roughness: 5
                 });
 
                 chart.on('click', function (params) {
@@ -312,7 +313,9 @@ under the License.
 
             require(['echarts'], function (echarts) {
 
-                var chart = echarts.init(document.getElementById('main3'));
+                var chart = echarts.init(document.getElementById('main3'),{
+                    roughness: 5
+                });
 
                 var option = {
                     angleAxis: {

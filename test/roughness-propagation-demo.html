@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Roughness 属性传递机制演示</title>
+    <script src="lib/simpleRequire.js"></script>
+    <script src="lib/config.js"></script>
+    <script src="lib/jquery.min.js"></script>
+    <script src="lib/facePrint.js"></script>
+    <script src="lib/testHelper.js"></script>
+    <link rel="stylesheet" href="lib/reset.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+
+        .header p {
+            margin: 5px 0;
+            color: #666;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            background: #333;
+            color: white;
+            padding: 15px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .chart {
+            width: 100%;
+            height: 400px;
+        }
+
+        .analysis {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .analysis h2 {
+            margin: 0 0 15px 0;
+            color: #333;
+            border-bottom: 2px solid #5470c6;
+            padding-bottom: 10px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #5470c6;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .element-tree {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .element-line {
+            padding: 2px 0;
+            line-height: 1.6;
+        }
+
+        .element-line.has-roughness {
+            color: #28a745;
+        }
+
+        .element-line.no-roughness {
+            color: #dc3545;
+        }
+
+        .icon {
+            display: inline-block;
+            width: 16px;
+            text-align: center;
+        }
+
+        .explanation {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .explanation h3 {
+            margin: 0 0 10px 0;
+            color: #856404;
+        }
+
+        .explanation p {
+            margin: 5px 0;
+            color: #856404;
+        }
+
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+
+        .code-block pre {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎨 Roughness 属性传递机制演示</h1>
+        <p>
+            <strong>问题：</strong>为什么 ZRender 初始化时设置了 roughness，但图形元素却没有应用手绘风格？
+            <span class="status success">已修复 ✓</span>
+        </p>
+        <p>
+            <strong>原因：</strong>属性不会自动继承，需要在元素添加到 ZRender 时显式传递
+        </p>
+    </div>
+
+    <div class="container">
+        <div class="panel">
+            <div class="panel-header">📊 测试图表 (roughness: 5)</div>
+            <div id="chart" class="chart"></div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">📈 实时统计</div>
+            <div style="padding: 20px;">
+                <div class="stats" id="stats"></div>
+                <div class="element-tree" id="elementTree"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="analysis">
+        <h2>🔍 详细分析</h2>
+        
+        <div class="explanation">
+            <h3>💡 核心问题</h3>
+            <p>1. ZRender 实例有 roughness 属性</p>
+            <p>2. 但图形元素（Rect, Line, Text 等）在创建时没有这个属性</p>
+            <p>3. 需要在元素添加到 ZRender 时，从 ZRender 实例获取并设置</p>
+        </div>
+
+        <div id="flowDiagram"></div>
+
+        <div class="explanation">
+            <h3>✅ 修复方案</h3>
+            <p><strong>修改 1:</strong> Element.addSelfToZr() - 在检查 __zr 之前设置 roughness</p>
+            <div class="code-block">
+                <pre>addSelfToZr(zr: ZRenderType) {
+    // ✓ 先设置属性（在检查之前）
+    if (zr.roughness != null && this.roughness == null) {
+        this.roughness = zr.roughness;
+    }
+    
+    // 然后检查是否已经添加
+    if (this.__zr === zr) {
+        return;
+    }
+    
+    this.__zr = zr;
+    // ...
+}</pre>
+            </div>
+
+            <p><strong>修改 2:</strong> Group._doAdd() - 处理已有 __zr 的子元素</p>
+            <div class="code-block">
+                <pre>_doAdd(child: Element) {
+    // ...
+    const zr = this.__zr;
+    if (zr && zr !== (child as Group).__zr) {
+        child.addSelfToZr(zr);
+    }
+    // ✓ 新增：即使已有相同的 __zr，也要同步 roughness
+    else if (zr && zr === (child as Group).__zr) {
+        if (zr.roughness != null && child.roughness == null) {
+            child.roughness = zr.roughness;
+        }
+    }
+    // ...
+}</pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        require(['echarts'], function (echarts) {
+            const chart = echarts.init(document.getElementById('chart'), null, {
+                renderer: 'canvas',
+                roughness: 5,
+                filler: 'hachure'
+            });
+
+            const zr = chart.getZr();
+            
+            console.log('ZRender 实例信息:');
+            console.log('  - ID:', zr.id);
+            console.log('  - roughness:', zr.roughness);
+            console.log('  - filler:', zr.filler);
+
+            chart.setOption({
+                title: {
+                    text: '手绘风格柱状图',
+                    left: 'center',
+                    top: 20
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                series: [{
+                    name: '销量',
+                    type: 'bar',
+                    data: [120, 200, 150, 80, 70, 110, 130],
+                    itemStyle: {
+                        color: '#5470c6',
+                        borderColor: '#333',
+                        borderWidth: 2
+                    },
+                    label: {
+                        show: true,
+                        position: 'top'
+                    }
+                }]
+            });
+
+            // 分析元素
+            setTimeout(() => {
+                analyzeElements();
+            }, 1000);
+
+            function analyzeElements() {
+                const roots = zr.storage.getRoots();
+                
+                let totalElements = 0;
+                let elementsWithRoughness = 0;
+                let elementsByType = {};
+                let elementTree = [];
+
+                function analyzeElement(el, depth = 0) {
+                    totalElements++;
+                    
+                    const type = el.type || 'unknown';
+                    elementsByType[type] = (elementsByType[type] || 0) + 1;
+                    
+                    const hasRoughness = el.roughness != null && el.roughness > 0;
+                    if (hasRoughness) {
+                        elementsWithRoughness++;
+                    }
+
+                    const indent = '  '.repeat(depth);
+                    const icon = hasRoughness ? '✓' : '✗';
+                    const roughnessValue = el.roughness != null ? el.roughness : 'null';
+                    const className = hasRoughness ? 'has-roughness' : 'no-roughness';
+                    
+                    elementTree.push({
+                        html: `<div class="element-line ${className}">
+                            ${indent}<span class="icon">${icon}</span> ${type} 
+                            (roughness: ${roughnessValue})
+                        </div>`,
+                        hasRoughness
+                    });
+
+                    if (el.childrenRef && typeof el.childrenRef === 'function') {
+                        const children = el.childrenRef();
+                        if (children && children.length > 0) {
+                            children.forEach(child => analyzeElement(child, depth + 1));
+                        }
+                    }
+                }
+
+                roots.forEach(root => analyzeElement(root));
+
+                // 显示统计
+                const coverage = totalElements > 0 
+                    ? (elementsWithRoughness / totalElements * 100).toFixed(1) 
+                    : 0;
+
+                const statsHtml = `
+                    <div class="stat-card">
+                        <div class="stat-label">ZRender Roughness</div>
+                        <div class="stat-value">${zr.roughness}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">总元素数</div>
+                        <div class="stat-value">${totalElements}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">有 Roughness 的元素</div>
+                        <div class="stat-value" style="color: ${coverage == 100 ? '#28a745' : '#dc3545'}">
+                            ${elementsWithRoughness}
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">覆盖率</div>
+                        <div class="stat-value" style="color: ${coverage == 100 ? '#28a745' : '#dc3545'}">
+                            ${coverage}%
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('stats').innerHTML = statsHtml;
+
+                // 显示元素树
+                const treeHtml = `
+                    <div style="margin-bottom: 10px; font-weight: bold;">
+                        元素树结构 (✓ = 有 roughness, ✗ = 无 roughness)
+                    </div>
+                    ${elementTree.map(item => item.html).join('')}
+                `;
+
+                document.getElementById('elementTree').innerHTML = treeHtml;
+
+                // 显示流程图
+                const flowHtml = `
+                    <div class="code-block">
+                        <strong>属性传递流程：</strong>
+                        <pre>
+1. echarts.init(dom, null, { roughness: 5 })
+   └─> zrender.init(dom, { roughness: 5 })
+       └─> zr.roughness = 5  ✓
+
+2. chart.setOption(option)
+   └─> ECharts 创建图形元素
+       ├─> mainGroup (Group)
+       │   └─> seriesGroup (Group)
+       │       ├─> rect1 (Rect)
+       │       ├─> rect2 (Rect)
+       │       └─> rect3 (Rect)
+
+3. zr.add(mainGroup)
+   └─> mainGroup.roughness = zr.roughness  ✓
+   └─> mainGroup.addSelfToZr(zr)
+       └─> Group.addSelfToZr() 递归调用子元素
+           ├─> seriesGroup.addSelfToZr(zr)
+           │   ├─> seriesGroup.roughness = zr.roughness  ✓ (修复后)
+           │   └─> 递归子元素
+           │       ├─> rect1.roughness = zr.roughness  ✓ (修复后)
+           │       ├─> rect2.roughness = zr.roughness  ✓ (修复后)
+           │       └─> rect3.roughness = zr.roughness  ✓ (修复后)
+
+结果：${coverage == 100 ? '✓ 所有元素都有 roughness' : '✗ 部分元素缺少 roughness'}
+                        </pre>
+                    </div>
+                `;
+
+                document.getElementById('flowDiagram').innerHTML = flowHtml;
+
+                // 控制台输出
+                console.log('\n=== 元素分析结果 ===');
+                console.log(`总元素数: ${totalElements}`);
+                console.log(`有 roughness 的元素: ${elementsWithRoughness}`);
+                console.log(`覆盖率: ${coverage}%`);
+                console.log('\n元素类型分布:');
+                for (let type in elementsByType) {
+                    console.log(`  ${type}: ${elementsByType[type]}`);
+                }
+
+                if (coverage == 100) {
+                    console.log('\n✅ 成功！所有元素都正确获得了 roughness 属性');
+                } else {
+                    console.log('\n❌ 问题！部分元素没有 roughness 属性');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

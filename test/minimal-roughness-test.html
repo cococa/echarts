@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Minimal Roughness Test</title>
+    <script src="lib/simpleRequire.js"></script>
+    <script src="lib/config.js"></script>
+    <script src="lib/jquery.min.js"></script>
+    <script src="lib/facePrint.js"></script>
+    <script src="lib/testHelper.js"></script>
+    <link rel="stylesheet" href="lib/reset.css" />
+</head>
+<body>
+    <div id="main" style="width: 800px; height: 600px; border: 1px solid #ccc;"></div>
+    <div style="margin: 10px;">
+        <button onclick="testCanvas()">Test Canvas</button>
+        <button onclick="testSVG()">Test SVG</button>
+        <button onclick="testCanvasRoughness()">Test Canvas + Roughness</button>
+        <button onclick="testSVGRoughness()">Test SVG + Roughness</button>
+    </div>
+    <div id="log" style="margin: 10px; font-family: monospace; font-size: 12px; background: #f0f0f0; padding: 10px; height: 200px; overflow-y: auto;"></div>
+
+    <script>
+        var currentChart = null;
+        
+        function log(msg) {
+            console.log(msg);
+            document.getElementById('log').innerHTML += msg + '<br>';
+            document.getElementById('log').scrollTop = document.getElementById('log').scrollHeight;
+        }
+        
+        function clearChart() {
+            if (currentChart) {
+                currentChart.dispose();
+                currentChart = null;
+            }
+            document.getElementById('main').innerHTML = '';
+        }
+        
+        function createChart(renderer, roughness) {
+            clearChart();
+            log('Creating chart with renderer: ' + renderer + ', roughness: ' + roughness);
+            
+            require(['echarts'], function (echarts) {
+                try {
+                    currentChart = echarts.init(document.getElementById('main'), null, {
+                        renderer: renderer,
+                        roughness: roughness
+                    });
+                    
+                    log('Chart created successfully');
+                    log('ZRender roughness: ' + currentChart.getZr().roughness);
+                    log('ZRender filler: ' + currentChart.getZr().filler);
+                    
+                    var option = {
+                        xAxis: {
+                            type: 'category',
+                            data: ['A', 'B', 'C', 'D', 'E']
+                        },
+                        yAxis: {
+                            type: 'value'
+                        },
+                        series: [{
+                            data: [120, 200, 150, 80, 70],
+                            type: 'bar',
+                            itemStyle: {
+                                color: '#ff6b6b'
+                            }
+                        }]
+                    };
+                    
+                    currentChart.setOption(option);
+                    log('Option set, chart should be rendered');
+                    
+                    // 检查元素的 roughness 属性
+                    setTimeout(() => {
+                        var zr = currentChart.getZr();
+                        var roots = zr.storage.getRoots();
+                        log('Checking elements...');
+                        
+                        function checkElement(el, depth = 0) {
+                            var indent = '  '.repeat(depth);
+                            if (el.type) {
+                                log(indent + el.type + ' - roughness: ' + (el.roughness !== undefined ? el.roughness : 'undefined') + ', filler: ' + (el.filler || 'undefined'));
+                            }
+                            if (el.childrenRef && typeof el.childrenRef === 'function') {
+                                var children = el.childrenRef();
+                                if (children && children.length > 0) {
+                                    children.forEach(child => checkElement(child, depth + 1));
+                                }
+                            }
+                        }
+                        
+                        roots.forEach(root => checkElement(root));
+                    }, 500);
+                    
+                } catch (error) {
+                    log('Error creating chart: ' + error.message);
+                    console.error(error);
+                }
+            });
+        }
+        
+        function testCanvas() {
+            createChart('canvas', 0);
+        }
+        
+        function testSVG() {
+            createChart('svg', 0);
+        }
+        
+        function testCanvasRoughness() {
+            createChart('canvas', 5);
+        }
+        
+        function testSVGRoughness() {
+            createChart('svg', 5);
+        }
+        
+        // 初始测试
+        log('Page loaded, ready for testing');
+    </script>
+</body>
+</html>

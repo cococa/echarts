@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Roughness Auto Font</title>
+    <script src="lib/simpleRequire.js"></script>
+    <script src="lib/config.js"></script>
+    <script src="lib/jquery.min.js"></script>
+    <script src="lib/facePrint.js"></script>
+    <script src="lib/testHelper.js"></script>
+    <link rel="stylesheet" href="lib/reset.css" />
+    <style>
+        @font-face {
+            font-family: 'JinNianYeYaoJiaYouYa';
+            src: url('../JinNianYeYaoJiaYouYa-2.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .chart-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #ccc;
+        }
+
+        .title {
+            padding: 10px;
+            background: #f0f0f0;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .chart {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="chart-wrapper">
+            <div class="title">Normal (roughness: 0)</div>
+            <div id="chart1" class="chart"></div>
+        </div>
+        <div class="chart-wrapper">
+            <div class="title">Hand-drawn (roughness: 5)</div>
+            <div id="chart2" class="chart"></div>
+        </div>
+    </div>
+
+    <script>
+        require(['echarts'], function (echarts) {
+            // 等待字体加载
+            document.fonts.ready.then(function() {
+                console.log('Custom font loaded');
+                
+                // 扩展 echarts.init 方法，自动为 roughness > 0 的图表应用自定义字体
+                const originalInit = echarts.init;
+                echarts.init = function(dom, theme, opts) {
+                    const chart = originalInit.call(this, dom, theme, opts);
+                    
+                    // 如果设置了 roughness，保存原始的 setOption 方法
+                    if (opts && opts.roughness > 0) {
+                        const originalSetOption = chart.setOption;
+                        
+                        chart.setOption = function(option, notMerge, lazyUpdate) {
+                            // 自动为所有文本添加自定义字体
+                            const handDrawnFont = 'JinNianYeYaoJiaYouYa, sans-serif';
+                            
+                            // 深度应用字体
+                            function applyFont(obj) {
+                                if (!obj || typeof obj !== 'object') return;
+                                
+                                // 处理 textStyle
+                                if (obj.textStyle && !obj.textStyle.fontFamily) {
+                                    obj.textStyle.fontFamily = handDrawnFont;
+                                }
+                                
+                                // 处理 axisLabel
+                                if (obj.axisLabel && !obj.axisLabel.fontFamily) {
+                                    obj.axisLabel.fontFamily = handDrawnFont;
+                                }
+                                
+                                // 处理 label
+                                if (obj.label && !obj.label.fontFamily) {
+                                    obj.label.fontFamily = handDrawnFont;
+                                }
+                                
+                                // 递归处理子对象
+                                for (let key in obj) {
+                                    if (obj.hasOwnProperty(key) && typeof obj[key] === 'object') {
+                                        applyFont(obj[key]);
+                                    }
+                                }
+                            }
+                            
+                            // 克隆 option 以避免修改原始对象
+                            const modifiedOption = JSON.parse(JSON.stringify(option));
+                            applyFont(modifiedOption);
+                            
+                            // 调用原始的 setOption
+                            return originalSetOption.call(this, modifiedOption, notMerge, lazyUpdate);
+                        };
+                    }
+                    
+                    return chart;
+                };
+                
+                createCharts();
+            });
+
+            function createCharts() {
+                // 图表 1：正常样式
+                const chart1 = echarts.init(document.getElementById('chart1'), null, {
+                    renderer: 'canvas',
+                    roughness: 0
+                });
+
+                const option1 = {
+                    title: {
+                        text: '正常柱状图',
+                        left: 'center'
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+                    },
+                    yAxis: {
+                        type: 'value'
+                    },
+                    series: [{
+                        data: [120, 200, 150, 80, 70, 110, 130],
+                        type: 'bar',
+                        itemStyle: {
+                            color: '#5470c6'
+                        }
+                    }]
+                };
+
+                chart1.setOption(option1);
+
+                // 图表 2：手绘风格（自动应用字体）
+                const chart2 = echarts.init(document.getElementById('chart2'), null, {
+                    renderer: 'canvas',
+                    roughness: 5
+                });
+
+                const option2 = {
+                    title: {
+                        text: '手绘风格柱状图',
+                        left: 'center',
+                        textStyle: {
+                            fontSize: 24
+                        }
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+                    },
+                    yAxis: {
+                        type: 'value'
+                    },
+                    series: [{
+                        data: [120, 200, 150, 80, 70, 110, 130],
+                        type: 'bar',
+                        itemStyle: {
+                            color: '#ff6b6b'
+                        },
+                        label: {
+                            show: true,
+                            position: 'top'
+                        }
+                    }]
+                };
+
+                chart2.setOption(option2);
+
+                console.log('Charts created');
+                console.log('Chart 1 roughness:', chart1.getZr().roughness);
+                console.log('Chart 2 roughness:', chart2.getZr().roughness);
+            }
+        });
+    </script>
+</body>
+</html>

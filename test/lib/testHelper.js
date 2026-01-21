@@ -291,7 +291,8 @@
             var chart = echarts.init(dom, null, {
                 renderer: opt.renderer,
                 useCoarsePointer: opt.useCoarsePointer,
-                pointerSize: opt.pointerSize
+                pointerSize: opt.pointerSize,
+                roughness: opt.roughness
             });
 
             if (opt.draggable) {

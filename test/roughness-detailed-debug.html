@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Roughness Detailed Debug</title>
+    <script src="lib/simpleRequire.js"></script>
+    <script src="lib/config.js"></script>
+    <script src="lib/jquery.min.js"></script>
+    <script src="lib/facePrint.js"></script>
+    <script src="lib/testHelper.js"></script>
+    <link rel="stylesheet" href="lib/reset.css" />
+</head>
+<body>
+    <div id="main" style="width: 800px; height: 600px; border: 2px solid #333;"></div>
+    <div id="log" style="margin: 10px; font-family: monospace; font-size: 11px; background: #f0f0f0; padding: 10px; max-height: 400px; overflow-y: auto;"></div>
+
+    <script>
+        require(['echarts'], function (echarts) {
+            const logDiv = document.getElementById('log');
+            
+            function log(msg, color = 'black') {
+                console.log(msg);
+                logDiv.innerHTML += `<div style="color: ${color}">${msg}</div>`;
+                logDiv.scrollTop = logDiv.scrollHeight;
+            }
+            
+            log('=== Starting Roughness Debug Test ===', 'blue');
+            log(`ECharts version: ${echarts.version}`);
+            log(`ZRender version: ${echarts.dependencies.zrender}`);
+            log('');
+            
+            // 创建图表
+            const chart = echarts.init(document.getElementById('main'), null, {
+                renderer: 'canvas',
+                roughness: 0.3,
+                filler: 'hachure'
+            });
+            
+            const zr = chart.getZr();
+            log(`ZRender created:`, 'green');
+            log(`  - roughness: ${zr.roughness}`);
+            log(`  - filler: ${zr.filler}`);
+            log('');
+            
+            // 设置选项
+            const option = {
+                xAxis: {
+                    type: 'category',
+                    data: ['A', 'B', 'C']
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                series: [{
+                    data: [120, 200, 150],
+                    type: 'bar',
+                    itemStyle: {
+                        color: '#ff6b6b',
+                        borderColor: '#333',
+                        borderWidth: 2
+                    }
+                }]
+            };
+            
+            chart.setOption(option);
+            log('Chart option set', 'green');
+            log('');
+            
+            // 等待渲染完成后检查元素
+            setTimeout(() => {
+                log('=== Checking Element Properties ===', 'blue');
+                const roots = zr.storage.getRoots();
+                log(`Total root elements: ${roots.length}`);
+                log('');
+                
+                let rectCount = 0;
+                let rectWithRoughness = 0;
+                
+                function checkElement(el, depth = 0, parentPath = '') {
+                    const indent = '  '.repeat(depth);
+                    const path = parentPath ? `${parentPath} > ${el.type || 'unknown'}` : (el.type || 'unknown');
+                    
+                    if (el.type) {
+                        const roughnessStr = el.roughness != null ? el.roughness : 'null';
+                        const fillerStr = el.filler || 'null';
+                        const hasZr = el.__zr ? 'yes' : 'no';
+                        
+                        let color = 'black';
+                        let marker = '';
+                        
+                        if (el.type === 'rect') {
+                            rectCount++;
+                            if (el.roughness != null && el.roughness > 0) {
+                                rectWithRoughness++;
+                                color = 'green';
+                                marker = ' ✓ HAS ROUGHNESS!';
+                            } else {
+                                color = 'red';
+                                marker = ' ✗ MISSING ROUGHNESS!';
+                            }
+                        }
+                        
+                        log(`${indent}${el.type}: roughness=${roughnessStr}, filler=${fillerStr}, __zr=${hasZr}${marker}`, color);
+                    }
+                    
+                    if (el.childrenRef && typeof el.childrenRef === 'function') {
+                        const children = el.childrenRef();
+                        if (children && children.length > 0) {
+                            children.forEach(child => checkElement(child, depth + 1, path));
+                        }
+                    }
+                }
+                
+                roots.forEach((root, index) => {
+                    log(`Root ${index}:`, 'blue');
+                    checkElement(root);
+                    log('');
+                });
+                
+                log('=== Summary ===', 'blue');
+                log(`Total rect elements: ${rectCount}`);
+                log(`Rect with roughness: ${rectWithRoughness}`);
+                
+                if (rectWithRoughness === 0 && rectCount > 0) {
+                    log('❌ PROBLEM: No rect elements have roughness!', 'red');
+                    log('This means the roughness property is not being propagated correctly.', 'red');
+                } else if (rectWithRoughness === rectCount && rectCount > 0) {
+                    log('✅ SUCCESS: All rect elements have roughness!', 'green');
+                } else {
+                    log(`⚠️  PARTIAL: Only ${rectWithRoughness}/${rectCount} rect elements have roughness`, 'orange');
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
