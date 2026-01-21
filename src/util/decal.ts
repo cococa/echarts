@@ -296,7 +296,6 @@ export function createOrUpdatePatternFromDecal(
                     }
                 }
                 else {
-                    console.log("xxx");
                     // Paint to canvas for all other renderers.
                     brushSingle(ctx, symbol);
                 }

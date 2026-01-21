@@ -613,7 +613,6 @@ class ECharts extends Eventful<ECEventDefinition> {
     setOption<Opt extends ECBasicOption>(option: Opt, opts?: SetOptionOpts): void;
     /* eslint-disable-next-line */
     setOption<Opt extends ECBasicOption>(option: Opt, notMerge?: boolean | SetOptionOpts, lazyUpdate?: boolean): void {
-        console.log("setOption");
         if (this[IN_MAIN_PROCESS_KEY]) {
             if (__DEV__) {
                 error('`setOption` should not be called during main process.');
@@ -1553,7 +1552,6 @@ class ECharts extends Eventful<ECEventDefinition> {
                 else {
                     i++;
                 }
-                console.log('view',view);
             }
         };
 
