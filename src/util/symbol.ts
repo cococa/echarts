@@ -303,7 +303,26 @@ const SymbolClz = graphic.Path.extend({
             symbolShapeMakers[symbolType](
                 shape.x, shape.y, shape.width, shape.height, proxySymbol.shape
             );
+            
+            // 传递 roughness 和 filler 到 proxySymbol
+            const originalRoughness = proxySymbol.roughness;
+            const originalFiller = proxySymbol.filler;
+            const originalStyle = proxySymbol.style;
+            
+            if (this.roughness) {
+                proxySymbol.roughness = this.roughness;
+                proxySymbol.filler = this.filler;
+                proxySymbol.style = this.style;
+            }
+            
             proxySymbol.buildPath(ctx, proxySymbol.shape, inBundle);
+            
+            // 恢复原始值
+            if (this.roughness) {
+                proxySymbol.roughness = originalRoughness;
+                proxySymbol.filler = originalFiller;
+                proxySymbol.style = originalStyle;
+            }
         }
     }
 });

@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Roughness 折线图调试</title>
+    <title>Roughness 散点图调试</title>
     <script src="../lib/simpleRequire.js"></script>
     <script src="../lib/config.js"></script>
     <script src="../lib/jquery.min.js"></script>
@@ -67,7 +67,7 @@
     </style>
 </head>
 <body>
-    <h1>折线图 Roughness 调试</h1>
+    <h1>散点图 Roughness 调试</h1>
     
     <div class="controls">
         <div class="control-group">
@@ -131,6 +131,18 @@
                 document.getElementById('roughnessValue').textContent = e.target.value;
             });
             
+            // 生成随机散点数据
+            function generateScatterData(count, xRange, yRange) {
+                const data = [];
+                for (let i = 0; i < count; i++) {
+                    data.push([
+                        Math.random() * xRange,
+                        Math.random() * yRange
+                    ]);
+                }
+                return data;
+            }
+            
             // 创建图表
             function createChart() {
                 if (chart) {
@@ -154,43 +166,60 @@
                         fontFamily: 'JinNianYeYaoJiaYouYa, sans-serif'
                     },
                     title: {
-                        text: '折线图示例'
+                        text: '散点图示例'
                     },
                     tooltip: {
-                        trigger: 'axis'
+                        trigger: 'item',
+                        formatter: function (params) {
+                            return params.seriesName + '<br/>' +
+                                   'X: ' + params.value[0].toFixed(2) + '<br/>' +
+                                   'Y: ' + params.value[1].toFixed(2);
+                        }
                     },
                     legend: {
-                        data: ['邮件营销', '联盟广告', '视频广告']
+                        data: ['数据集 A', '数据集 B', '数据集 C']
                     },
                     grid: {
                         left: '3%',
-                        right: '4%',
+                        right: '7%',
                         bottom: '3%',
                         containLabel: true
                     },
                     xAxis: {
-                        type: 'category',
-                        boundaryGap: false,
-                        data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+                        type: 'value',
+                        name: 'X 轴'
                     },
                     yAxis: {
-                        type: 'value'
+                        type: 'value',
+                        name: 'Y 轴'
                     },
                     series: [
                         {
-                            name: '邮件营销',
-                            type: 'line',
-                            data: [120, 132, 101, 134, 90, 230, 210]
+                            name: '数据集 A',
+                            type: 'scatter',
+                            symbolSize: 20,
+                            data: generateScatterData(50, 100, 100),
+                            itemStyle: {
+                                color: '#ff6b6b'
+                            }
                         },
                         {
-                            name: '联盟广告',
-                            type: 'line',
-                            data: [220, 182, 191, 234, 290, 330, 310]
+                            name: '数据集 B',
+                            type: 'scatter',
+                            symbolSize: 20,
+                            data: generateScatterData(50, 100, 100),
+                            itemStyle: {
+                                color: '#4ecdc4'
+                            }
                         },
                         {
-                            name: '视频广告',
-                            type: 'line',
-                            data: [150, 232, 201, 154, 190, 330, 410]
+                            name: '数据集 C',
+                            type: 'scatter',
+                            symbolSize: 20,
+                            data: generateScatterData(50, 100, 100),
+                            itemStyle: {
+                                color: '#ffe66d'
+                            }
                         }
                     ]
                 };

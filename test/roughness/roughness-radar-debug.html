@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Roughness 折线图调试</title>
+    <title>Roughness 雷达图调试</title>
     <script src="../lib/simpleRequire.js"></script>
     <script src="../lib/config.js"></script>
     <script src="../lib/jquery.min.js"></script>
@@ -67,7 +67,7 @@
     </style>
 </head>
 <body>
-    <h1>折线图 Roughness 调试</h1>
+    <h1>雷达图 Roughness 调试</h1>
     
     <div class="controls">
         <div class="control-group">
@@ -154,43 +154,58 @@
                         fontFamily: 'JinNianYeYaoJiaYouYa, sans-serif'
                     },
                     title: {
-                        text: '折线图示例'
+                        text: '雷达图示例'
                     },
                     tooltip: {
-                        trigger: 'axis'
+                        trigger: 'item'
                     },
                     legend: {
-                        data: ['邮件营销', '联盟广告', '视频广告']
+                        data: ['预算分配', '实际开销']
                     },
-                    grid: {
-                        left: '3%',
-                        right: '4%',
-                        bottom: '3%',
-                        containLabel: true
-                    },
-                    xAxis: {
-                        type: 'category',
-                        boundaryGap: false,
-                        data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
-                    },
-                    yAxis: {
-                        type: 'value'
+                    radar: {
+                        indicator: [
+                            { name: '销售', max: 6500 },
+                            { name: '管理', max: 16000 },
+                            { name: '信息技术', max: 30000 },
+                            { name: '客服', max: 38000 },
+                            { name: '研发', max: 52000 },
+                            { name: '市场', max: 25000 }
+                        ]
                     },
                     series: [
                         {
-                            name: '邮件营销',
-                            type: 'line',
-                            data: [120, 132, 101, 134, 90, 230, 210]
-                        },
-                        {
-                            name: '联盟广告',
-                            type: 'line',
-                            data: [220, 182, 191, 234, 290, 330, 310]
-                        },
-                        {
-                            name: '视频广告',
-                            type: 'line',
-                            data: [150, 232, 201, 154, 190, 330, 410]
+                            name: '预算 vs 开销',
+                            type: 'radar',
+                            data: [
+                                {
+                                    value: [4200, 3000, 20000, 35000, 50000, 18000],
+                                    name: '预算分配',
+                                    areaStyle: {
+                                        color: 'rgba(255, 107, 107, 0.3)'
+                                    },
+                                    lineStyle: {
+                                        color: '#ff6b6b',
+                                        width: 2
+                                    },
+                                    itemStyle: {
+                                        color: '#ff6b6b'
+                                    }
+                                },
+                                {
+                                    value: [5000, 14000, 28000, 26000, 42000, 21000],
+                                    name: '实际开销',
+                                    areaStyle: {
+                                        color: 'rgba(78, 205, 196, 0.3)'
+                                    },
+                                    lineStyle: {
+                                        color: '#4ecdc4',
+                                        width: 2
+                                    },
+                                    itemStyle: {
+                                        color: '#4ecdc4'
+                                    }
+                                }
+                            ]
                         }
                     ]
                 };

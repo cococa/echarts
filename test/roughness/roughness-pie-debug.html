@@ -150,12 +150,12 @@
                 });
                 
                 const option = {
+                    textStyle: {
+                        fontFamily: 'JinNianYeYaoJiaYouYa, sans-serif'
+                    },
                     title: {
                         text: '饼图示例',
-                        left: 'center',
-                        textStyle: {
-                            fontFamily: 'JinNianYeYaoJiaYouYa, sans-serif'
-                        }
+                        left: 'center'
                     },
                     tooltip: {
                         trigger: 'item',
@@ -163,10 +163,7 @@
                     },
                     legend: {
                         orient: 'vertical',
-                        left: 'left',
-                        textStyle: {
-                            fontFamily: 'JinNianYeYaoJiaYouYa, sans-serif'
-                        }
+                        left: 'left'
                     },
                     series: [
                         {
@@ -180,9 +177,6 @@
                                 { value: 135, name: '视频广告' },
                                 { value: 1548, name: '搜索引擎' }
                             ],
-                            label: {
-                                fontFamily: 'JinNianYeYaoJiaYouYa, sans-serif'
-                            },
                             emphasis: {
                                 itemStyle: {
                                     shadowBlur: 10,

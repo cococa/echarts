@@ -14440,13 +14440,26 @@
             return new CircleShape();
         };
         Circle.prototype.buildPath = function (ctx, shape) {
+            console.log("Circle buildPath", this.roughness);
             if (this.roughness) {
                 var fill = typeof this.style.fill === 'string' ? this.style.fill : undefined;
+                var stroke = typeof this.style.stroke === 'string' ? this.style.stroke : undefined;
+                console.log('=== Circle.buildPath with roughness ===', {
+                    roughness: this.roughness,
+                    filler: this.filler,
+                    fill: fill,
+                    stroke: stroke,
+                    cx: shape.cx,
+                    cy: shape.cy,
+                    r: shape.r
+                });
                 var rc = rough.canvas(ctx, {
                     options: {
                         roughness: this.roughness,
                         fillStyle: this.filler,
                         fill: fill,
+                        stroke: stroke,
+                        strokeWidth: this.style.lineWidth || 1,
                     },
                 });
                 rc.circle(shape.cx, shape.cy, shape.r * 2);
@@ -26397,7 +26410,22 @@
             proxySymbol = symbolBuildProxies[symbolType];
           }
           symbolShapeMakers[symbolType](shape.x, shape.y, shape.width, shape.height, proxySymbol.shape);
+          // 传递 roughness 和 filler 到 proxySymbol
+          var originalRoughness = proxySymbol.roughness;
+          var originalFiller = proxySymbol.filler;
+          var originalStyle = proxySymbol.style;
+          if (this.roughness) {
+            proxySymbol.roughness = this.roughness;
+            proxySymbol.filler = this.filler;
+            proxySymbol.style = this.style;
+          }
           proxySymbol.buildPath(ctx, proxySymbol.shape, inBundle);
+          // 恢复原始值
+          if (this.roughness) {
+            proxySymbol.roughness = originalRoughness;
+            proxySymbol.filler = originalFiller;
+            proxySymbol.style = originalStyle;
+          }
         }
       }
     });
