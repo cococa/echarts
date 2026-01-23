@@ -17,6 +17,9 @@
 * under the License.
 */
 import * as zrender from 'zrender/src/zrender';
+import Group from 'zrender/src/graphic/Group';
+
+
 import {
     assert,
     each,
@@ -329,6 +332,7 @@ export type EChartsInitOpts = {
     width?: number | string,
     height?: number | string,
     roughness?: number
+    filler?: 'hachure' | 'zigzag' | 'cross-hatch' | 'dots' | 'dashed' | 'zigzag-line'
 };
 class ECharts extends Eventful<ECEventDefinition> {
 
@@ -445,6 +449,7 @@ class ECharts extends Eventful<ECEventDefinition> {
 
         const zr = this._zr = zrender.init(dom, {
             roughness: opts.roughness,
+            filler: opts.filler,
             renderer: opts.renderer || defaultRenderer,
             devicePixelRatio: opts.devicePixelRatio,
             width: opts.width,

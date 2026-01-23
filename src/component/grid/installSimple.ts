@@ -36,10 +36,17 @@ class GridView extends ComponentView {
     render(gridModel: GridModel, ecModel: GlobalModel) {
         this.group.removeAll();
         if (gridModel.get('show')) {
+            let fill = gridModel.get('backgroundColor');
+            // Workaround for ZRender bug: transparent fill triggers unwanted rough filling
+            if (fill === 'rgba(0,0,0,0)' || fill === 'transparent' || fill === 'none') {
+                fill = null;
+            }
+            console.log("fill",fill);
+
             this.group.add(new Rect({
                 shape: gridModel.coordinateSystem.getRect(),
                 style: defaults({
-                    fill: gridModel.get('backgroundColor')
+                    fill: fill
                 }, gridModel.getItemStyle()),
                 silent: true,
                 z2: -1

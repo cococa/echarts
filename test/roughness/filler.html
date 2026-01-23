@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <script src="../lib/simpleRequire.js"></script>
+        <script src="../lib/config.js"></script>
+        <script src="../lib/jquery.min.js"></script>
+        <script src="../lib/facePrint.js"></script>
+        <script src="../lib/testHelper.js"></script>
+        <link rel="stylesheet" href="../lib/reset.css" />
+    </head>
+    <body>
+        <style>
+            h1 {
+                line-height: 60px;
+                height: 60px;
+                background: #146402;
+                text-align: center;
+                font-weight: bold;
+                color: #eee;
+                font-size: 14px;
+            }
+            .chart {
+                height: 500px;
+            }
+        </style>
+
+        <script>
+            // Override paths for sub-directory
+            require.config({
+                paths: {
+                    'echarts': '../../dist/echarts',
+                    'zrender': '../../node_modules/zrender/dist/zrender',
+                    'geoJson': '../../geoData/geoJson',
+                    'theme': '../../theme',
+                    'data': '../data',
+                    'map': '../data/map',
+                    'i18n': '../../i18n',
+                    'extension': '../../dist/extension',
+                    'ssrClient': '../../ssr/client/dist/index.js'
+                }
+            });
+        </script>
+
+        <h1>roughness: 2, filler: 'hachure'</h1>
+        <div class="chart" id="main0"></div>
+        
+        <h1>roughness: 2, filler: 'zigzag'</h1>
+        <div class="chart" id="main1"></div>
+        
+        <h1>roughness: 2, filler: 'dots'</h1>
+        <div class="chart" id="main2"></div>
+
+        <script>
+            require(['echarts'], function (echarts) {
+                var option = {
+                    xAxis: {
+                        data: ['A', 'B', 'C', 'D']
+                    },
+                    yAxis: {},
+                    series: [{
+                        type: 'bar',
+                        data: [10, 20, 30, 40]
+                    }]
+                };
+
+                var chart0 = testHelper.create(echarts, 'main0', {
+                    option: option,
+                    roughness: 1,
+                    // filler: 'dashed'
+                });
+
+                var chart1 = testHelper.create(echarts, 'main1', {
+                    option: option,
+                    roughness: 2,
+                    // filler: 'zigzag'
+                });
+
+                var chart2 = testHelper.create(echarts, 'main2', {
+                    option: option,
+                    roughness: 1,
+                    // filler: 'dots'
+                });
+            });
+        </script>
+    </body>
+</html>

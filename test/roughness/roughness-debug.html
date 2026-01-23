@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Roughness Detailed Debug</title>
+    <script src="../lib/simpleRequire.js"></script>
+    <script src="../lib/config.js"></script>
+    <script src="../lib/jquery.min.js"></script>
+    <script src="../lib/facePrint.js"></script>
+    <script src="../lib/testHelper.js"></script>
+    <link rel="stylesheet" href="../lib/reset.css" />
+</head>
+<body>
+    <div id="main" style="width: 800px; height: 600px; border: 2px solid #333;"></div>
+    <div id="log" style="margin: 10px; font-family: monospace; font-size: 11px; background: #f0f0f0; padding: 10px; max-height: 400px; overflow-y: auto;"></div>
+
+    <script>
+        require.config({
+            paths: {
+                'echarts': '../../dist/echarts',
+                'zrender': '../../node_modules/zrender/dist/zrender',
+                'geoJson': '../../geoData/geoJson',
+                'theme': '../../theme',
+                'data': '../data',
+                'map': '../data/map',
+                'i18n': '../../i18n',
+                'extension': '../../dist/extension',
+                'ssrClient': '../../ssr/client/dist/index.js'
+            }
+        });
+
+        require(['echarts'], function (echarts) {
+            const logDiv = document.getElementById('log');
+            
+            function log(msg, color = 'black') {
+                console.log(msg);
+                logDiv.innerHTML += `<div style="color: ${color}">${msg}</div>`;
+                logDiv.scrollTop = logDiv.scrollHeight;
+            }
+            
+            log('=== Starting Roughness Debug Test ===', 'blue');
+            log(`ECharts version: ${echarts.version}`);
+            log(`ZRender version: ${echarts.dependencies.zrender}`);
+            log('');
+            
+            // 创建图表
+            const chart = echarts.init(document.getElementById('main'), null, {
+                renderer: 'svg',
+                roughness: 1.1,
+                filler: 'hachure'
+            });
+            
+            const zr = chart.getZr();
+            log(`ZRender created:`, 'green');
+            log(`  - roughness: ${zr.roughness}`);
+            log(`  - filler: ${zr.filler}`);
+            log('');
+            
+            // 设置选项
+            const option = {
+                // grid: {
+                //     show: false,  // 关闭网格背景
+                //     containLabel: true
+                // },
+                xAxis: {
+                    type: 'category',
+                    data: ['A', 'B', 'C'],
+                    
+                },
+                yAxis: {
+                    type: 'value',
+                    splitArea: {
+                        // show: false  // 关闭 Y 轴分隔区域
+                    },
+                    // axisLine: {
+                    //     show: true
+                    // }
+                },
+                series: [{
+                    data: [120, 200, 150],
+                    type: 'pie',
+                    itemStyle: {
+                        color: '#ff6b6b',
+                        borderColor: '#333',
+                        borderWidth: 2
+                    }
+                }]
+            };
+            
+            chart.setOption(option);
+            log('Chart option set', 'green');
+            log('');
+            
+            // 等待渲染完成后检查元素
+            setTimeout(() => {
+                log('=== Checking Element Properties ===', 'blue');
+                const roots = zr.storage.getRoots();
+                log(`Total root elements: ${roots.length}`);
+                log('');
+                
+                let rectCount = 0;
+                let rectWithRoughness = 0;
+                let pathCount = 0;
+                let pathWithRoughness = 0;
+                
+                function checkElement(el, depth = 0, parentPath = '') {
+                    const indent = '  '.repeat(depth);
+                    const path = parentPath ? `${parentPath} > ${el.type || 'unknown'}` : (el.type || 'unknown');
+                    
+                    if (el.type) {
+                        const roughnessStr = el.roughness != null ? el.roughness : 'null';
+                        const fillerStr = el.filler || 'null';
+                        const hasZr = el.__zr ? 'yes' : 'no';
+                        const shapeInfo = el.shape ? JSON.stringify(el.shape) : '';
+                        const styleInfo = el.style ? `fill=${el.style.fill}, stroke=${el.style.stroke}` : '';
+                        
+                        let color = 'black';
+                        let marker = '';
+                        
+                        if (el.type === 'rect') {
+                            rectCount++;
+                            if (el.roughness != null && el.roughness > 0) {
+                                rectWithRoughness++;
+                                color = 'orange';
+                                marker = ' ⚠️ RECT WITH ROUGHNESS!';
+                            } else {
+                                color = 'green';
+                                marker = ' ✓ rect ok';
+                            }
+                            log(`${indent}${el.type}: roughness=${roughnessStr}, filler=${fillerStr}, __zr=${hasZr}, shape=${shapeInfo}, style={${styleInfo}}${marker}`, color);
+                        } else if (el.type === 'path') {
+                            pathCount++;
+                            if (el.roughness != null && el.roughness > 0) {
+                                pathWithRoughness++;
+                                color = 'orange';
+                                marker = ' ⚠️ PATH WITH ROUGHNESS!';
+                            }
+                            log(`${indent}${el.type}: roughness=${roughnessStr}, filler=${fillerStr}, __zr=${hasZr}, style={${styleInfo}}${marker}`, color);
+                        } else {
+                            log(`${indent}${el.type}: roughness=${roughnessStr}, filler=${fillerStr}, __zr=${hasZr}`, color);
+                        }
+                    }
+                    
+                    if (el.childrenRef && typeof el.childrenRef === 'function') {
+                        const children = el.childrenRef();
+                        if (children && children.length > 0) {
+                            children.forEach(child => checkElement(child, depth + 1, path));
+                        }
+                    }
+                }
+                
+                roots.forEach((root, index) => {
+                    log(`Root ${index}:`, 'blue');
+                    checkElement(root);
+                    log('');
+                });
+                
+                log('=== Summary ===', 'blue');
+                log(`Total rect elements: ${rectCount}`);
+                log(`Rect with roughness: ${rectWithRoughness}`);
+                log(`Total path elements: ${pathCount}`);
+                log(`Path with roughness: ${pathWithRoughness}`);
+                
+                if (rectWithRoughness > 0) {
+                    log(`⚠️  WARNING: ${rectWithRoughness} rect elements have roughness!`, 'orange');
+                }
+                if (pathWithRoughness > 0) {
+                    log(`⚠️  WARNING: ${pathWithRoughness} path elements have roughness!`, 'orange');
+                }
+                if (rectWithRoughness === 0 && rectCount > 0) {
+                    log('✅ SUCCESS: No rect elements have roughness!', 'green');
+                } else if (rectWithRoughness === rectCount && rectCount > 0) {
+                    log('❌ PROBLEM: All rect elements have roughness!', 'red');
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

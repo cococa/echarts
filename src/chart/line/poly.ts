@@ -22,6 +22,7 @@
 import Path, { PathProps } from 'zrender/src/graphic/Path';
 import PathProxy from 'zrender/src/core/PathProxy';
 import { cubicRootAt, cubicAt } from 'zrender/src/core/curve';
+import rough from 'zrender/src/handdrawn/RoughCanvas';
 
 const mathMin = Math.min;
 const mathMax = Math.max;
@@ -231,6 +232,11 @@ export class ECPolyline extends Path<ECPolylineProps> {
 
     constructor(opts?: ECPolylineProps) {
         super(opts);
+        console.log('=== ECPolyline constructor ===', {
+            roughness: this.roughness,
+            filler: this.filler,
+            opts: opts
+        });
     }
 
     getDefaultStyle() {
@@ -244,7 +250,47 @@ export class ECPolyline extends Path<ECPolylineProps> {
         return new ECPolylineShape();
     }
 
-    buildPath(ctx: PathProxy, shape: ECPolylineShape) {
+    buildPath(ctx: CanvasRenderingContext2D | PathProxy, shape: ECPolylineShape) {
+        console.log('=== ECPolyline.buildPath called ===', {
+            roughness: this.roughness,
+            filler: this.filler,
+            pointsLength: shape.points ? shape.points.length : 0,
+            ctxType: ctx.constructor.name
+        });
+        
+        // 如果有 roughness 且 ctx 不是 PathProxy，使用手绘效果
+        if (this.roughness && !(ctx instanceof PathProxy)) {
+            console.log('Applying rough effect to polyline');
+            // ctx 是真实的 CanvasRenderingContext2D
+            const points = shape.points;
+            if (!points || points.length < 2) {
+                return;
+            }
+            
+            // 将点转换为 [x, y] 数组
+            const pointArray: [number, number][] = [];
+            for (let i = 0; i < points.length / 2; i++) {
+                const x = points[i * 2];
+                const y = points[i * 2 + 1];
+                if (!isPointNull(x, y)) {
+                    pointArray.push([x, y]);
+                }
+            }
+            
+            if (pointArray.length > 0) {
+                const stroke = typeof this.style.stroke === 'string' ? this.style.stroke : undefined;
+                const rc = rough.canvas(ctx as any, {
+                    options: {
+                        roughness: this.roughness,
+                        stroke: stroke,
+                        strokeWidth: this.style.lineWidth || 1,
+                    },
+                });
+                rc.linearPath(pointArray);
+            }
+            return;
+        }
+
         const points = shape.points;
 
         let i = 0;
@@ -267,7 +313,7 @@ export class ECPolyline extends Path<ECPolylineProps> {
         }
         while (i < len) {
             i += drawSegment(
-                ctx, points, i, len, len,
+                ctx as PathProxy, points, i, len, len,
                 1,
                 shape.smooth,
                 shape.smoothMonotone, shape.connectNulls

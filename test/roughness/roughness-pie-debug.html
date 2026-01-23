@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Roughness 饼图调试</title>
+    <script src="../lib/simpleRequire.js"></script>
+    <script src="../lib/config.js"></script>
+    <script src="../lib/jquery.min.js"></script>
+    <script src="../lib/facePrint.js"></script>
+    <script src="../lib/testHelper.js"></script>
+    <link rel="stylesheet" href="../lib/reset.css" />
+    <style>
+        @font-face {
+            font-family: 'JinNianYeYaoJiaYouYa';
+            src: url('../../JinNianYeYaoJiaYouYa-2.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .controls {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+        .control-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: inline-block;
+            width: 120px;
+            font-weight: bold;
+        }
+        input[type="range"] {
+            width: 200px;
+            vertical-align: middle;
+        }
+        select, button {
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .value-display {
+            display: inline-block;
+            min-width: 40px;
+            font-weight: bold;
+            color: #2196F3;
+        }
+        #main {
+            border: 2px solid #333;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>饼图 Roughness 调试</h1>
+    
+    <div class="controls">
+        <div class="control-group">
+            <label>渲染器 (Renderer):</label>
+            <select id="renderer">
+                <option value="canvas">Canvas</option>
+                <option value="svg">SVG</option>
+            </select>
+        </div>
+        
+        <div class="control-group">
+            <label>粗糙度 (Roughness):</label>
+            <input type="range" id="roughness" min="0" max="5" step="0.1" value="2.6">
+            <span class="value-display" id="roughnessValue">2.6</span>
+        </div>
+        
+        <div class="control-group">
+            <label>填充样式 (Filler):</label>
+            <select id="filler">
+                <option value="hachure">Hachure (斜线)</option>
+                <option value="solid">Solid (实心)</option>
+                <option value="zigzag">Zigzag (锯齿)</option>
+                <option value="cross-hatch">Cross-hatch (交叉线)</option>
+                <option value="dots">Dots (点)</option>
+                <option value="dashed">Dashed (虚线)</option>
+                <option value="zigzag-line">Zigzag-line (锯齿线)</option>
+            </select>
+        </div>
+        
+        <div class="control-group">
+            <button id="applyBtn">应用设置</button>
+            <button id="refreshBtn" style="background: #2196F3;">刷新图表</button>
+        </div>
+    </div>
+
+    <div id="main" style="width: 800px; height: 600px;"></div>
+
+    <script>
+        require.config({
+            paths: {
+                'echarts': '../../dist/echarts',
+                'zrender': '../../node_modules/zrender/dist/zrender',
+                'geoJson': '../../geoData/geoJson',
+                'theme': '../../theme',
+                'data': '../data',
+                'map': '../data/map',
+                'i18n': '../../i18n',
+                'extension': '../../dist/extension',
+                'ssrClient': '../../ssr/client/dist/index.js'
+            }
+        });
+
+        require(['echarts'], function (echarts) {
+            let chart = null;
+            let currentRenderer = 'canvas';
+            let currentRoughness = 2.6;
+            let currentFiller = 'hachure';
+            
+            // 更新 roughness 显示值
+            document.getElementById('roughness').addEventListener('input', function(e) {
+                document.getElementById('roughnessValue').textContent = e.target.value;
+            });
+            
+            // 创建图表
+            function createChart() {
+                if (chart) {
+                    chart.dispose();
+                }
+                
+                console.log('Creating chart with:', { 
+                    renderer: currentRenderer, 
+                    roughness: currentRoughness, 
+                    filler: currentFiller 
+                });
+                
+                chart = echarts.init(document.getElementById('main'), null, {
+                    renderer: currentRenderer,
+                    roughness: currentRoughness,
+                    filler: currentFiller
+                });
+                
+                const option = {
+                    title: {
+                        text: '饼图示例',
+                        left: 'center',
+                        textStyle: {
+                            fontFamily: 'JinNianYeYaoJiaYouYa, sans-serif'
+                        }
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: '{a} <br/>{b}: {c} ({d}%)'
+                    },
+                    legend: {
+                        orient: 'vertical',
+                        left: 'left',
+                        textStyle: {
+                            fontFamily: 'JinNianYeYaoJiaYouYa, sans-serif'
+                        }
+                    },
+                    series: [
+                        {
+                            name: '访问来源',
+                            type: 'pie',
+                            radius: '50%',
+                            data: [
+                                { value: 335, name: '直接访问' },
+                                { value: 310, name: '邮件营销' },
+                                { value: 234, name: '联盟广告' },
+                                { value: 135, name: '视频广告' },
+                                { value: 1548, name: '搜索引擎' }
+                            ],
+                            label: {
+                                fontFamily: 'JinNianYeYaoJiaYouYa, sans-serif'
+                            },
+                            emphasis: {
+                                itemStyle: {
+                                    shadowBlur: 10,
+                                    shadowOffsetX: 0,
+                                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                }
+                            }
+                        }
+                    ]
+                };
+                
+                chart.setOption(option);
+                console.log('Chart created successfully');
+            }
+            
+            // 应用设置
+            document.getElementById('applyBtn').addEventListener('click', function() {
+                currentRenderer = document.getElementById('renderer').value;
+                currentRoughness = parseFloat(document.getElementById('roughness').value);
+                currentFiller = document.getElementById('filler').value;
+                
+                createChart();
+            });
+            
+            // 刷新图表
+            document.getElementById('refreshBtn').addEventListener('click', function() {
+                if (chart) {
+                    chart.resize();
+                }
+            });
+            
+            // 初始化图表
+            createChart();
+        });
+    </script>
+</body>
+</html>

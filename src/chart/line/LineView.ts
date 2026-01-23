@@ -629,6 +629,8 @@ class LineView extends ChartView {
     }
 
     render(seriesModel: LineSeriesModel, ecModel: GlobalModel, api: ExtensionAPI) {
+        console.log('=== LineView.render called ===');
+        
         const coordSys = seriesModel.coordinateSystem;
         const group = this.group;
         const data = seriesModel.getData();
@@ -643,6 +645,8 @@ class LineView extends ChartView {
         const symbolDraw = this._symbolDraw;
         let polyline = this._polyline;
         let polygon = this._polygon;
+
+        console.log('Existing polyline:', polyline, 'roughness:', polyline ? polyline.roughness : 'N/A');
 
         const lineGroup = this._lineGroup;
 
@@ -1026,6 +1030,8 @@ class LineView extends ChartView {
             this._lineGroup.remove(polyline);
         }
 
+        console.log('=== LineView._newPolyline creating ECPolyline ===');
+        
         polyline = new ECPolyline({
             shape: {
                 points
@@ -1033,6 +1039,8 @@ class LineView extends ChartView {
             segmentIgnoreThreshold: 2,
             z2: 10
         });
+
+        console.log('ECPolyline created, roughness:', polyline.roughness);
 
         this._lineGroup.add(polyline);
 

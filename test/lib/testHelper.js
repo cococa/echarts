@@ -292,7 +292,8 @@
                 renderer: opt.renderer,
                 useCoarsePointer: opt.useCoarsePointer,
                 pointerSize: opt.pointerSize,
-                roughness: opt.roughness
+                roughness: opt.roughness,
+                filler: opt.filler
             });
 
             if (opt.draggable) {

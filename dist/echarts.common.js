@@ -12905,6 +12905,11 @@
             if (!ops || !ops.length) {
                 return;
             }
+            console.log('=== RoughCanvas._drawFillOps called ===');
+            console.log('fill color:', o.fill);
+            console.log('fillStyle:', o.fillStyle);
+            console.log('ops count:', ops.length);
+            console.trace('Call stack');
             var ctx = this.ctx;
             var isPathProxy = typeof ctx.save !== 'function';
             if (!isPathProxy) {
@@ -12932,9 +12937,11 @@
             }
         };
         RoughCanvas.prototype.rectangle = function (x, y, width, height, options) {
+            console.log('=== RoughCanvas.rectangle called ===', { x: x, y: y, width: width, height: height, options: options });
             var o = this._getOptions(options);
             var ops = rectangle(x, y, width, height, o);
             if (ops.fillOps) {
+                console.log('rectangle has fillOps, calling _drawFillOps');
                 this._drawFillOps(ops.fillOps, o);
             }
             drawOpsToContext(this.ctx, ops);
@@ -12945,9 +12952,11 @@
             }
         };
         RoughCanvas.prototype.circle = function (x, y, diameter, options) {
+            console.log('=== RoughCanvas.circle called ===', { x: x, y: y, diameter: diameter, options: options });
             var o = this._getOptions(options);
             var ops = circle(x, y, diameter, o);
             if (ops.fillOps) {
+                console.log('circle has fillOps, calling _drawFillOps');
                 this._drawFillOps(ops.fillOps, o);
             }
             drawOpsToContext(this.ctx, ops);
@@ -12958,9 +12967,11 @@
             }
         };
         RoughCanvas.prototype.ellipse = function (x, y, width, height, options) {
+            console.log('=== RoughCanvas.ellipse called ===', { x: x, y: y, width: width, height: height, options: options });
             var o = this._getOptions(options);
             var ops = ellipse(x, y, width, height, o);
             if (ops.fillOps) {
+                console.log('ellipse has fillOps, calling _drawFillOps');
                 this._drawFillOps(ops.fillOps, o);
             }
             drawOpsToContext(this.ctx, ops);
@@ -12981,9 +12992,11 @@
             }
         };
         RoughCanvas.prototype.polygon = function (points, options) {
+            console.log('=== RoughCanvas.polygon called ===', { points: points, options: options });
             var o = this._getOptions(options);
             var ops = polygon(points, o);
             if (ops.fillOps) {
+                console.log('polygon has fillOps, calling _drawFillOps');
                 this._drawFillOps(ops.fillOps, o);
             }
             drawOpsToContext(this.ctx, ops);
@@ -13052,17 +13065,33 @@
                 width = shape.width;
                 height = shape.height;
             }
+            var isClipPath = !!this.__clipTarget;
             if (this.roughness && !shape.r) {
-                var fill = typeof this.style.fill === 'string' ? this.style.fill : undefined;
-                var rc = rough.canvas(ctx, {
-                    options: {
-                        roughness: this.roughness,
-                        fillStyle: this.filler,
-                        fill: fill,
-                    },
+                console.log('=== Rect.buildPath with roughness ===', {
+                    roughness: this.roughness,
+                    filler: this.filler,
+                    fill: this.style.fill,
+                    stroke: this.style.stroke,
+                    x: x,
+                    y: y,
+                    width: width,
+                    height: height
                 });
-                rc.rectangle(x, y, width, height);
-                return;
+                var fill = typeof this.style.fill === 'string' ? this.style.fill : undefined;
+                var stroke = typeof this.style.stroke === 'string' ? this.style.stroke : undefined;
+                if (fill || stroke) {
+                    var rc = rough.canvas(ctx, {
+                        options: {
+                            roughness: this.roughness,
+                            fillStyle: this.filler,
+                            fill: fill,
+                            stroke: stroke,
+                            strokeWidth: this.style.lineWidth || 1,
+                        },
+                    });
+                    rc.rectangle(x, y, width, height);
+                    return;
+                }
             }
             if (!shape.r) {
                 ctx.rect(x, y, width, height);
@@ -14606,43 +14635,51 @@
         Sector.prototype.buildPath = function (ctx, shape) {
             if (this.roughness) {
                 var fill = typeof this.style.fill === 'string' ? this.style.fill : undefined;
+                var stroke = typeof this.style.stroke === 'string' ? this.style.stroke : undefined;
+                console.log('=== Sector.buildPath with roughness ===', {
+                    roughness: this.roughness,
+                    filler: this.filler,
+                    fill: fill,
+                    stroke: stroke,
+                    shape: shape
+                });
+                var cx = shape.cx, cy = shape.cy, r0 = shape.r0, r = shape.r, startAngle = shape.startAngle, endAngle = shape.endAngle, clockwise = shape.clockwise;
+                var steps = Math.max(20, Math.ceil(Math.abs(endAngle - startAngle) / (Math.PI / 18)));
+                var points = [];
+                if (r0 > 0) {
+                    for (var i = 0; i <= steps; i++) {
+                        var angle = startAngle + (endAngle - startAngle) * i / steps;
+                        var x = cx + r * Math.cos(angle);
+                        var y = cy + r * Math.sin(angle);
+                        points.push([x, y]);
+                    }
+                    for (var i = steps; i >= 0; i--) {
+                        var angle = startAngle + (endAngle - startAngle) * i / steps;
+                        var x = cx + r0 * Math.cos(angle);
+                        var y = cy + r0 * Math.sin(angle);
+                        points.push([x, y]);
+                    }
+                }
+                else {
+                    points.push([cx, cy]);
+                    for (var i = 0; i <= steps; i++) {
+                        var angle = startAngle + (endAngle - startAngle) * i / steps;
+                        var x = cx + r * Math.cos(angle);
+                        var y = cy + r * Math.sin(angle);
+                        points.push([x, y]);
+                    }
+                }
+                console.log('Sector polygon points:', points.length);
                 var rc = rough.canvas(ctx, {
                     options: {
                         roughness: this.roughness,
                         fillStyle: this.filler,
                         fill: fill,
+                        stroke: stroke,
+                        strokeWidth: this.style.lineWidth || 1,
                     },
                 });
-                var recorder = {
-                    d: [],
-                    moveTo: function (x, y) {
-                        this.d.push("M " + x + " " + y);
-                    },
-                    lineTo: function (x, y) {
-                        this.d.push("L " + x + " " + y);
-                    },
-                    bezierCurveTo: function (x1, y1, x2, y2, x3, y3) {
-                        this.d.push("C " + x1 + " " + y1 + " " + x2 + " " + y2 + " " + x3 + " " + y3);
-                    },
-                    quadraticCurveTo: function (x1, y1, x2, y2) {
-                        this.d.push("Q " + x1 + " " + y1 + " " + x2 + " " + y2);
-                    },
-                    arc: function (x, y, r, startAngle, endAngle, anticlockwise) {
-                        var endX = x + r * Math.cos(endAngle);
-                        var endY = y + r * Math.sin(endAngle);
-                        var largeArc = Math.abs(endAngle - startAngle) > Math.PI ? 1 : 0;
-                        if (Math.abs(endAngle - startAngle) > Math.PI * 2 - 1e-4) {
-                            largeArc = 1;
-                        }
-                        var sweep = anticlockwise ? 0 : 1;
-                        this.d.push("A " + r + " " + r + " 0 " + largeArc + " " + sweep + " " + endX + " " + endY);
-                    },
-                    closePath: function () {
-                        this.d.push('Z');
-                    }
-                };
-                buildPath$1(recorder, shape);
-                rc.path(recorder.d.join(' '));
+                rc.polygon(points);
                 return;
             }
             buildPath$1(ctx, shape);
@@ -14850,14 +14887,24 @@
             return new PolylineShape();
         };
         Polyline.prototype.buildPath = function (ctx, shape) {
+            console.log('=== zrender Polyline.buildPath ===', {
+                roughness: this.roughness,
+                filler: this.filler,
+                points: shape.points ? shape.points.length : 0,
+                stroke: this.style.stroke
+            });
             if (this.roughness) {
+                var stroke = typeof this.style.stroke === 'string' ? this.style.stroke : undefined;
                 var rc = rough.canvas(ctx, {
                     options: {
                         roughness: this.roughness,
                         fillStyle: this.filler,
+                        stroke: stroke,
+                        strokeWidth: this.style.lineWidth || 1,
                     },
                 });
                 if (shape.points) {
+                    console.log('Drawing rough polyline with stroke:', stroke);
                     rc.linearPath(shape.points);
                 }
                 return;
@@ -26004,7 +26051,6 @@
     };
     var symbolBuildProxies = {};
     each(symbolCtors, function (Ctor, name) {
-      console.log("Ctor", Ctor, name);
       var ctor = new Ctor();
       // s.roughness = 1
       symbolBuildProxies[name] = ctor;
@@ -26272,6 +26318,29 @@
         var strokePercent = style.strokePercent;
         var strokePart = strokePercent < 1;
         var firstDraw = !el.path;
+        if (el.roughness) {
+            console.log('=== brushPath: drawing with roughness directly ===', {
+                type: el.type,
+                roughness: el.roughness,
+                hasStroke: hasStroke,
+                hasFill: hasFill,
+                strokeColor: style.stroke,
+                fillColor: style.fill
+            });
+            ctx.save();
+            ctx.beginPath();
+            el.buildPath(ctx, el.shape, inBatch);
+            if (hasStroke) {
+                doStrokePath(ctx, style);
+            }
+            if (hasFill) {
+                doFillPath(ctx, style);
+            }
+            ctx.restore();
+            el.__dirty = 0;
+            el.__isRendered = true;
+            return;
+        }
         if ((!el.silent || strokePart) && firstDraw) {
             el.createPathProxy();
         }
@@ -26580,10 +26649,13 @@
         for (var i = 0; i < clipPaths.length; i++) {
             var clipPath = clipPaths[i];
             allClipped = allClipped || clipPath.isZeroArea();
+            var originalRoughness = clipPath.roughness;
+            clipPath.roughness = 0;
             setContextTransform(ctx, clipPath);
             ctx.beginPath();
             clipPath.buildPath(ctx, clipPath.shape);
             ctx.clip();
+            clipPath.roughness = originalRoughness;
         }
         scope.allClipped = allClipped;
     }
@@ -26974,7 +27046,6 @@
                 svgRoot.children.push(symbolVNode);
               }
             } else {
-              console.log("xxx");
               // Paint to canvas for all other renderers.
               brushSingle(ctx, symbol);
             }
@@ -27320,6 +27391,7 @@
         }
         var zr = _this._zr = init(dom, {
           roughness: opts.roughness,
+          filler: opts.filler,
           renderer: opts.renderer || defaultRenderer,
           devicePixelRatio: opts.devicePixelRatio,
           width: opts.width,
@@ -27433,7 +27505,6 @@
       };
       /* eslint-disable-next-line */
       ECharts.prototype.setOption = function (option, notMerge, lazyUpdate) {
-        console.log("setOption");
         if (this[IN_MAIN_PROCESS_KEY]) {
           if ("development" !== 'production') {
             error('`setOption` should not be called during main process.');
@@ -28148,7 +28219,6 @@
             } else {
               i++;
             }
-            console.log('view', view);
           }
         };
         updateDirectly = function (ecIns, method, payload, mainType, subType) {
@@ -38775,6 +38845,11 @@
       function ECPolyline(opts) {
         var _this = _super.call(this, opts) || this;
         _this.type = 'ec-polyline';
+        console.log('=== ECPolyline constructor ===', {
+          roughness: _this.roughness,
+          filler: _this.filler,
+          opts: opts
+        });
         return _this;
       }
       ECPolyline.prototype.getDefaultStyle = function () {
@@ -38787,6 +38862,42 @@
         return new ECPolylineShape();
       };
       ECPolyline.prototype.buildPath = function (ctx, shape) {
+        console.log('=== ECPolyline.buildPath called ===', {
+          roughness: this.roughness,
+          filler: this.filler,
+          pointsLength: shape.points ? shape.points.length : 0,
+          ctxType: ctx.constructor.name
+        });
+        // 如果有 roughness 且 ctx 不是 PathProxy，使用手绘效果
+        if (this.roughness && !(ctx instanceof PathProxy)) {
+          console.log('Applying rough effect to polyline');
+          // ctx 是真实的 CanvasRenderingContext2D
+          var points_1 = shape.points;
+          if (!points_1 || points_1.length < 2) {
+            return;
+          }
+          // 将点转换为 [x, y] 数组
+          var pointArray = [];
+          for (var i_1 = 0; i_1 < points_1.length / 2; i_1++) {
+            var x = points_1[i_1 * 2];
+            var y = points_1[i_1 * 2 + 1];
+            if (!isPointNull(x, y)) {
+              pointArray.push([x, y]);
+            }
+          }
+          if (pointArray.length > 0) {
+            var stroke = typeof this.style.stroke === 'string' ? this.style.stroke : undefined;
+            var rc = rough.canvas(ctx, {
+              options: {
+                roughness: this.roughness,
+                stroke: stroke,
+                strokeWidth: this.style.lineWidth || 1
+              }
+            });
+            rc.linearPath(pointArray);
+          }
+          return;
+        }
         var points = shape.points;
         var i = 0;
         var len = points.length / 2;
@@ -38854,8 +38965,8 @@
               y3 = data[i++];
               var nRoot = isDimX ? cubicRootAt(x0, x, x2, x3, xOrY, roots) : cubicRootAt(y0, y, y2, y3, xOrY, roots);
               if (nRoot > 0) {
-                for (var i_1 = 0; i_1 < nRoot; i_1++) {
-                  var t_1 = roots[i_1];
+                for (var i_2 = 0; i_2 < nRoot; i_2++) {
+                  var t_1 = roots[i_2];
                   if (t_1 <= 1 && t_1 >= 0) {
                     var val = isDimX ? cubicAt(y0, y, y2, y3, t_1) : cubicAt(x0, x, x2, x3, t_1);
                     return isDimX ? [xOrY, val] : [val, xOrY];
@@ -39474,6 +39585,7 @@
         this._changePolyState = bind(this._changePolyState, this);
       };
       LineView.prototype.render = function (seriesModel, ecModel, api) {
+        console.log('=== LineView.render called ===');
         var coordSys = seriesModel.coordinateSystem;
         var group = this.group;
         var data = seriesModel.getData();
@@ -39485,6 +39597,7 @@
         var symbolDraw = this._symbolDraw;
         var polyline = this._polyline;
         var polygon = this._polygon;
+        console.log('Existing polyline:', polyline, 'roughness:', polyline ? polyline.roughness : 'N/A');
         var lineGroup = this._lineGroup;
         var hasAnimation = !ecModel.ssr && seriesModel.get('animation');
         var isAreaChart = !areaStyleModel.isEmpty();
@@ -39767,6 +39880,7 @@
         if (polyline) {
           this._lineGroup.remove(polyline);
         }
+        console.log('=== LineView._newPolyline creating ECPolyline ===');
         polyline = new ECPolyline({
           shape: {
             points: points
@@ -39774,6 +39888,7 @@
           segmentIgnoreThreshold: 2,
           z2: 10
         });
+        console.log('ECPolyline created, roughness:', polyline.roughness);
         this._lineGroup.add(polyline);
         this._polyline = polyline;
         return polyline;
@@ -45411,10 +45526,16 @@
       GridView.prototype.render = function (gridModel, ecModel) {
         this.group.removeAll();
         if (gridModel.get('show')) {
+          var fill = gridModel.get('backgroundColor');
+          // Workaround for ZRender bug: transparent fill triggers unwanted rough filling
+          if (fill === 'rgba(0,0,0,0)' || fill === 'transparent' || fill === 'none') {
+            fill = null;
+          }
+          console.log("fill", fill);
           this.group.add(new Rect({
             shape: gridModel.coordinateSystem.getRect(),
             style: defaults({
-              fill: gridModel.get('backgroundColor')
+              fill: fill
             }, gridModel.getItemStyle()),
             silent: true,
             z2: -1
